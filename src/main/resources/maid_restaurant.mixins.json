@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "com.mastermarisa.maid_restaurant.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "StockpotBlockEntityAccessor","PotBlockEntityAccessor",
+    "TableBlockMixin","MaidStealEdibleMoveBlockTaskMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

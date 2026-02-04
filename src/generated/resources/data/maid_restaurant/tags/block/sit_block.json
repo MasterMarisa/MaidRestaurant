@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "#kaleidoscope_cookery:cook_stool",
+      "required": false
+    },
+    {
+      "id": "#kaleidoscope_cookery:chair",
+      "required": false
+    }
+  ]
+}

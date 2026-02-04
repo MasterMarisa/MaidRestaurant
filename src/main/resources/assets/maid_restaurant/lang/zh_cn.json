@@ -1,0 +1,9 @@
+{
+  "item.maid_restaurant.order_menu" : "餐厅菜单",
+  "message.maid_restaurant.block_removed" : "已移除桌位",
+  "message.maid_restaurant.block_selected" : "已选中桌位",
+  "task.maid_restaurant.cooker" : "厨师",
+  "task.maid_restaurant.waiter" : "侍者",
+  "task.maid_restaurant.cooker.desc" : "在收到烹饪委托后，女仆会开始烹饪",
+  "task.maid_restaurant.waiter.desc" : "在收到上菜委托后，女仆会将菜肴放置到指定的桌位处"
+}

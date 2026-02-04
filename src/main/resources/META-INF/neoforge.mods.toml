@@ -1,0 +1,48 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+
+modId="maid_restaurant"
+version="0.1.2"
+displayName="Maid Restaurant"
+authors="摸里傻"
+
+description='''
+Nope.
+'''
+
+[[mixins]]
+config="maid_restaurant.mixins.json"
+
+[[accessTransformers]]
+file="META-INF/accesstransformer.cfg"
+
+[[dependencies."maid_restaurant"]]
+    modId="neoforge"
+    type="required"
+    versionRange="[${neo_version},)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies."maid_restaurant"]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies."maid_restaurant"]]
+    modId="touhou_little_maid"
+    type="required"
+    versionRange="[1.5.0,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies."maid_restaurant"]]
+    modId="kaleidoscope_cookery"
+    type="required"
+    versionRange="[1.1.2,)"
+    ordering="NONE"
+    side="BOTH"
