@@ -1,6 +1,7 @@
 package com.mastermarisa.maid_restaurant.task.cooktask;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.geckolib3.core.molang.util.PooledStringHashSet;
 import com.github.ysbbbbbb.kaleidoscopecookery.block.kitchen.PotBlock;
 import com.github.ysbbbbbb.kaleidoscopecookery.blockentity.kitchen.PotBlockEntity;
 import com.github.ysbbbbbb.kaleidoscopecookery.crafting.recipe.PotRecipe;
@@ -33,6 +34,7 @@ import java.util.*;
 
 public class PotCookTask implements ICookTask {
     public static final String UID = "PotCookTask";
+    public static final List<String> blackList;
 
     @Override
     public String getUID() {
@@ -108,7 +110,8 @@ public class PotCookTask implements ICookTask {
     public List<RecipeData> getAllRecipeData() {
         List<RecipeData> ans = new ArrayList<>();
         for (var holder : RecipeUtils.getRecipeManager().getAllRecipesFor(ModRecipes.POT_RECIPE)) {
-            ans.add(new RecipeData(holder.id(),ModRecipes.POT_RECIPE,getIcon(),holder.value().result()));
+            if (!blackList.contains(holder.id().toString()))
+                ans.add(new RecipeData(holder.id(),ModRecipes.POT_RECIPE,getIcon(),holder.value().result()));
         }
         return ans;
     }
@@ -116,7 +119,6 @@ public class PotCookTask implements ICookTask {
     private void tickState0(ServerLevel level, EntityMaid maid, BlockPos pos, PotBlockEntity pot, CookRequest request) {
         BlockState state = level.getBlockState(pos);
         if (!state.getValue(PotBlock.HAS_OIL)) {
-            MaidRestaurant.LOGGER.debug("TRY");
             List<ItemStack> oil = MaidInvUtils.tryExtract(maid.getAvailableInv(false),1,StackPredicate.of(TagMod.OIL),true);
             if (!oil.isEmpty()) {
                 pot.onPlaceOil(level,maid,oil.getFirst());
@@ -171,5 +173,13 @@ public class PotCookTask implements ICookTask {
     private void tickState3(ServerLevel level, EntityMaid maid, BlockPos pos, PotBlockEntity pot, CookRequest request) {
         pot.reset();
         maid.swing(InteractionHand.OFF_HAND);
+    }
+
+    static {
+        blackList = new ArrayList<>(List.of("kaleidoscope_cookery:pot/braised_fish_salmon","kaleidoscope_cookery:pot/braised_fish_salmon_with_rice","kaleidoscope_cookery:pot/braised_fish_cod","kaleidoscope_cookery:pot/braised_fish_cod_with_rice"));
+        for (int i = 2;i <= 9;i++) {
+            blackList.add("kaleidoscope_cookery:pot/stuffed_dough_food_to_meat_pie_" + i);
+            blackList.add("kaleidoscope_cookery:pot/egg_to_fried_egg_" + i);
+        }
     }
 }

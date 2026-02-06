@@ -36,6 +36,7 @@ import java.util.*;
 
 public class StockpotCookTask implements ICookTask {
     public static final String UID = "StockpotCookTask";
+    public static final List<String> blackList;
 
     @Override
     public String getUID() {
@@ -111,7 +112,8 @@ public class StockpotCookTask implements ICookTask {
     public List<RecipeData> getAllRecipeData() {
         List<RecipeData> ans = new ArrayList<>();
         for (var holder : RecipeUtils.getRecipeManager().getAllRecipesFor(ModRecipes.STOCKPOT_RECIPE)) {
-            ans.add(new RecipeData(holder.id(),ModRecipes.STOCKPOT_RECIPE,getIcon(),holder.value().result()));
+            if (!blackList.contains(holder.id().toString()))
+                ans.add(new RecipeData(holder.id(),ModRecipes.STOCKPOT_RECIPE,getIcon(),holder.value().result()));
         }
         return ans;
     }
@@ -202,5 +204,12 @@ public class StockpotCookTask implements ICookTask {
         maid.playSound(SoundEvents.LANTERN_BREAK, 0.5F, 0.5F);
         ItemUtils.getItemToLivingEntity(maid,lid);
         maid.swing(InteractionHand.OFF_HAND);
+    }
+
+    static {
+        blackList = new ArrayList<>();
+        for (int i = 2;i <= 9;i++) {
+            blackList.add("kaleidoscope_cookery:stockpot/dumpling_count_" + i);
+        }
     }
 }

@@ -17,10 +17,6 @@ public class RecipeUtils {
         return recipeManager.byKeyTyped(type,name);
     }
 
-    public static void getAllRecipesFor(RecipeType<?> type) {
-
-    }
-
     public static Optional<RecipeHolder<?>> byKey(ResourceLocation name){
         return recipeManager.byKey(name);
     }

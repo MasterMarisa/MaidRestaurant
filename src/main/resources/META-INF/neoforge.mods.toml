@@ -1,16 +1,17 @@
 modLoader="javafml"
 loaderVersion="${loader_version_range}"
-license="${mod_license}"
+license="BSD 3-Clause"
 
 [[mods]]
 
 modId="maid_restaurant"
-version="0.1.2"
+version="0.1.4"
 displayName="Maid Restaurant"
+logoFile="logo.png"
 authors="摸里傻"
 
 description='''
-Nope.
+An addon mod designed to deliver a restaurant-style automatic experience with maids.
 '''
 
 [[mixins]]

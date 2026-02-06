@@ -37,6 +37,7 @@ public class TaskWaiter implements IMaidTask {
         return false;
     }
 
+    @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         maid.setPickup(false);
         return Lists.newArrayList(Pair.of(5,new MaidSearchTableTask(0.4f)),

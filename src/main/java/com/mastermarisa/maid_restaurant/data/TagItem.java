@@ -11,6 +11,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.common.data.internal.NeoForgeItemTagsProvider;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -19,6 +20,8 @@ import java.util.concurrent.CompletableFuture;
 @ParametersAreNonnullByDefault
 public class TagItem extends ItemTagsProvider {
     public static final TagKey<Item> TABLE_BLACKLIST = ItemTags.create(ResourceLocation.fromNamespaceAndPath(MaidRestaurant.MOD_ID, "table_blacklist"));
+
+    public static final TagKey<Item> BRAISED_FISH_INGREDIENT = ItemTags.create(MaidRestaurant.resourceLocation("braised_fish_ingredient"));
 
     public TagItem(PackOutput pOutput, CompletableFuture<HolderLookup.Provider> pLookupProvider,
                    CompletableFuture<TagLookup<Block>> pBlockTags, @Nullable ExistingFileHelper existingFileHelper) {
@@ -29,5 +32,9 @@ public class TagItem extends ItemTagsProvider {
     protected void addTags(HolderLookup.Provider provider) {
         tag(TABLE_BLACKLIST)
                 .add(InitItems.ORDER_MENU.get());
+
+        tag(BRAISED_FISH_INGREDIENT)
+                .addOptionalTag(ResourceLocation.parse("c:foods/raw_cod"))
+                .addOptionalTag(ResourceLocation.parse("c:foods/raw_salmon"));
     }
 }
