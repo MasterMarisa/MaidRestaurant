@@ -19,6 +19,7 @@ import com.mastermarisa.maid_restaurant.uitls.MaidInvUtils;
 import com.mastermarisa.maid_restaurant.uitls.RecipeUtils;
 import com.mastermarisa.maid_restaurant.uitls.StackPredicate;
 import com.mastermarisa.maid_restaurant.uitls.manager.BlockUsageManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -28,11 +29,10 @@ import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +41,7 @@ import java.util.*;
 public class StockpotCookTask implements ICookTask {
     public static final String UID = "StockpotCookTask";
     public static final List<String> blackList;
+    public static final List<RecipeData> ans;
 
     @Override
     public String getUID() {
@@ -136,8 +137,14 @@ public class StockpotCookTask implements ICookTask {
 
     @Override
     public List<RecipeData> getAllRecipeData() {
+        RecipeManager manager = RecipeUtils.getRecipeManager();
         List<RecipeData> ans = new ArrayList<>();
-        for (var holder : RecipeUtils.getRecipeManager().getAllRecipesFor(ModRecipes.STOCKPOT_RECIPE)) {
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            manager = Minecraft.getInstance().level.getRecipeManager();
+        } else if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) {
+            manager = RecipeUtils.getRecipeManager();
+        }
+        for (var holder : manager.getAllRecipesFor(ModRecipes.STOCKPOT_RECIPE)) {
             if (!blackList.contains(holder.id().toString()))
                 ans.add(new RecipeData(holder.id(),ModRecipes.STOCKPOT_RECIPE,getIcon(),holder.value().result()));
         }
@@ -233,6 +240,7 @@ public class StockpotCookTask implements ICookTask {
 
     static {
         blackList = new ArrayList<>();
+        ans = new ArrayList<>();
         for (int i = 2;i <= 9;i++) {
             blackList.add("kaleidoscope_cookery:stockpot/dumpling_count_" + i);
         }

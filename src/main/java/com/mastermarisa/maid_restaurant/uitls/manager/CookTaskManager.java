@@ -22,6 +22,11 @@ public class CookTaskManager {
     }
 
     public static void register() {
+        taskMap.clear();
+        taskPool.clear();
+        typeMap.clear();
+        taskPool.clear();
+        orderedTypes.clear();
         for (var task : toRegister) {
             taskMap.put(task.getType(),task);
             taskPool.put(task,task.getType());

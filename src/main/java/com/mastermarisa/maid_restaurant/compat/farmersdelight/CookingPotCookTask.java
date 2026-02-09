@@ -21,6 +21,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
@@ -67,7 +68,7 @@ public class CookingPotCookTask implements ICookTask {
 
     @Override
     public ItemStack getResult(RecipeHolder<? extends Recipe<?>> recipeHolder) {
-        if (FMLEnvironment.dist == Dist.CLIENT) {
+        if (FMLEnvironment.dist == Dist.CLIENT && Minecraft.getInstance().level != null) {
             return recipeHolder.value().getResultItem(Minecraft.getInstance().level.registryAccess());
         } else if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) {
             return recipeHolder.value().getResultItem(InitializationHelper.getServerCache().registryAccess());
@@ -150,8 +151,14 @@ public class CookingPotCookTask implements ICookTask {
 
     @Override
     public List<RecipeData> getAllRecipeData() {
+        RecipeManager manager = RecipeUtils.getRecipeManager();
         List<RecipeData> ans = new ArrayList<>();
-        for (var holder : RecipeUtils.getRecipeManager().getAllRecipesFor(ModRecipeTypes.COOKING.get())) {
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            manager = Minecraft.getInstance().level.getRecipeManager();
+        } else if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) {
+            manager = RecipeUtils.getRecipeManager();
+        }
+        for (var holder : manager.getAllRecipesFor(ModRecipeTypes.COOKING.get())) {
             ans.add(new RecipeData(holder.id(),ModRecipeTypes.COOKING.get(),getIcon(),getResult(holder)));
         }
 

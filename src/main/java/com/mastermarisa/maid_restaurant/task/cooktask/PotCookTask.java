@@ -15,6 +15,7 @@ import com.mastermarisa.maid_restaurant.uitls.MaidInvUtils;
 import com.mastermarisa.maid_restaurant.uitls.RecipeUtils;
 import com.mastermarisa.maid_restaurant.uitls.StackPredicate;
 import com.mastermarisa.maid_restaurant.uitls.manager.BlockUsageManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -23,9 +24,12 @@ import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -118,8 +122,14 @@ public class PotCookTask implements ICookTask {
 
     @Override
     public List<RecipeData> getAllRecipeData() {
+        RecipeManager manager = RecipeUtils.getRecipeManager();
         List<RecipeData> ans = new ArrayList<>();
-        for (var holder : RecipeUtils.getRecipeManager().getAllRecipesFor(ModRecipes.POT_RECIPE)) {
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            manager = Minecraft.getInstance().level.getRecipeManager();
+        } else if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) {
+            manager = RecipeUtils.getRecipeManager();
+        }
+        for (var holder : manager.getAllRecipesFor(ModRecipes.POT_RECIPE)) {
             if (!blackList.contains(holder.id().toString()))
                 ans.add(new RecipeData(holder.id(),ModRecipes.POT_RECIPE,getIcon(),holder.value().result()));
         }

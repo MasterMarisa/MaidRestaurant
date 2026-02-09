@@ -13,5 +13,6 @@ public interface InitEvents {
         bus.register(OnAddReloadListeners.class);
         bus.register(OnServerAboutToStart.class);
         bus.register(OnMaidTaskEnable.class);
+        bus.register(OnPlayerLoggedIn.class);
     }
 }

@@ -42,6 +42,7 @@ public class OrderingScreen extends Screen implements IPageable {
 
     public OrderingScreen(Player player, List<BlockPos> targetTable) {
         super(Component.empty());
+        CookTaskManager.register();
         this.player = player;
         this.targetTable = targetTable;
         this.pages = new ArrayList<>();
@@ -139,14 +140,19 @@ public class OrderingScreen extends Screen implements IPageable {
         pageNum = new UILabel("1" + "/" + pages.size(),UIConst.lessBlack);
         pageNum.setCenterX(getCurrentPage().getCenterX());
         pageNum.setMaxY(getCurrentPage().getMaxY() - 10);
+        if (pages.isEmpty()) {
+            close();
+            return;
+        }
 
         switchToPage(0);
     }
 
     public void initOrderTags() {
         List<UIElement> tags = new ArrayList<>();
-        for (var pair : orders) {
-            tags.add(new UIOrderTag(pair.left(),pair.right()));
+        for (int i = 0;i < orders.size();i++) {
+            var pair = orders.get(i);
+            tags.add(new UIOrderTag(pair.left(),pair.right(),this,i));
         }
 
         orderTags = UIContainerVertical.wrap(tags,2,0, UIContainerVertical.ElementAlignment.UP);

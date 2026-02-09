@@ -15,6 +15,7 @@ import com.mastermarisa.maid_restaurant.uitls.RecipeUtils;
 import com.mastermarisa.maid_restaurant.uitls.StackPredicate;
 import com.mastermarisa.maid_restaurant.uitls.manager.BlockUsageManager;
 import com.mastermarisa.maid_restaurant.uitls.manager.RequestManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerLevel;
@@ -22,7 +23,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.Nullable;
 
@@ -139,8 +142,14 @@ public class SteamerCookTask implements ICookTask {
 
     @Override
     public List<RecipeData> getAllRecipeData() {
+        RecipeManager manager = RecipeUtils.getRecipeManager();
         List<RecipeData> ans = new ArrayList<>();
-        for (var holder : RecipeUtils.getRecipeManager().getAllRecipesFor(ModRecipes.STEAMER_RECIPE)) {
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            manager = Minecraft.getInstance().level.getRecipeManager();
+        } else if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) {
+            manager = RecipeUtils.getRecipeManager();
+        }
+        for (var holder : manager.getAllRecipesFor(ModRecipes.STEAMER_RECIPE)) {
             ans.add(new RecipeData(holder.id(),ModRecipes.STEAMER_RECIPE,getIcon(),holder.value().getResult()));
         }
         return ans;
