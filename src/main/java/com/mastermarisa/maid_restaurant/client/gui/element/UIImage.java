@@ -18,8 +18,8 @@ public class UIImage extends UIElement {
         this.data = data;
     }
 
-    protected void render(GuiGraphics graphics) {
-        super.render(graphics);
+    protected void render(GuiGraphics graphics, int mouseX, int mouseY) {
+        super.render(graphics,mouseX,mouseY);
         int imageWidth = this.data.partOfTexture.width;
         int imageHeight = this.data.partOfTexture.height;
         graphics.blit(this.data.textureLocation, this.frame.x + (int)Math.floor((double)(this.frame.width - imageWidth) / (double)2.0F), this.frame.y + (int)Math.floor((double)(this.frame.height - imageHeight) / (double)2.0F), 0, (float)this.data.partOfTexture.x, (float)this.data.partOfTexture.y, this.data.partOfTexture.width, this.data.partOfTexture.height, data.textureWidth, data.textureHeight);

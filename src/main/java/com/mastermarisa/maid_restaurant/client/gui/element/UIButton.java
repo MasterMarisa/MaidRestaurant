@@ -1,22 +1,25 @@
 package com.mastermarisa.maid_restaurant.client.gui.element;
 
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
+import com.mastermarisa.maid_restaurant.api.functional.Func;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 
 public class UIButton extends UIElement {
-    private final Button button;
+    @Nullable
+    protected Func<UIButton,Boolean> onClicked;
 
-    public UIButton(Rectangle frame, Button button) {
+    public UIButton(Rectangle frame, @Nullable Func<UIButton,Boolean> onClicked) {
         super(frame);
-        this.button = button;
+        this.onClicked = onClicked;
     }
 
     @Override
-    protected void render(GuiGraphics graphics) {
-        super.render(graphics);
-        button.setX(getCenterX() - button.getWidth() / 2);
-        button.setY(getCenterY() - button.getHeight() / 2);
+    public boolean onMouseClicked(double mouseX, double mouseY, int button) {
+        if (onClicked != null && frame.contains(mouseX,mouseY) && button == 0) {
+            return onClicked.accept(this);
+        }
+
+        return super.onMouseClicked(mouseX, mouseY, button);
     }
 }

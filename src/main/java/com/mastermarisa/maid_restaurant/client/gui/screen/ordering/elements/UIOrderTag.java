@@ -1,12 +1,13 @@
-package com.mastermarisa.maid_restaurant.client.gui.screen.ordering;
+package com.mastermarisa.maid_restaurant.client.gui.screen.ordering.elements;
 
 import com.mastermarisa.maid_restaurant.client.gui.element.UIElement;
 import com.mastermarisa.maid_restaurant.client.gui.element.UIImage;
 import com.mastermarisa.maid_restaurant.client.gui.element.UIItemStackWithCount;
+import com.mastermarisa.maid_restaurant.client.gui.screen.ordering.OrderingScreen;
+import com.mastermarisa.maid_restaurant.client.gui.screen.ordering.RecipeData;
 import com.mastermarisa.maid_restaurant.init.UIConst;
-import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.client.gui.GuiGraphics;
-import org.spongepowered.tools.obfuscation.ObfuscationData;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 public class UIOrderTag extends UIElement {
     private final UIImage bg;
     private final UIItemStackWithCount result;
+    private final UICancelButton btn;
     protected OrderingScreen screen;
     protected int index;
 
@@ -24,12 +26,14 @@ public class UIOrderTag extends UIElement {
         result.dropShadow = false;
         this.screen = screen;
         this.index = index;
-        children = List.of(bg,result);
+        btn = new UICancelButton(index,screen);
+
+        children = List.of(bg,result,btn);
     }
 
     @Override
-    protected void render(GuiGraphics graphics) {
-        super.render(graphics);
+    protected void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
+        super.render(graphics,mouseX,mouseY);
         resize();
     }
 
@@ -38,18 +42,27 @@ public class UIOrderTag extends UIElement {
         bg.setCenterY(getCenterY());
         result.setMaxX(bg.getMaxX() - 21);
         result.setCenterY(getCenterY());
+        btn.setMinX(getMinX() + 5);
+        btn.setCenterY(getCenterY());
     }
 
     @Override
     public boolean onMouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (result.frame.contains(mouseX,mouseY)) {
+        if (bg.frame.contains(mouseX,mouseY)) {
             if (scrollY > 0) {
-                screen.order(index);
+                OrderingScreen.Order order = screen.orders.get(index);
+                RecipeData data = order.data;
+                if (data.result.getCount() * (order.count + 1) <= data.result.getMaxStackSize()) {
+                    order.count++;
+                    result.setCount(data.result.getCount() * order.count);
+                }
                 return true;
             } else if (scrollY < 0) {
-                var pair = screen.orders.get(index);
-                if (pair.right() > 1) {
-                    screen.orders.set(index, Pair.of(pair.left(),pair.right()-1));
+                OrderingScreen.Order order = screen.orders.get(index);
+                RecipeData data = order.data;
+                if (order.count > 1) {
+                    order.count--;
+                    result.setCount(data.result.getCount() * order.count);
                 }
                 return true;
             }

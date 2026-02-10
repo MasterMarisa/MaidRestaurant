@@ -5,7 +5,7 @@ license="BSD 3-Clause"
 [[mods]]
 
 modId="maid_restaurant"
-version="0.1.7"
+version="0.1.8"
 displayName="Maid Restaurant"
 logoFile="logo.png"
 authors="摸里傻"

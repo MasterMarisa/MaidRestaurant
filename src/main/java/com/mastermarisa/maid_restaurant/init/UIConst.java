@@ -16,6 +16,8 @@ public interface UIConst {
     ImageData orderedTagImage = new ImageData(MaidRestaurant.resourceLocation("textures/gui/order_tag.png"),new Rectangle(0,0,58,18),58,18,58,18);
     ImageData confirmTagImage = new ImageData(MaidRestaurant.resourceLocation("textures/gui/confirm_tag.png"),new Rectangle(0,0,24,18),24,18,24,18);
     ImageData bandImage = new ImageData(MaidRestaurant.resourceLocation("textures/gui/request_queue.png"),new Rectangle(116,272,184,17),184,17,399,419);
+    ImageData band_1 = new ImageData(MaidRestaurant.resourceLocation("textures/gui/band_2.png"),new Rectangle(0,0,138,17),138,17,138,17);
+    ImageData typeBubble = new ImageData(MaidRestaurant.resourceLocation("textures/gui/type_bubble.png"),new Rectangle(0,0,18,22),18,22,18,22);
     ImageData requestImage = new ImageData(MaidRestaurant.resourceLocation("textures/gui/request_queue.png"),new Rectangle(19,275,18,70),18,70,399,419);
     ImageData basket_1 = new ImageData(MaidRestaurant.resourceLocation("textures/gui/basket_1.png"),new Rectangle(0,0,32,33),32,33,32,33);
     ImageData basket_2 = new ImageData(MaidRestaurant.resourceLocation("textures/gui/basket_2.png"),new Rectangle(0,0,32,33),32,33,32,33);

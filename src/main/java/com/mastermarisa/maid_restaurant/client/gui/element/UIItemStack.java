@@ -24,8 +24,8 @@ public class UIItemStack extends UIElement {
         this.itemStack = new ItemStack(ingredient.getItems()[0].getItem());
     }
 
-    protected void render(GuiGraphics graphics) {
-        super.render(graphics);
+    protected void render(GuiGraphics graphics, int mouseX, int mouseY) {
+        super.render(graphics,mouseX,mouseY);
         graphics.renderItem(this.itemStack, this.frame.x + (this.frame.width - 16) / 2, this.frame.y + (this.frame.height - 16) / 2);
     }
 

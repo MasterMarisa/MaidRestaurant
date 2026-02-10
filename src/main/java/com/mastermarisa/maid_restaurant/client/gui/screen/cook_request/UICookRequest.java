@@ -11,6 +11,7 @@ import com.mastermarisa.maid_restaurant.uitls.RecipeUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -31,8 +32,8 @@ public class UICookRequest extends UIElement {
     }
 
     @Override
-    protected void render(GuiGraphics graphics) {
-        super.render(graphics);
+    protected void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
+        super.render(graphics,mouseX,mouseY);
         resize();
     }
 

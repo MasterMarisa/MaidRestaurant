@@ -43,10 +43,10 @@ public class UIContainerHorizontal extends UIElement{
         this.alignment = alignment;
     }
 
-    protected void render(GuiGraphics graphics) {
+    protected void render(GuiGraphics graphics, int mouseX, int mouseY) {
         order();
 
-        super.render(graphics);
+        super.render(graphics,mouseX,mouseY);
     }
 
     public void order() {

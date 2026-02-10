@@ -27,11 +27,13 @@ public class UIItemStackWithCount extends UIElement {
     }
 
     @Override
-    protected void render(GuiGraphics graphics) {
-        super.render(graphics);
+    protected void render(GuiGraphics graphics, int mouseX, int mouseY) {
+        super.render(graphics,mouseX,mouseY);
         graphics.renderItem(this.itemStack, this.frame.x, this.frame.y + (this.frame.height - 16) / 2);
         graphics.drawString(font,"x" + itemStack.getCount(),getCenterX() + 5,getMaxY() - font.lineHeight, color.getRGB(),dropShadow);
     }
+
+    public void setCount(int i) { itemStack.setCount(i); }
 
     public boolean hasTooltip() {
         return true;

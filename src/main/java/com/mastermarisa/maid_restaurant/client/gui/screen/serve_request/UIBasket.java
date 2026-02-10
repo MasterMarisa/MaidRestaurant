@@ -6,6 +6,7 @@ import com.mastermarisa.maid_restaurant.entity.attachment.ServeRequest;
 import com.mastermarisa.maid_restaurant.init.UIConst;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -37,8 +38,8 @@ public class UIBasket extends UIElement {
     }
 
     @Override
-    protected void render(GuiGraphics graphics) {
-        super.render(graphics);
+    protected void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
+        super.render(graphics,mouseX,mouseY);
         resize();
     }
 

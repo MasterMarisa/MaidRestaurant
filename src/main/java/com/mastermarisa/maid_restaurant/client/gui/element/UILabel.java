@@ -42,8 +42,8 @@ public class UILabel extends UIElement {
         this.color = Color.BLACK;
     }
 
-    protected void render(GuiGraphics graphics) {
-        super.render(graphics);
+    protected void render(GuiGraphics graphics, int mouseX, int mouseY) {
+        super.render(graphics,mouseX,mouseY);
         int textWidth = font.width(this.text) - 1;
         int x = this.frame.x + (this.frame.width - textWidth) * this.alignment.ordinal / 2;
         int y = this.frame.y + (this.frame.height - 7) / 2;

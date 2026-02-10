@@ -21,7 +21,7 @@ public abstract class UIElement {
     protected java.util.List<? extends FormattedText> tooltip = new ArrayList<>();
     @Nullable
     protected UIElement father;
-    protected java.util.List<UIElement> children = new ArrayList<>();
+    protected List<UIElement> children = new ArrayList<>();
 
     static {
         font = mc.font;
@@ -31,16 +31,16 @@ public abstract class UIElement {
         this.frame = frame;
     }
 
-    protected void render(GuiGraphics graphics) {
-        this.children.forEach((child) -> child.render(graphics));
+    protected void render(GuiGraphics graphics, int mouseX, int mouseY) {
+        this.children.forEach((child) -> child.render(graphics,mouseX,mouseY));
     }
 
     public static void render(GuiGraphics graphics, UIElement element, int mouseX, int mouseY) {
         render(graphics, Collections.singletonList(element), mouseX, mouseY);
     }
 
-    public static void render(GuiGraphics graphics, java.util.List<? extends UIElement> elements, int mouseX, int mouseY) {
-        elements.forEach((element) -> element.render(graphics));
+    public static void render(GuiGraphics graphics, List<? extends UIElement> elements, int mouseX, int mouseY) {
+        elements.forEach((element) -> element.render(graphics,mouseX,mouseY));
         elements.stream().flatMap(UIElement::getRecursiveChildren).forEach((element)-> element.tryRenderTooltip(graphics, mouseX, mouseY));
     }
 
@@ -48,8 +48,20 @@ public abstract class UIElement {
         element.getRecursiveChildren().forEach((e) -> e.tryRenderTooltip(graphics, mouseX, mouseY));
     }
 
+    public static boolean onMouseClicked(UIElement element, double mouseX, double mouseY, int button) {
+        return onMouseClicked(List.of(element),mouseX,mouseY,button);
+    }
+
+    public static boolean onMouseClicked(List<? extends UIElement> elements, double mouseX, double mouseY, int button) {
+        return elements.stream().anyMatch(e -> e.onMouseClicked(mouseX,mouseY,button));
+    }
+
     public boolean onMouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        return this.children.stream().map(c->c.onMouseScrolled(mouseX,mouseY,scrollX,scrollY)).toList().contains(true);
+        return this.children.stream().anyMatch(c -> c.onMouseScrolled(mouseX,mouseY,scrollX,scrollY));
+    }
+
+    protected boolean onMouseClicked(double mouseX, double mouseY, int button) {
+        return this.children.stream().anyMatch(c -> c.onMouseClicked(mouseX,mouseY,button));
     }
 
     protected void tryRenderTooltip(GuiGraphics graphics, int mouseX, int mouseY){

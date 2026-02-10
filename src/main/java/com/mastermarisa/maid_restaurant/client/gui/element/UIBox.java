@@ -20,8 +20,8 @@ public class UIBox extends UIElement {
         this.color = color;
     }
 
-    protected void render(GuiGraphics graphics) {
-        super.render(graphics);
+    protected void render(GuiGraphics graphics, int mouseX, int mouseY) {
+        super.render(graphics,mouseX,mouseY);
         graphics.fill(this.frame.x, this.frame.y, this.frame.x + this.frame.width, this.frame.y + this.frame.height, this.color.getRGB());
     }
 }
