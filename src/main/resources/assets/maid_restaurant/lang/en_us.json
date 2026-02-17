@@ -1,9 +1,17 @@
 {
   "item.maid_restaurant.order_menu" : "Order Menu",
+  "item.maid_restaurant.order_item" : "Order",
   "message.maid_restaurant.block_removed" : "Table removed",
   "message.maid_restaurant.block_selected" : "Table selected",
-  "task.maid_restaurant.cooker" : "Cooker",
+  "task.maid_restaurant.cook" : "Cook",
   "task.maid_restaurant.waiter" : "Waiter",
-  "task.maid_restaurant.cooker.desc" : "Maid will cook when receiving cook requests",
-  "task.maid_restaurant.waiter.desc" : "Maid will serve meals to selected tables when receiving serve requests"
+  "task.maid_restaurant.cook.desc" : "Maid will cook when receiving cook requests",
+  "task.maid_restaurant.waiter.desc" : "Maid will serve meals to selected tables when receiving serve requests",
+  "gui.maid_restaurant.cook_request.cycle_on" : "Cycle:On",
+  "gui.maid_restaurant.cook_request.cycle_off" : "Cycle:Off",
+  "gui.maid_restaurant.cook_request.stocking_mode_unlimited" : "Stocking Mode:Unlimited",
+  "gui.maid_restaurant.cook_request.stocking_mode_insertable" : "Stocking Mode:Cook when target tables has any empty slot.",
+  "gui.maid_restaurant.cook_request.stocking_mode_space_enough" : "Stocking Mode:Cook when target tables has enough empty slots.",
+  "gui.maid_restaurant.request_handler.accept" : "Accept Requests",
+  "gui.maid_restaurant.request_handler.no_accept" : "Don't Accept Requests"
 }

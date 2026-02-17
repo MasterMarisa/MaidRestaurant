@@ -1,12 +1,11 @@
 package com.mastermarisa.maid_restaurant;
 
 import com.mastermarisa.maid_restaurant.data.DataGenerators;
-import com.mastermarisa.maid_restaurant.events.CommonRegistry;
-import com.mastermarisa.maid_restaurant.init.InitCompats;
-import com.mastermarisa.maid_restaurant.init.InitEntities;
-import com.mastermarisa.maid_restaurant.init.InitEvents;
-import com.mastermarisa.maid_restaurant.init.InitItems;
-import com.mastermarisa.maid_restaurant.network.NetWorkHandler;
+import com.mastermarisa.maid_restaurant.event.BlockSelector;
+import com.mastermarisa.maid_restaurant.init.ModCompats;
+import com.mastermarisa.maid_restaurant.init.ModDataComponents;
+import com.mastermarisa.maid_restaurant.init.ModEntities;
+import com.mastermarisa.maid_restaurant.init.ModItems;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.common.NeoForge;
 import org.slf4j.Logger;
@@ -29,13 +28,11 @@ public class MaidRestaurant {
     }
 
     public MaidRestaurant(IEventBus modEventBus, ModContainer modContainer) {
-        InitEntities.register(modEventBus);
-        InitItems.register(modEventBus);
-        InitEvents.register(NeoForge.EVENT_BUS);
-        InitCompats.register();
+        ModEntities.register(modEventBus);
+        ModItems.register(modEventBus);
+        ModDataComponents.register(modEventBus);
+        ModCompats.register();
 
-        modEventBus.register(CommonRegistry.class);
-        modEventBus.register(NetWorkHandler.class);
         modEventBus.register(DataGenerators.class);
     }
 }

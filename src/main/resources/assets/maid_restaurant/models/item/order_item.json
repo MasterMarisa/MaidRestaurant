@@ -1,0 +1,16 @@
+{
+  "overrides": [
+    {
+      "model": "maid_restaurant:item/order_item_no_requests",
+      "predicate": {
+        "maid_restaurant:order_item_state": 0.0
+      }
+    },
+    {
+      "model": "maid_restaurant:item/order_item_has_requests",
+      "predicate": {
+        "maid_restaurant:order_item_state": 1.0
+      }
+    }
+  ]
+}

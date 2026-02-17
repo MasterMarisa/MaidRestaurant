@@ -17,9 +17,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.concurrent.CompletableFuture;
 
 public class TagBlock extends BlockTagsProvider {
-    public static final TagKey<Block> STORAGE_BLOCK = BlockTags.create(ResourceLocation.fromNamespaceAndPath(MaidRestaurant.MOD_ID, "storage_block"));
-    public static final TagKey<Block> SIT_BLOCK = BlockTags.create(ResourceLocation.fromNamespaceAndPath(MaidRestaurant.MOD_ID, "sit_block"));
-    public static final TagKey<Block> SERVE_MEAL_BLOCK = BlockTags.create(ResourceLocation.fromNamespaceAndPath(MaidRestaurant.MOD_ID, "serve_blockmeal_block"));
+    public static final TagKey<Block> STORAGE_BLOCK = BlockTags.create(MaidRestaurant.resourceLocation("storage_block"));
+    public static final TagKey<Block> SIT_BLOCK = BlockTags.create(MaidRestaurant.resourceLocation("sit_block"));
+    public static final TagKey<Block> SERVE_MEAL_BLOCK = BlockTags.create(MaidRestaurant.resourceLocation("serve_blockmeal_block"));
 
     public TagBlock(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, String modId, @Nullable ExistingFileHelper existingFileHelper) {
         super(output, lookupProvider, modId, existingFileHelper);
@@ -42,6 +42,6 @@ public class TagBlock extends BlockTagsProvider {
 
     @Override
     public @NotNull String getName() {
-        return "None.";
+        return MaidRestaurant.MOD_ID + "_Block";
     }
 }

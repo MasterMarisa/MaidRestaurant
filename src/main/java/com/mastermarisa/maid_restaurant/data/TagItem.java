@@ -1,7 +1,7 @@
 package com.mastermarisa.maid_restaurant.data;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.init.InitItems;
+import com.mastermarisa.maid_restaurant.init.ModItems;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
@@ -11,7 +11,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import net.neoforged.neoforge.common.data.internal.NeoForgeItemTagsProvider;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -33,10 +32,12 @@ public class TagItem extends ItemTagsProvider {
     @Override
     protected void addTags(HolderLookup.Provider provider) {
         tag(TABLE_BLACKLIST)
-                .add(InitItems.ORDER_MENU.get());
+                .add(ModItems.ORDER_MENU.get())
+                .add(ModItems.ORDER_ITEM.get());
 
         tag(BASKET_BLACKLIST)
-                .add(InitItems.ORDER_MENU.get());
+                .add(ModItems.ORDER_MENU.get())
+                .add(ModItems.ORDER_ITEM.get());
 
         tag(BRAISED_FISH_INGREDIENT)
                 .addOptionalTag(ResourceLocation.parse("c:foods/raw_cod"))

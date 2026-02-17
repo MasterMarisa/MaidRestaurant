@@ -1,9 +1,17 @@
 {
   "item.maid_restaurant.order_menu" : "餐厅菜单",
+  "item.maid_restaurant.order_item" : "订单",
   "message.maid_restaurant.block_removed" : "已移除桌位",
   "message.maid_restaurant.block_selected" : "已选中桌位",
-  "task.maid_restaurant.cooker" : "厨师",
+  "task.maid_restaurant.cook" : "厨师",
   "task.maid_restaurant.waiter" : "侍者",
-  "task.maid_restaurant.cooker.desc" : "在收到烹饪委托后，女仆会开始烹饪",
-  "task.maid_restaurant.waiter.desc" : "在收到上菜委托后，女仆会将菜肴放置到指定的桌位处"
+  "task.maid_restaurant.cook.desc" : "在收到烹饪委托后，女仆会开始烹饪",
+  "task.maid_restaurant.waiter.desc" : "在收到上菜委托后，女仆会将菜肴放置到指定的桌位处",
+  "gui.maid_restaurant.cook_request.cycle_on" : "循环:启用",
+  "gui.maid_restaurant.cook_request.cycle_off" : "循环:关闭",
+  "gui.maid_restaurant.cook_request.stocking_mode_unlimited" : "补货模式:无限制",
+  "gui.maid_restaurant.cook_request.stocking_mode_insertable" : "补货模式:目标桌位存在空位时进行烹饪",
+  "gui.maid_restaurant.cook_request.stocking_mode_space_enough" : "补货模式:目标桌位空位足够时进行烹饪",
+  "gui.maid_restaurant.request_handler.accept" : "接受委托",
+  "gui.maid_restaurant.request_handler.no_accept" : "不接受委托"
 }

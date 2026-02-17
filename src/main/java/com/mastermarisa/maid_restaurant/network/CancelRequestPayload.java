@@ -7,7 +7,9 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.jetbrains.annotations.NotNull;
 
-public record CancelRequestPayload(int actionCode, String uuid, int index) implements CustomPacketPayload {
+import java.util.UUID;
+
+public record CancelRequestPayload(int actionCode, UUID uuid, int index) implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<CancelRequestPayload> TYPE =
             new CustomPacketPayload.Type<>(MaidRestaurant.resourceLocation("cancel_request"));
 
@@ -20,7 +22,7 @@ public record CancelRequestPayload(int actionCode, String uuid, int index) imple
             StreamCodec.composite(
                     ByteBufCodecs.INT,
                     CancelRequestPayload::actionCode,
-                    ByteBufCodecs.STRING_UTF8,
+                    NetworkHandler.UUID_STREAM_CODEC,
                     CancelRequestPayload::uuid,
                     ByteBufCodecs.INT,
                     CancelRequestPayload::index,

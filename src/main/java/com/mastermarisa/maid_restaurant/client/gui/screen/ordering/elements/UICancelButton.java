@@ -1,7 +1,7 @@
 package com.mastermarisa.maid_restaurant.client.gui.screen.ordering.elements;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.client.gui.element.UIButton;
+import com.mastermarisa.maid_restaurant.client.gui.base.UIButton;
 import com.mastermarisa.maid_restaurant.client.gui.screen.ordering.OrderingScreen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
@@ -15,10 +15,7 @@ public class UICancelButton extends UIButton {
     private final int index;
 
     public UICancelButton(int index, OrderingScreen screen) {
-        super(new Rectangle(7,7),(button) -> {
-            screen.cancel(index);
-            return true;
-        });
+        super(new Rectangle(7,7),(button) -> screen.cancel(index),0);
         this.screen = screen;
         this.index = index;
     }

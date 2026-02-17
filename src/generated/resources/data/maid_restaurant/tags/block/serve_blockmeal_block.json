@@ -3,10 +3,6 @@
     {
       "id": "#kaleidoscope_cookery:table",
       "required": false
-    },
-    {
-      "id": "kaleidoscope_cookery:fruit_basket",
-      "required": false
     }
   ]
 }

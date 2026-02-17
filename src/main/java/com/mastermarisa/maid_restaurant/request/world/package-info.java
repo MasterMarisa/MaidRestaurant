@@ -1,0 +1,4 @@
+@ParametersAreNonnullByDefault
+package com.mastermarisa.maid_restaurant.request.world;
+
+import javax.annotation.ParametersAreNonnullByDefault;

@@ -2,8 +2,17 @@
   "values": [
     "minecraft:chest",
     "minecraft:barrel",
-    "create:depot",
-    "create:belt",
-    "create:weighted_ejector"
+    {
+      "id" : "create:belt",
+      "required": false
+    },
+    {
+      "id" : "create:depot",
+      "required": false
+    },
+    {
+      "id" : "create:item_vault",
+      "required": false
+    }
   ]
 }

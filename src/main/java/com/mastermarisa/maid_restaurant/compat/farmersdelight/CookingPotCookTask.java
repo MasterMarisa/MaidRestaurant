@@ -3,13 +3,13 @@ package com.mastermarisa.maid_restaurant.compat.farmersdelight;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.ysbbbbbb.kaleidoscopecookery.util.ItemUtils;
 import com.mastermarisa.maid_restaurant.api.ICookTask;
-import com.mastermarisa.maid_restaurant.client.gui.screen.ordering.RecipeData;
-import com.mastermarisa.maid_restaurant.entity.attachment.CookRequest;
-import com.mastermarisa.maid_restaurant.uitls.BlockPosUtils;
-import com.mastermarisa.maid_restaurant.uitls.MaidInvUtils;
-import com.mastermarisa.maid_restaurant.uitls.component.StackPredicate;
-import com.mastermarisa.maid_restaurant.uitls.BlockUsageManager;
-import com.mastermarisa.maid_restaurant.uitls.CookTaskManager;
+import com.mastermarisa.maid_restaurant.request.CookRequest;
+import com.mastermarisa.maid_restaurant.utils.BlockUsageManager;
+import com.mastermarisa.maid_restaurant.utils.CookTasks;
+import com.mastermarisa.maid_restaurant.utils.ItemHandlerUtils;
+import com.mastermarisa.maid_restaurant.utils.SearchUtils;
+import com.mastermarisa.maid_restaurant.utils.component.RecipeData;
+import com.mastermarisa.maid_restaurant.utils.component.StackPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -75,8 +75,8 @@ public class CookingPotCookTask implements ICookTask {
     @Override
     public @Nullable BlockPos searchWorkBlock(ServerLevel level, EntityMaid maid, int horizontalSearchRange, int verticalSearchRange) {
         BlockPos center = maid.getBrainSearchPos();
-        List<BlockPos> foundPots = BlockPosUtils.search(center,horizontalSearchRange,verticalSearchRange,pos ->
-           level.getBlockEntity(pos) instanceof CookingPotBlockEntity && BlockUsageManager.getUserCount(pos) <= 0
+        List<BlockPos> foundPots = SearchUtils.search(center,horizontalSearchRange,verticalSearchRange, pos ->
+                level.getBlockEntity(pos) instanceof CookingPotBlockEntity && BlockUsageManager.getUserCount(pos) <= 0
         );
 
         if (!foundPots.isEmpty()) {
@@ -102,15 +102,15 @@ public class CookingPotCookTask implements ICookTask {
         RecipeHolder<? extends Recipe<?>> holder = level.getRecipeManager().byKeyTyped(request.type,request.id);
         CookingPotRecipe recipe = (CookingPotRecipe) holder.value();
         if (!result.isEmpty() && result.is(getResult(holder,level).getItem())) {
-            if (result.getCount() >= request.count) {
-                ItemUtils.getItemToLivingEntity(maid,handler.extractItem(8,request.count,false));
-                request.count = 0;
+            if (result.getCount() >= request.remain) {
+                ItemUtils.getItemToLivingEntity(maid,handler.extractItem(8,request.remain,false));
+                request.remain = 0;
             } else {
-                request.count -= result.getCount();
+                request.remain -= result.getCount();
                 ItemUtils.getItemToLivingEntity(maid,handler.extractItem(8,result.getCount(),false));
             }
         } else if (!meal.isEmpty() && container.isEmpty()) {
-            ItemStack carrier = MaidInvUtils.tryExtractSingleSlot(maid.getAvailableInv(false),1,StackPredicate.of(recipe.getOutputContainer().getItem()),true);
+            ItemStack carrier = ItemHandlerUtils.tryExtractSingleSlot(maid.getAvailableInv(false),1,StackPredicate.of(recipe.getOutputContainer().getItem()),true);
             if (!carrier.isEmpty()) {
                 handler.setStackInSlot(7,carrier);
             }
@@ -118,12 +118,12 @@ public class CookingPotCookTask implements ICookTask {
             List<ItemStack> slots = new ArrayList<>();
             for (int i = 0;i < 6;i++) slots.add(handler.getStackInSlot(i));
             List<StackPredicate> required = getIngredients(holder);
-            required = MaidInvUtils.getRequired(required,slots);
+            required = ItemHandlerUtils.getRequired(required,slots);
             for (StackPredicate predicate : required) {
                 if (!recipe.getOutputContainer().isEmpty() && predicate.test(recipe.getOutputContainer())) continue;
                 List<Integer> indexs = getEmptySlots(slots);
                 if (!indexs.isEmpty()) {
-                    ItemStack material = MaidInvUtils.tryExtractSingleSlot(maid.getAvailableInv(false),1,predicate,true);
+                    ItemStack material = ItemHandlerUtils.tryExtractSingleSlot(maid.getAvailableInv(false),1,predicate,true);
                     handler.setStackInSlot(indexs.getFirst(),material);
                 }
             }
@@ -151,6 +151,6 @@ public class CookingPotCookTask implements ICookTask {
     }
 
     public static void register() {
-        CookTaskManager.register(new CookingPotCookTask());
+        CookTasks.register(new CookingPotCookTask());
     }
 }

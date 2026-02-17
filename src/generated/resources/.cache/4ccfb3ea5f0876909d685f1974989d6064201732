@@ -1,4 +1,4 @@
-// 1.21.1	2026-02-07T15:03:05.2779258	Tags for minecraft:item mod id maid_restaurant
-9ad0cde7915554c4cd9c80dae594da6999779714 data/maid_restaurant/tags/item/basket_blacklist.json
+// 1.21.1	2026-02-14T17:10:01.9146725	Tags for minecraft:item mod id maid_restaurant
+b430b6cc9b0c8108d62e74e2c0699447141329e7 data/maid_restaurant/tags/item/basket_blacklist.json
 e50b685bb815b4430e84cf432f69d3eb967295df data/maid_restaurant/tags/item/braised_fish_ingredient.json
-9ad0cde7915554c4cd9c80dae594da6999779714 data/maid_restaurant/tags/item/table_blacklist.json
+b430b6cc9b0c8108d62e74e2c0699447141329e7 data/maid_restaurant/tags/item/table_blacklist.json

@@ -1,39 +1,47 @@
 package com.mastermarisa.maid_restaurant.network;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.ysbbbbbb.kaleidoscopecookery.crafting.recipe.PotRecipe;
-import com.github.ysbbbbbb.kaleidoscopecookery.crafting.recipe.StockpotRecipe;
-import com.github.ysbbbbbb.kaleidoscopecookery.init.ModItems;
-import com.github.ysbbbbbb.kaleidoscopecookery.init.ModRecipes;
-import com.mastermarisa.maid_restaurant.entity.attachment.CookRequest;
-import com.mastermarisa.maid_restaurant.entity.attachment.CookRequestQueue;
-import com.mastermarisa.maid_restaurant.entity.attachment.ServeRequestQueue;
-import com.mastermarisa.maid_restaurant.uitls.BlockPosUtils;
-import com.mastermarisa.maid_restaurant.uitls.RequestManager;
+import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.request.CookRequest;
+import com.mastermarisa.maid_restaurant.request.CookRequestHandler;
+import com.mastermarisa.maid_restaurant.request.ServeRequestHandler;
+import com.mastermarisa.maid_restaurant.utils.CookTasks;
+import com.mastermarisa.maid_restaurant.utils.RequestManager;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
-public class NetWorkHandler {
+@EventBusSubscriber
+public class NetworkHandler {
     @SubscribeEvent
     public static void register(final RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar("1.0");
 
         registrar.playToServer(
-                CookOrderPayload.TYPE,
-                CookOrderPayload.STREAM_CODEC,
+                SendOrderPayload.TYPE,
+                SendOrderPayload.STREAM_CODEC,
                 (payload, context) -> {
                     context.enqueueWork(() -> {
-                        handleCookOrdersOnServer(payload,context);
+                        handleSendOrdersOnServer(payload,context);
+                    });
+                }
+        );
+
+        registrar.playToServer(
+                ModifyAttributePayload.TYPE,
+                ModifyAttributePayload.STREAM_CODEC,
+                (payload, context) -> {
+                    context.enqueueWork(() -> {
+                        handleModifyAttributesOnServer(payload,context);
                     });
                 }
         );
@@ -41,86 +49,153 @@ public class NetWorkHandler {
         registrar.playToServer(
                 CancelRequestPayload.TYPE,
                 CancelRequestPayload.STREAM_CODEC,
-                ((payload, context) -> {
+                (payload, context) -> {
                     context.enqueueWork(() -> {
                         handleCancelRequestOnServer(payload,context);
                     });
-                })
+                }
+        );
+
+        registrar.playToServer(
+                ChangeHandlerAcceptValuePayload.TYPE,
+                ChangeHandlerAcceptValuePayload.STREAM_CODEC,
+                (payload, context) -> {
+                    context.enqueueWork(() -> {
+                        handleChangeHandlerAcceptValueOnServer(payload,context);
+                    });
+                }
+        );
+
+        registrar.playToClient(
+                OpenScreenPayload.TYPE,
+                OpenScreenPayload.STREAM_CODEC,
+                (payload, context) -> {
+                    context.enqueueWork(() -> {
+                        OpenScreenPayload.handle(payload,context);
+                    });
+                }
         );
     }
 
-    private static void handleCookOrdersOnServer(CookOrderPayload payload, IPayloadContext context) {
-        String[] IDs = payload.recipeIDs();
-        String[] types = payload.recipeTypes();
+    private static void handleSendOrdersOnServer(SendOrderPayload payload, IPayloadContext context) {
+        String[] IDs = payload.IDs();
+        String[] types = payload.types();
         int[] counts = payload.counts();
-        long[] tables = payload.tables();
-
         for (int i = 0;i < IDs.length;i++) {
-            CookRequest request = new CookRequest(IDs[i],types[i],counts[i]);
-            for (CookRequest item : tryMap(context.player().level(),request))
-                RequestManager.postCookRequest(item, BlockPosUtils.unpack(tables));
+            RequestManager.post((ServerLevel) context.player().level(),new CookRequest(
+                    ResourceLocation.parse(IDs[i]),
+                    CookTasks.getType(types[i]),
+                    counts[i],
+                    counts[i],
+                    payload.targets(),
+                    payload.attributes()
+            ), CookRequest.TYPE);
         }
     }
 
-    private static List<CookRequest> tryMap(Level level, CookRequest request) {
-        List<CookRequest> ans = new ArrayList<>(List.of(request));
-        if (request.is(ModRecipes.POT_RECIPE)) {
-            PotRecipe recipe = level.getRecipeManager().byKeyTyped(ModRecipes.POT_RECIPE,request.id).value();
-            if (recipe.result().is(ModItems.MEAT_PIE) && recipe.result().getCount() != 9) {
-                int count = recipe.result().getCount() * request.count;
-                if (count != 1) ans.clear();
-                if (count > 9) {
-                    ans.add(new CookRequest(ResourceLocation.parse("kaleidoscope_cookery:pot/stuffed_dough_food_to_meat_pie_9"),request.type,count / 9));
-                }
-                if (count != 1 && count % 9 != 0)
-                    ans.add(new CookRequest(ResourceLocation.parse("kaleidoscope_cookery:pot/stuffed_dough_food_to_meat_pie_" + count % 9),request.type,1));
-            }  else if (recipe.result().is(ModItems.FRIED_EGG) && recipe.result().getCount() != 9) {
-                int count = recipe.result().getCount() * request.count;
-                if (count != 1) ans.clear();
-                if (count > 9) {
-                    ans.add(new CookRequest(ResourceLocation.parse("kaleidoscope_cookery:pot/egg_to_fried_egg_9"),request.type,count / 9));
-                }
-                if (count != 1 && count % 9 != 0)
-                    ans.add(new CookRequest(ResourceLocation.parse("kaleidoscope_cookery:pot/egg_to_fried_egg_" + count % 9),request.type,1));
-            }
-        } else if (request.is(ModRecipes.STOCKPOT_RECIPE)) {
-            StockpotRecipe recipe = level.getRecipeManager().byKeyTyped(ModRecipes.STOCKPOT_RECIPE,request.id).value();
-            if (recipe.result().is(ModItems.DUMPLING) && recipe.result().getCount() != 9) {
-                int count = recipe.result().getCount() * request.count;
-                if (count != 1) ans.clear();
-                if (count > 9) {
-                    ans.add(new CookRequest(ResourceLocation.parse("kaleidoscope_cookery:stockpot/dumpling_count_9"),request.type,count / 9));
-                }
-                if (count != 1 && count % 9 != 0)
-                    ans.add(new CookRequest(ResourceLocation.parse("kaleidoscope_cookery:stockpot/dumpling_count_" + count % 9),request.type,1));
+    private static void handleModifyAttributesOnServer(ModifyAttributePayload payload, IPayloadContext context) {
+        ServerLevel level = (ServerLevel) context.player().level();
+        if (level.getEntity(payload.uuid()) instanceof EntityMaid maid) {
+            CookRequestHandler handler = maid.getData(CookRequestHandler.TYPE);
+            if (handler.size() > payload.index()) {
+                Objects.requireNonNull(handler.getAt(payload.index())).attributes.setAttributes(payload.attributes());
             }
         }
-
-        return ans;
     }
 
     private static void handleCancelRequestOnServer(CancelRequestPayload payload, IPayloadContext context) {
-        Player player = context.player();
-        ServerLevel level = (ServerLevel) player.level();
-
-        switch (payload.actionCode()) {
-            case 0:
-                if (level.getEntity(UUID.fromString(payload.uuid())) instanceof EntityMaid maid) {
-                    CookRequestQueue cookRequestQueue = maid.getData(CookRequestQueue.TYPE);
-                    ServeRequestQueue serveRequestQueue = maid.getData(ServeRequestQueue.TYPE);
-                    cookRequestQueue.removeAt(payload.index());
-                    serveRequestQueue.removeAt(payload.index());
-                    maid.setData(CookRequestQueue.TYPE,cookRequestQueue);
-                    maid.setData(ServeRequestQueue.TYPE,serveRequestQueue);
+        ServerLevel level = (ServerLevel) context.player().level();
+        if (level.getEntity(payload.uuid()) instanceof EntityMaid maid) {
+            switch (payload.actionCode()) {
+                case 0 -> {
+                    CookRequestHandler handler = maid.getData(CookRequestHandler.TYPE);
+                    handler.removeAt(payload.index());
+                    maid.removeData(CookRequestHandler.TYPE);
+                    maid.setData(CookRequestHandler.TYPE,handler);
                 }
-                break;
-            case 1:
-                if (level.getEntity(UUID.fromString(payload.uuid())) instanceof EntityMaid maid) {
-                    ServeRequestQueue serveRequestQueue = maid.getData(ServeRequestQueue.TYPE);
-                    serveRequestQueue.removeAt(payload.index());
-                    maid.setData(ServeRequestQueue.TYPE,serveRequestQueue);
+                case 1 -> {
+                    ServeRequestHandler handler = maid.getData(ServeRequestHandler.TYPE);
+                    handler.removeAt(payload.index());
+                    maid.removeData(ServeRequestHandler.TYPE);
+                    maid.setData(ServeRequestHandler.TYPE,handler);
                 }
-                break;
+            }
         }
     }
+
+    private static void handleChangeHandlerAcceptValueOnServer(ChangeHandlerAcceptValuePayload payload, IPayloadContext context) {
+        ServerLevel level = (ServerLevel) context.player().level();
+        if (level.getEntity(payload.uuid()) instanceof EntityMaid maid) {
+            switch (payload.t()) {
+                case 0 -> {
+                    CookRequestHandler handler = maid.getData(CookRequestHandler.TYPE);
+                    handler.accept = payload.value();
+                    maid.removeData(CookRequestHandler.TYPE);
+                    maid.setData(CookRequestHandler.TYPE,handler);
+                }
+                case 1 -> {
+                    ServeRequestHandler handler = maid.getData(ServeRequestHandler.TYPE);
+                    handler.accept = payload.value();
+                    maid.removeData(ServeRequestHandler.TYPE);
+                    maid.setData(ServeRequestHandler.TYPE,handler);
+                }
+            }
+        }
+    }
+
+    public static final StreamCodec<FriendlyByteBuf, long[]> LONG_ARRAY_STREAM_CODEC = StreamCodec.of(
+            (buf, array) -> {
+                buf.writeVarInt(array.length);
+                for (long l : array) {
+                    buf.writeLong(l);
+                }
+            },
+            buf -> {
+                int length = buf.readVarInt();
+                long[] array = new long[length];
+                for (int i = 0; i < length; i++) {
+                    array[i] = buf.readLong();
+                }
+                return array;
+            }
+    );
+
+    public static final StreamCodec<FriendlyByteBuf, int[]> INT_ARRAY_STREAM_CODEC = StreamCodec.of(
+            (buf, array) -> {
+                buf.writeVarInt(array.length);
+                for (int i : array) {
+                    buf.writeInt(i);
+                }
+            },
+            buf -> {
+                int length = buf.readVarInt();
+                int[] array = new int[length];
+                for (int i = 0; i < length; i++) {
+                    array[i] = buf.readInt();
+                }
+                return array;
+            }
+    );
+
+    public static final StreamCodec<FriendlyByteBuf, String[]> STRING_ARRAY_STREAM_CODEC = StreamCodec.of(
+            (buf, array) -> {
+                buf.writeVarInt(array.length);
+                for (String s : array) {
+                    buf.writeUtf(s);
+                }
+            },
+            buf -> {
+                int length = buf.readVarInt();
+                String[] array = new String[length];
+                for (int i = 0; i < length; i++) {
+                    array[i] = buf.readUtf();
+                }
+                return array;
+            }
+    );
+
+    public static final StreamCodec<FriendlyByteBuf, UUID> UUID_STREAM_CODEC = StreamCodec.of(
+            (buf, uuid) -> buf.writeUUID(uuid),
+            buf -> buf.readUUID()
+    );
 }

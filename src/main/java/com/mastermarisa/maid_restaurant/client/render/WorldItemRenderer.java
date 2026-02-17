@@ -75,8 +75,7 @@ public class WorldItemRenderer {
         poseStack.popPose();
 
         if (!shader){
-            if (buffer instanceof MultiBufferSource.BufferSource bufferSource)
-                bufferSource.endBatch();
+            buffer.endBatch();
             RenderSystem.shaderLightDirections[0] = shaderLightDirections$1;
             RenderSystem.shaderLightDirections[1] = shaderLightDirections$2;
         }

@@ -1,11 +1,11 @@
 package com.mastermarisa.maid_restaurant.client.gui.screen.ordering.elements;
 
-import com.mastermarisa.maid_restaurant.client.gui.element.UIElement;
-import com.mastermarisa.maid_restaurant.client.gui.element.UIImage;
-import com.mastermarisa.maid_restaurant.client.gui.element.UIItemStackWithCount;
+import com.mastermarisa.maid_restaurant.client.gui.UIConst;
+import com.mastermarisa.maid_restaurant.client.gui.base.UIElement;
+import com.mastermarisa.maid_restaurant.client.gui.base.UIImage;
+import com.mastermarisa.maid_restaurant.client.gui.base.UIItemStackWithCount;
 import com.mastermarisa.maid_restaurant.client.gui.screen.ordering.OrderingScreen;
-import com.mastermarisa.maid_restaurant.client.gui.screen.ordering.RecipeData;
-import com.mastermarisa.maid_restaurant.init.UIConst;
+import com.mastermarisa.maid_restaurant.utils.component.RecipeData;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 

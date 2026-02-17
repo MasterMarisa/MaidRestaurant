@@ -1,7 +1,7 @@
 package com.mastermarisa.maid_restaurant.client.gui.screen.ordering.elements;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.client.gui.element.UIButton;
+import com.mastermarisa.maid_restaurant.client.gui.base.UIButton;
 import com.mastermarisa.maid_restaurant.client.gui.screen.ordering.OrderingScreen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
@@ -17,10 +17,7 @@ public class UIOrderButton extends UIButton {
     protected final int index;
 
     public UIOrderButton(int index, OrderingScreen screen){
-        super(new Rectangle(16,16),(button) -> {
-            screen.order(index);
-            return true;
-        });
+        super(new Rectangle(16,16),(button) -> screen.order(index),0);
         this.screen = screen;
         this.index = index;
     }
@@ -28,7 +25,7 @@ public class UIOrderButton extends UIButton {
     @Override
     protected void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
         super.render(graphics,mouseX,mouseY);
-        if (screen.getCurPage() != null && screen.getCurPage().data.size() > index) {
+        if (screen.getCurrentPage() != null && screen.getCurrentPage().data.size() > index) {
             int x = frame.contains(mouseX,mouseY) ? 48 : 32;
             int y = 224;
 
