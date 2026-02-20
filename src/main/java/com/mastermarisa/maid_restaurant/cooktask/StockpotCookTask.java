@@ -57,7 +57,7 @@ public class StockpotCookTask implements ICookTask {
     }
 
     @Override
-    public List<StackPredicate> getIngredients(RecipeHolder<? extends Recipe<?>> recipeHolder) {
+    public List<StackPredicate> getIngredients(RecipeHolder<? extends Recipe<?>> recipeHolder, Level level) {
         StockpotRecipe recipe = (StockpotRecipe) recipeHolder.value();
         List<StackPredicate> predicates = new ArrayList<>(recipe.getIngredients().stream().filter(s->!s.isEmpty()).map(StackPredicate::new).toList());
         if (!recipe.carrier().isEmpty())

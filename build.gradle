@@ -87,6 +87,7 @@ dependencies {
     implementation "curse.maven:touhou-little-maid-355044:7510722"
     implementation "curse.maven:kaleidoscope-cookery-1309203:7473813"
     implementation "curse.maven:farmers-delight-398521:6917256"
+    implementation "curse.maven:kitchen-karrot-880555:6550979"
     implementation "curse.maven:create-328085:7178775"
     implementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_version}")
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${flywheel_minecraft_version}:${flywheel_version}")

@@ -23,7 +23,7 @@ public class MaidStateManager {
         if (request == null || !request.checkEnableConditions((ServerLevel) level,maid)) return CookState.IDLE;
 
         ICookTask iCookTask = CookTasks.getTask(request.type);
-        List<StackPredicate> required = iCookTask.getIngredients(level.getRecipeManager().byKey(request.id).get());
+        List<StackPredicate> required = iCookTask.getIngredients(level.getRecipeManager().byKey(request.id).get(),level);
         required.addAll(iCookTask.getKitchenWares());
         List<ItemStack> handler = ItemHandlerUtils.toStacks(maid.getAvailableInv(false));
         Optional<PositionTracker> cached = maid.getBrain().getMemory(ModEntities.CACHED_WORK_BLOCK.get());

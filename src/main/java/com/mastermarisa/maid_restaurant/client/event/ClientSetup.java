@@ -1,6 +1,8 @@
 package com.mastermarisa.maid_restaurant.client.event;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.client.render.EmptyRenderer;
+import com.mastermarisa.maid_restaurant.entity.SitEntity;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.OrderItem;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -8,6 +10,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 @EventBusSubscriber(modid = MaidRestaurant.MOD_ID,value = Dist.CLIENT)
 public class ClientSetup {
@@ -17,5 +20,10 @@ public class ClientSetup {
             ItemProperties.register(ModItems.ORDER_ITEM.get(), MaidRestaurant.resourceLocation("order_item_state"),
                     (stack, level, entity, seed) -> OrderItem.hasRequests(stack) ? 1.0f : 0.0f);
         });
+    }
+
+    @SubscribeEvent
+    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(SitEntity.TYPE, EmptyRenderer::new);
     }
 }

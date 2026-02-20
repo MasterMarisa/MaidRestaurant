@@ -1,13 +1,18 @@
 package com.mastermarisa.maid_restaurant.init;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.entity.SitEntity;
 import com.mastermarisa.maid_restaurant.request.CookRequestHandler;
 import com.mastermarisa.maid_restaurant.request.ServeRequestHandler;
 import com.mastermarisa.maid_restaurant.request.world.WorldCookRequestHandler;
 import com.mastermarisa.maid_restaurant.request.world.WorldServeRequestHandler;
 import com.mastermarisa.maid_restaurant.utils.component.BlockSelection;
 import com.mojang.serialization.Codec;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.behavior.PositionTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.neoforged.bus.api.IEventBus;
@@ -25,6 +30,9 @@ public class ModEntities {
 
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.
             create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, MaidRestaurant.MOD_ID);
+
+    private static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.
+            create(BuiltInRegistries.ENTITY_TYPE, "maid_restaurant");
 
     public static final DeferredHolder<MemoryModuleType<?>,MemoryModuleType<PositionTracker>> TARGET_POS = MEMORY_MODULE_TYPES
             .register("target_pos", () -> new MemoryModuleType<>(Optional.empty()));
@@ -53,8 +61,12 @@ public class ModEntities {
     private static final Supplier<AttachmentType<BlockSelection>> BLOCK_SELECTION = ATTACHMENT_TYPES.
             register("block_selection",() -> BlockSelection.TYPE);
 
+    public static final DeferredHolder<EntityType<?>, EntityType<Entity>> SIT_ENTITY = ENTITY_TYPES.
+            register("sit_entity", () -> SitEntity.TYPE);
+
     public static void register(IEventBus mod) {
         MEMORY_MODULE_TYPES.register(mod);
         ATTACHMENT_TYPES.register(mod);
+        ENTITY_TYPES.register(mod);
     }
 }

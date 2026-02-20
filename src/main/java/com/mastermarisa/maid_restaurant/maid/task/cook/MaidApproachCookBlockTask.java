@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.api.ICookTask;
 import com.mastermarisa.maid_restaurant.api.IStep;
+import com.mastermarisa.maid_restaurant.config.RestaurantConfig;
 import com.mastermarisa.maid_restaurant.data.TagBlock;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.task.base.MaidCheckRateTask;
@@ -16,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
@@ -38,7 +40,8 @@ public class MaidApproachCookBlockTask extends MaidCheckRateTask implements ISte
 
     @Override
     protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid maid) {
-        return super.checkExtraStartConditions(level,maid) &&
+        return !maid.isPassenger() &&
+                super.checkExtraStartConditions(level,maid) &&
                 MaidStateManager.cookState(maid,level) == MaidStateManager.CookState.COOK &&
                 search(level,maid);
     }
@@ -114,10 +117,24 @@ public class MaidApproachCookBlockTask extends MaidCheckRateTask implements ISte
         } else {
             maid.getBrain().getMemory(ModEntities.CHAIR_POS.get()).ifPresent(tracker -> {
                 BlockPos pos = maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).get().currentBlockPosition();
-                Vec3 chair = tracker.currentPosition();
-                chair = chair.relative(DirectionUtils.getHorizontalDirection(pos.getX() - chair.x,pos.getZ() - chair.z),0.2f);
-                maid.teleportTo(chair.x,chair.y,chair.z);
-                maid.setDeltaMovement(Vec3.ZERO);
+                BlockPos chair = tracker.currentBlockPosition();
+
+                if (RestaurantConfig.SIT_WHILE_COOKING()) {
+                    BlockState state = level.getBlockState(chair);
+                    if (state.is(TagBlock.SIT_BLOCK)) {
+                        BehaviorUtils.startRide(level, maid, chair, DirectionUtils.getHorizontalDirection((double)(pos.getX() - chair.getX()), (double)(pos.getZ() - chair.getZ())));
+                    } else {
+                        BehaviorUtils.eraseTargetPos(maid);
+                        maid.getBrain().eraseMemory(ModEntities.CHAIR_POS.get());
+                        return;
+                    }
+                } else {
+                    Vec3 chairV = tracker.currentPosition();
+                    chairV = chairV.relative(DirectionUtils.getHorizontalDirection(pos.getX() - chairV.x,pos.getZ() - chairV.z),0.2f);
+                    maid.teleportTo(chairV.x,chairV.y,chairV.z);
+                    maid.setDeltaMovement(Vec3.ZERO);
+                }
+
                 BehaviorUtils.setLookTargetMemory(maid,pos);
                 maid.getBrain().setMemory(ModEntities.TARGET_TYPE.get(),2);
             });

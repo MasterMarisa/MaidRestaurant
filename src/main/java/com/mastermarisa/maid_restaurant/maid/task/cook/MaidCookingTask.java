@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.ICookTask;
+import com.mastermarisa.maid_restaurant.config.RestaurantConfig;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.task.base.MaidTickRateTask;
 import com.mastermarisa.maid_restaurant.request.CookRequest;
@@ -50,8 +51,9 @@ public class MaidCookingTask extends MaidTickRateTask {
                 return false;
             }
 
+            if (RestaurantConfig.SIT_WHILE_COOKING() && !maid.isPassenger()) return false;
             if (BlockUsageManager.getUserCount(pos) > 0 && !BlockUsageManager.isUsing(pos,maid.getUUID())) return false;
-            if (maid.distanceToSqr(chair) > Math.pow(0.3D,2.0D)) return false;
+            if (!RestaurantConfig.SIT_WHILE_COOKING() && maid.distanceToSqr(chair) > Math.pow(0.3D,2.0D)) return false;
             if (MaidStateManager.cookState(maid,level) != MaidStateManager.CookState.COOK) return false;
             ICookTask iCookTask = CookTasks.getTask(request.type);
 
@@ -97,6 +99,7 @@ public class MaidCookingTask extends MaidTickRateTask {
             if (request != null)
                 Arrays.stream(request.targets).forEach(l -> BlockUsageManager.removeUser(EncodeUtils.decode(l),maid.getUUID()));
             BehaviorUtils.eraseTargetPos(maid);
+            if (RestaurantConfig.SIT_WHILE_COOKING()) BehaviorUtils.stopRide(level,maid);
             maid.getBrain().eraseMemory(ModEntities.CHAIR_POS.get());
             CheckRateManager.setNextCheckTick(maid.getUUID() + MaidApproachCookBlockTask.UID,5);
             CheckRateManager.setNextCheckTick(maid.getUUID() + MaidGetFromStorageTask.UID,5);

@@ -28,7 +28,12 @@ public class RequestManager {
                 return maid.getData(CookRequestHandler.TYPE).getFirst();
             }
             case ServeRequest.TYPE -> {
-                return maid.getData(ServeRequestHandler.TYPE).getFirst();
+                ServeRequest request = maid.getData(ServeRequestHandler.TYPE).getFirst();
+                if (request != null && request.toServe.getCount() <= 0) {
+                    maid.getData(ServeRequestHandler.TYPE).removeFirst();
+                    return peek(maid, ServeRequest.TYPE);
+                }
+                return request;
             }
         }
         return null;

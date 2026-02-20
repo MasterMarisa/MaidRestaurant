@@ -24,7 +24,7 @@ public interface ICookTask {
 
     RecipeType<?> getType();
 
-    default List<StackPredicate> getIngredients(RecipeHolder<? extends Recipe<?>> recipeHolder) {
+    default List<StackPredicate> getIngredients(RecipeHolder<? extends Recipe<?>> recipeHolder, Level level) {
         return recipeHolder.value().getIngredients().stream().filter(i -> !i.isEmpty() && i.getItems().length > 0).map(StackPredicate::new).collect(Collectors.toList());
     }
 

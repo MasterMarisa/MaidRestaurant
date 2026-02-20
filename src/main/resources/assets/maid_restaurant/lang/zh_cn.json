@@ -13,5 +13,6 @@
   "gui.maid_restaurant.cook_request.stocking_mode_insertable" : "补货模式:目标桌位存在空位时进行烹饪",
   "gui.maid_restaurant.cook_request.stocking_mode_space_enough" : "补货模式:目标桌位空位足够时进行烹饪",
   "gui.maid_restaurant.request_handler.accept" : "接受新委托",
-  "gui.maid_restaurant.request_handler.no_accept" : "不接受新委托"
+  "gui.maid_restaurant.request_handler.no_accept" : "不接受新委托",
+  "config.maid_restaurant.server.sit_while_cooking" : "女仆烹饪时是否坐下"
 }

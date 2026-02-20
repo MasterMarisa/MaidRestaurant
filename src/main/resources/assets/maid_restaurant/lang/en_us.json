@@ -12,6 +12,7 @@
   "gui.maid_restaurant.cook_request.stocking_mode_unlimited" : "Stocking Mode:Unlimited",
   "gui.maid_restaurant.cook_request.stocking_mode_insertable" : "Stocking Mode:Cook when target tables has any empty slot.",
   "gui.maid_restaurant.cook_request.stocking_mode_space_enough" : "Stocking Mode:Cook when target tables has enough empty slots.",
-  "gui.maid_restaurant.request_handler.accept" : "Accept New Requests",
-  "gui.maid_restaurant.request_handler.no_accept" : "Don't Accept New Requests"
+  "gui.maid_restaurant.request_handler.accept" : "Accept New Requests.",
+  "gui.maid_restaurant.request_handler.no_accept" : "Don't Accept New Requests.",
+  "config.maid_restaurant.server.sit_while_cooking" : "Whether maid sits while cooking."
 }

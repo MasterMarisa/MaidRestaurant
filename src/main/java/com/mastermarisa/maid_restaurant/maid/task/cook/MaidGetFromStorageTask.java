@@ -89,7 +89,7 @@ public class MaidGetFromStorageTask extends MaidCheckRateTask implements IStep {
     protected boolean containsRequired(ServerLevel level, EntityMaid maid, IItemHandler itemHandler) {
         CookRequest request = Objects.requireNonNull((CookRequest) RequestManager.peek(maid,CookRequest.TYPE));
         ICookTask iCookTask = CookTasks.getTask(request.type);
-        List<StackPredicate> required = iCookTask.getIngredients(level.getRecipeManager().byKey(request.id).get());
+        List<StackPredicate> required = iCookTask.getIngredients(level.getRecipeManager().byKey(request.id).get(),level);
         List<ItemStack> handler = ItemHandlerUtils.toStacks(maid.getAvailableInv(false));
 
         Optional<PositionTracker> cached = maid.getBrain().getMemory(ModEntities.CACHED_WORK_BLOCK.get());
@@ -122,7 +122,7 @@ public class MaidGetFromStorageTask extends MaidCheckRateTask implements IStep {
 
         CookRequest request = Objects.requireNonNull((CookRequest) RequestManager.peek(maid,CookRequest.TYPE));
         ICookTask iCookTask = CookTasks.getTask(request.type);
-        List<StackPredicate> required = iCookTask.getIngredients(level.getRecipeManager().byKey(request.id).get());
+        List<StackPredicate> required = iCookTask.getIngredients(level.getRecipeManager().byKey(request.id).get(),level);
         List<ItemStack> stacks = ItemHandlerUtils.toStacks(maid.getAvailableInv(false));
 
         Optional<PositionTracker> cached = maid.getBrain().getMemory(ModEntities.CACHED_WORK_BLOCK.get());

@@ -1,5 +1,6 @@
 package com.mastermarisa.maid_restaurant;
 
+import com.mastermarisa.maid_restaurant.config.RestaurantConfig;
 import com.mastermarisa.maid_restaurant.data.DataGenerators;
 import com.mastermarisa.maid_restaurant.event.BlockSelector;
 import com.mastermarisa.maid_restaurant.init.ModCompats;
@@ -32,6 +33,7 @@ public class MaidRestaurant {
         ModItems.register(modEventBus);
         ModDataComponents.register(modEventBus);
         ModCompats.register();
+        RestaurantConfig.register(modContainer);
 
         modEventBus.register(DataGenerators.class);
     }

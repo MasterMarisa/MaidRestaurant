@@ -44,7 +44,7 @@ public class SteamerCookTask implements ICookTask {
     public RecipeType<?> getType() { return ModRecipes.STEAMER_RECIPE; }
 
     @Override
-    public List<StackPredicate> getIngredients(RecipeHolder<? extends Recipe<?>> recipeHolder) {
+    public List<StackPredicate> getIngredients(RecipeHolder<? extends Recipe<?>> recipeHolder, Level level) {
         return new ArrayList<>(List.of(StackPredicate.of(((SteamerRecipe)recipeHolder.value()).getIngredient())));
     }
 

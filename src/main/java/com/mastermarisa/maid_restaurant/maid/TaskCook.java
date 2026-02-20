@@ -6,9 +6,11 @@ import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModItems;
 import com.google.common.collect.Lists;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.config.RestaurantConfig;
 import com.mastermarisa.maid_restaurant.maid.task.cook.MaidApproachCookBlockTask;
 import com.mastermarisa.maid_restaurant.maid.task.cook.MaidCookingTask;
 import com.mastermarisa.maid_restaurant.maid.task.cook.MaidGetFromStorageTask;
+import com.mastermarisa.maid_restaurant.maid.task.cook.MaidSearchCookBlockTask;
 import com.mastermarisa.maid_restaurant.request.CookRequestHandler;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.resources.ResourceLocation;
@@ -49,12 +51,14 @@ public class TaskCook implements IMaidTask {
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid entityMaid) {
         return Lists.newArrayList(
                 Pair.of(5,new MaidGetFromStorageTask(entityMaid,60,0.4f,2,3.0D)),
-                Pair.of(5,new MaidApproachCookBlockTask(entityMaid,60,0.4f,2,0.25D)),
-                Pair.of(5,new MaidCookingTask())
+                Pair.of(5,new MaidApproachCookBlockTask(entityMaid,60,0.4f,2, RestaurantConfig.SIT_WHILE_COOKING() ? 2.0D : 0.25D)),
+                Pair.of(5,new MaidCookingTask()),
+                Pair.of(5,new MaidSearchCookBlockTask(entityMaid,60,2))
         );
     }
 
-    public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
+    @Override
+    public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid entityMaid) {
         return Lists.newArrayList();
     }
 }

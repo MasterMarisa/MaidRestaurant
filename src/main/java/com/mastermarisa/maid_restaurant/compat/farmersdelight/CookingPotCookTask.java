@@ -4,19 +4,13 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.ysbbbbbb.kaleidoscopecookery.util.ItemUtils;
 import com.mastermarisa.maid_restaurant.api.ICookTask;
 import com.mastermarisa.maid_restaurant.request.CookRequest;
-import com.mastermarisa.maid_restaurant.utils.BlockUsageManager;
-import com.mastermarisa.maid_restaurant.utils.CookTasks;
-import com.mastermarisa.maid_restaurant.utils.ItemHandlerUtils;
-import com.mastermarisa.maid_restaurant.utils.SearchUtils;
+import com.mastermarisa.maid_restaurant.utils.*;
 import com.mastermarisa.maid_restaurant.utils.component.RecipeData;
 import com.mastermarisa.maid_restaurant.utils.component.StackPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
@@ -43,30 +37,43 @@ public class CookingPotCookTask implements ICookTask {
     public RecipeType<?> getType() { return ModRecipeTypes.COOKING.get(); }
 
     @Override
-    public List<StackPredicate> getIngredients(RecipeHolder<? extends Recipe<?>> recipeHolder) {
+    public List<StackPredicate> getIngredients(RecipeHolder<? extends Recipe<?>> recipeHolder, Level level) {
         CookingPotRecipe recipe = (CookingPotRecipe) recipeHolder.value();
         List<StackPredicate> predicates = new ArrayList<>(recipe.getIngredients().stream().filter(s->!s.isEmpty()).map(StackPredicate::new).toList());
-        if (!recipe.getOutputContainer().isEmpty())
-            predicates.add(StackPredicate.of(recipe.getOutputContainer()));
+        ItemStack container = recipe.getOutputContainer();
+        if (!container.isEmpty())
+            for (int i = 0;i < recipe.getResultItem(level.registryAccess()).getCount();i++)
+                predicates.add(StackPredicate.of(recipe.getOutputContainer().getItem()));
 
         return predicates;
-    }
-
-    @Override
-    public List<StackPredicate> getKitchenWares() {
-        return List.of();
     }
 
     @Override
     public List<ItemStack> getCurrentInput(Level level, BlockPos pos, EntityMaid maid) {
         List<ItemStack> ans = new ArrayList<>();
         if (level.getBlockEntity(pos) instanceof CookingPotBlockEntity pot) {
+            CookRequest request = Objects.requireNonNull((CookRequest) RequestManager.peek(maid, CookRequest.TYPE));
+            CookingPotRecipe recipe = level.getRecipeManager().byKeyTyped(ModRecipeTypes.COOKING.get(), request.id).value();
+
             ItemStackHandler handler = pot.getInventory();
             for (int i = 0;i < 6;i++)
                 if (!handler.getStackInSlot(i).isEmpty())
-                    ans.add(handler.getStackInSlot(i));
-            if (!handler.getStackInSlot(7).isEmpty())
-                ans.add(handler.getStackInSlot(7));
+                    ans.add(handler.getStackInSlot(i).copy());
+            ItemStack container = handler.getStackInSlot(7);
+            if (!container.isEmpty()) ans.add(container.copy());
+            ItemStack output = recipe.getResultItem(level.registryAccess());
+            List<Ingredient> ingredients = recipe.getIngredients().stream().filter(i -> i.getItems().length != 0).toList();
+            ItemStack meal = handler.getStackInSlot(6);
+            int count = 0;
+            if (output.is(meal.getItem())) count += meal.getCount();
+            ItemStack result = handler.getStackInSlot(8);
+            if (output.is(result.getItem())) {
+                count += result.getCount();
+                ans.add(recipe.getOutputContainer().copyWithCount(result.getCount()));
+            }
+            if (count != 0)
+                for (var i : ingredients)
+                    ans.add(i.getItems()[0].copyWithCount(count / output.getCount()));
         }
 
         return ans;
@@ -99,32 +106,37 @@ public class CookingPotCookTask implements ICookTask {
         ItemStack meal = pot.getMeal();
         ItemStack container = handler.getStackInSlot(7);
         ItemStack result = handler.getStackInSlot(8);
-        RecipeHolder<? extends Recipe<?>> holder = level.getRecipeManager().byKeyTyped(request.type,request.id);
-        CookingPotRecipe recipe = (CookingPotRecipe) holder.value();
-        if (!result.isEmpty() && result.is(getResult(holder,level).getItem())) {
-            if (result.getCount() >= request.remain) {
-                ItemUtils.getItemToLivingEntity(maid,handler.extractItem(8,request.remain,false));
+        CookingPotRecipe recipe = level.getRecipeManager().byKeyTyped(ModRecipeTypes.COOKING.get(), request.id).value();
+        ItemStack output = recipe.getResultItem(level.registryAccess());
+        ItemStack carrier = recipe.getOutputContainer();
+        if (result.is(output.getItem())) {
+            if (result.getCount() / output.getCount() >= request.remain) {
+                ItemUtils.getItemToLivingEntity(maid,handler.extractItem(8,request.remain * output.getCount(),false));
                 request.remain = 0;
             } else {
-                request.remain -= result.getCount();
-                ItemUtils.getItemToLivingEntity(maid,handler.extractItem(8,result.getCount(),false));
+                request.remain -= result.getCount() / output.getCount();
+                ItemUtils.getItemToLivingEntity(maid,handler.extractItem(8,result.getCount() / output.getCount() * result.getCount(),false));
             }
-        } else if (!meal.isEmpty() && container.isEmpty()) {
-            ItemStack carrier = ItemHandlerUtils.tryExtractSingleSlot(maid.getAvailableInv(false),1,StackPredicate.of(recipe.getOutputContainer().getItem()),true);
-            if (!carrier.isEmpty()) {
-                handler.setStackInSlot(7,carrier);
+        } else if (!meal.is(output.getItem()) && container.isEmpty()) {
+            ItemStack bowl = ItemHandlerUtils.tryExtractSingleSlot(maid.getAvailableInv(false),output.getCount(),StackPredicate.of(carrier.getItem()),true);
+            if (!bowl.isEmpty()) {
+                handler.setStackInSlot(7,bowl);
             }
         } else {
             List<ItemStack> slots = new ArrayList<>();
-            for (int i = 0;i < 6;i++) slots.add(handler.getStackInSlot(i));
-            List<StackPredicate> required = getIngredients(holder);
-            required = ItemHandlerUtils.getRequired(required,slots);
+            for (int i = 0;i < 6;i++)
+                if (!handler.getStackInSlot(i).isEmpty())
+                    slots.add(handler.getStackInSlot(i));
+
+            List<StackPredicate> ingredients = recipe.getIngredients().stream().filter(i -> i.getItems().length != 0).map(StackPredicate::new).toList();
+            List<StackPredicate> required = ItemHandlerUtils.getRequired(ingredients,slots);
             for (StackPredicate predicate : required) {
-                if (!recipe.getOutputContainer().isEmpty() && predicate.test(recipe.getOutputContainer())) continue;
-                List<Integer> indexs = getEmptySlots(slots);
-                if (!indexs.isEmpty()) {
+                int index = getFirstEmptySlot(handler);
+                if (index != -1) {
                     ItemStack material = ItemHandlerUtils.tryExtractSingleSlot(maid.getAvailableInv(false),1,predicate,true);
-                    handler.setStackInSlot(indexs.getFirst(),material);
+                    if (!material.isEmpty()) {
+                        handler.setStackInSlot(index,material);
+                    }
                 }
             }
         }
@@ -141,13 +153,11 @@ public class CookingPotCookTask implements ICookTask {
         return ans;
     }
 
-    private List<Integer> getEmptySlots(List<ItemStack> slots) {
-        List<Integer> indexs = new ArrayList<>();
-        for (int i = 0;i < slots.size();i++)
-            if (slots.get(i).isEmpty())
-                indexs.add(i);
-
-        return indexs;
+    private int getFirstEmptySlot(ItemStackHandler handler) {
+        for (int i = 0;i < 6;i++) {
+            if (handler.getStackInSlot(i).isEmpty()) return i;
+        }
+        return -1;
     }
 
     public static void register() {
