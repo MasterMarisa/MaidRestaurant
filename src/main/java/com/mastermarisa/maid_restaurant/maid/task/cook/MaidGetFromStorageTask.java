@@ -73,10 +73,9 @@ public class MaidGetFromStorageTask extends MaidCheckRateTask implements IStep {
     protected boolean search(ServerLevel level, EntityMaid maid) {
         BlockPos center = BehaviorUtils.getSearchPos(maid);
         int searchRange = (int)maid.getRestrictRadius();
-        List<BlockPos> foundStorages = SearchUtils.search(center,searchRange,verticalSearchRange,(pos)->{
+        List<BlockPos> foundStorages = SearchUtils.search(center, searchRange, verticalSearchRange, (pos)->{
             IItemHandler handler = MaidStorages.tryGetHandler(level,pos);
-            return handler != null && containsRequired(level,maid,handler)
-                    && !SearchUtils.getAllRelativeGround(level,pos,1).stream().filter(maid::canPathReach).toList().isEmpty();
+            return handler != null && containsRequired(level,maid,handler);
         });
 
         return foundStorages.stream().min(Comparator.comparingDouble(p->p.distSqr(maid.blockPosition()))).map(pos->{

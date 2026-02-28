@@ -78,7 +78,7 @@ public class PotCookTask implements ICookTask {
     public List<ItemStack> getCurrentInput(Level level, BlockPos pos, EntityMaid maid) {
         List<ItemStack> ans = new ArrayList<>();
         if (level.getBlockEntity(pos) instanceof PotBlockEntity pot) {
-            ans.addAll(pot.getInputs().stream().dropWhile(ItemStack::isEmpty).toList());
+            ans.addAll(pot.getInputs().stream().filter(s -> !s.isEmpty()).toList());
             if (level.getBlockState(pos).getValue(PotBlock.HAS_OIL))
                 ans.add(new ItemStack(ModItems.OIL.get()));
         }

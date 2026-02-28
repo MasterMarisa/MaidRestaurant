@@ -2,6 +2,7 @@ package com.mastermarisa.maid_restaurant.utils;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
+import com.mastermarisa.maid_restaurant.utils.component.Combined2;
 import com.mastermarisa.maid_restaurant.utils.component.StackPredicate;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -58,6 +59,30 @@ public class ItemHandlerUtils {
         return ItemStack.EMPTY;
     }
 
+    public static List<ItemStack> fromTo(IItemHandler handler, int start, int end, boolean copy) {
+        return fromTo(handler, StackPredicate.of((s) -> true), start, end, copy);
+    }
+
+    public static List<ItemStack> fromTo(IItemHandler handler, StackPredicate filter, int start, int end, boolean copy) {
+        List<ItemStack> ans = new ArrayList<>();
+
+        for(int i = start; i < Math.min(handler.getSlots(), end); ++i) {
+            ItemStack stack = handler.getStackInSlot(i);
+            if (filter.test(stack)) ans.add(copy ? stack.copy() : stack);
+        }
+
+        return ans;
+    }
+
+    public static int findStackSlot(IItemHandler handler, StackPredicate filter, int start, int end) {
+        for(int i = start; i < Math.min(handler.getSlots(), end); ++i) {
+            ItemStack stack = handler.getStackInSlot(i);
+            if (filter.test(stack)) return i;
+        }
+
+        return -1;
+    }
+
     public static int findStackSlot(IItemHandler handler, StackPredicate filter) {
         for(int i = 0; i < handler.getSlots(); ++i) {
             ItemStack stack = handler.getStackInSlot(i);
@@ -103,9 +128,7 @@ public class ItemHandlerUtils {
         int count = 0;
         for (int i = 0;i < handler.getSlots();i++) {
             ItemStack stack = handler.getStackInSlot(i);
-            if (predicate.test(stack)) {
-                count += stack.getCount();
-            }
+            if (predicate.test(stack)) count += stack.getCount();
         }
 
         return count;
@@ -113,9 +136,7 @@ public class ItemHandlerUtils {
 
     public static int count(List<ItemStack> itemStacks) {
         int count = 0;
-        for (ItemStack stack : itemStacks) {
-            count += stack.getCount();
-        }
+        for (ItemStack stack : itemStacks) count += stack.getCount();
 
         return count;
     }
@@ -125,21 +146,46 @@ public class ItemHandlerUtils {
     }
 
     public static List<StackPredicate> getRequired(List<StackPredicate> required, List<ItemStack> slots) {
-        List<StackPredicate> remain = new ArrayList<>(required);
-        List<ItemStack> stacks = new ArrayList<>();
+        List<StackPredicate> ans = new ArrayList<>();
+        LinkedList<ItemStack> available = new LinkedList<>();
+        slots.stream().filter(s -> !s.isEmpty()).forEach(s -> available.add(s.copy()));
 
-        for (ItemStack itemStack : slots)
-            for (int i = 0;i < itemStack.getCount();i++)
-                stacks.add(itemStack.copyWithCount(1));
-
-        for (ItemStack itemStack : stacks)
-            for (int i = 0;i < remain.size();i++)
-                if (remain.get(i).test(itemStack)){
-                    remain.remove(remain.get(i));
+        for (StackPredicate predicate : required) {
+            boolean matched = false;
+            for (int j = 0; j < available.size(); j++) {
+                ItemStack stack = available.get(j);
+                if (predicate.test(stack)) {
+                    if (stack.getCount() > 1) stack.shrink(1);
+                    else available.remove(j);
+                    matched = true;
                     break;
                 }
+            }
+            if (!matched) ans.add(predicate);
+        }
 
-        return remain;
+        return ans;
+    }
+
+    public static boolean containsAllRequired(List<StackPredicate> required, List<ItemStack> slots) {
+        LinkedList<ItemStack> available = new LinkedList<>();
+        slots.stream().filter(s -> !s.isEmpty()).forEach(s -> available.add(s.copy()));
+
+        for (StackPredicate predicate : required) {
+            boolean matched = false;
+            for (int j = 0; j < available.size(); j++) {
+                ItemStack stack = available.get(j);
+                if (predicate.test(stack)) {
+                    if (stack.getCount() > 1) stack.shrink(1);
+                    else available.remove(j);
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) return false;
+        }
+
+        return true;
     }
 
     public static void tryTakeFrom(IItemHandler from, IItemHandler to, StackPredicate predicate, int count) {
@@ -195,10 +241,7 @@ public class ItemHandlerUtils {
 
     public static List<Pair<StackPredicate,Integer>> filterByCount(List<StackPredicate> required, List<ItemStack> handler, int count) {
         LinkedList<ItemStack> stacks = new LinkedList<>();
-        for (var stack : handler)
-            if (!stack.isEmpty())
-                stacks.add(stack.copy());
-
+        handler.stream().filter(i -> !i.isEmpty()).forEach(s -> stacks.add(s.copy()));
         int[] remain = new int[required.size()];
         Arrays.fill(remain, count);
 

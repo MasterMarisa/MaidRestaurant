@@ -1,0 +1,13 @@
+{
+  "name": "patchouli.maid_restaurant.book.name",
+  "landing_text": "patchouli.maid_restaurant.book.landing_text",
+  "version": 1,
+  "creative_tab": "minecraft:tools_and_utilities",
+  "use_resource_pack": true,
+  "model": "maid_restaurant:your_maid_serves",
+  "show_progress":false,
+  "i18n": true,
+  "book_texture": "patchouli:textures/gui/book_cyan.png",
+  "text_color": "5A5766",
+  "header_color": "48435C"
+}

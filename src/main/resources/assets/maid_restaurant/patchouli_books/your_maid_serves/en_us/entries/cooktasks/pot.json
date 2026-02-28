@@ -1,0 +1,29 @@
+{
+  "name": "patchouli.maid_restaurant.book.categories.cooktasks.pot.name",
+  "icon": "kaleidoscope_cookery:pot",
+  "category": "maid_restaurant:cooktasks",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.cooktasks.pot.descr"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "patchouli.maid_restaurant.book.categories.cooktasks.pot.name",
+      "multiblock": {
+        "mapping": {
+          "S": "kaleidoscope_cookery:pot",
+          "G": "kaleidoscope_cookery:stove[lit=true,facing=north]"
+        },
+        "pattern":  [
+          ["S"],
+          ["G"],
+          ["0"]
+        ]
+      },
+      "text": "",
+      "enable_visualize": "false"
+    }
+  ],
+  "sortnum": 1
+}

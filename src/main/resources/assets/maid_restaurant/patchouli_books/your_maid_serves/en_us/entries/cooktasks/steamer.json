@@ -1,0 +1,31 @@
+{
+  "name": "patchouli.maid_restaurant.book.categories.cooktasks.steamer.name",
+  "icon": "kaleidoscope_cookery:steamer",
+  "category": "maid_restaurant:cooktasks",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.cooktasks.steamer.descr"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "patchouli.maid_restaurant.book.categories.cooktasks.steamer.name",
+      "multiblock": {
+        "mapping": {
+          "H": "kaleidoscope_cookery:steamer[half=false,has_lid=true]",
+          "S": "kaleidoscope_cookery:steamer[half=false,has_lid=false]",
+          "G": "kaleidoscope_cookery:stove[lit=true,facing=north]"
+        },
+        "pattern":  [
+          ["H"],
+          ["S"],
+          ["G"],
+          ["0"]
+        ]
+      },
+      "text": "",
+      "enable_visualize": "false"
+    }
+  ],
+  "sortnum": 2
+}

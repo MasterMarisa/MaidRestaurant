@@ -1,0 +1,28 @@
+{
+  "name": "patchouli.maid_restaurant.book.categories.basic_management.send_order.name",
+  "icon": "maid_restaurant:order_item",
+  "category": "maid_restaurant:basic_management",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.basic_management.send_order.page_1"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.basic_management.send_order.page_2"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.basic_management.send_order.page_3"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.basic_management.send_order.page_4"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.basic_management.send_order.page_5"
+    }
+  ],
+  "sortnum": 2
+}

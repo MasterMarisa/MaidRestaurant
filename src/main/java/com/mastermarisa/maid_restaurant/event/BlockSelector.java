@@ -47,10 +47,6 @@ public class BlockSelector {
                     player.getCooldowns().addCooldown(itemStack.getItem(),2);
                 }
             }
-        } else if (itemStack.is(ModItems.ORDER_ITEM)) {
-            MaidRestaurant.LOGGER.debug("USER:" + BlockUsageManager.getUserCount(pos));
-            event.setCanceled(true);
-            event.setCancellationResult(ItemInteractionResult.SUCCESS);
         }
     }
 }

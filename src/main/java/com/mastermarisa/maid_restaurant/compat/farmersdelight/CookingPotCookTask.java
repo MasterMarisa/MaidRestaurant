@@ -53,12 +53,15 @@ public class CookingPotCookTask implements ICookTask {
         List<ItemStack> ans = new ArrayList<>();
         if (level.getBlockEntity(pos) instanceof CookingPotBlockEntity pot) {
             CookRequest request = Objects.requireNonNull((CookRequest) RequestManager.peek(maid, CookRequest.TYPE));
-            CookingPotRecipe recipe = level.getRecipeManager().byKeyTyped(ModRecipeTypes.COOKING.get(), request.id).value();
-
+            CookingPotRecipe recipe = Objects.requireNonNull(level.getRecipeManager().byKeyTyped(ModRecipeTypes.COOKING.get(), request.id)).value();
             ItemStackHandler handler = pot.getInventory();
-            for (int i = 0;i < 6;i++)
-                if (!handler.getStackInSlot(i).isEmpty())
-                    ans.add(handler.getStackInSlot(i).copy());
+            ans = ItemHandlerUtils.fromTo(
+                    handler,
+                    StackPredicate.of(s -> !s.isEmpty()),
+                    0,
+                    6,
+                    true
+            );
             ItemStack container = handler.getStackInSlot(7);
             if (!container.isEmpty()) ans.add(container.copy());
             ItemStack output = recipe.getResultItem(level.registryAccess());
@@ -123,17 +126,25 @@ public class CookingPotCookTask implements ICookTask {
                 handler.setStackInSlot(7,bowl);
             }
         } else {
-            List<ItemStack> slots = new ArrayList<>();
-            for (int i = 0;i < 6;i++)
-                if (!handler.getStackInSlot(i).isEmpty())
-                    slots.add(handler.getStackInSlot(i));
+            List<ItemStack> slots = ItemHandlerUtils.fromTo(
+                    handler,
+                    StackPredicate.of(s -> !s.isEmpty()),
+                    0,
+                    6,
+                    true
+            );
 
             List<StackPredicate> ingredients = recipe.getIngredients().stream().filter(i -> i.getItems().length != 0).map(StackPredicate::new).toList();
             List<StackPredicate> required = ItemHandlerUtils.getRequired(ingredients,slots);
             for (StackPredicate predicate : required) {
                 int index = getFirstEmptySlot(handler);
                 if (index != -1) {
-                    ItemStack material = ItemHandlerUtils.tryExtractSingleSlot(maid.getAvailableInv(false),1,predicate,true);
+                    ItemStack material = ItemHandlerUtils.tryExtractSingleSlot(
+                            maid.getAvailableInv(false),
+                            1,
+                            predicate,
+                            true
+                    );
                     if (!material.isEmpty()) {
                         handler.setStackInSlot(index,material);
                     }
@@ -147,7 +158,12 @@ public class CookingPotCookTask implements ICookTask {
         RecipeManager manager = level.getRecipeManager();
         List<RecipeData> ans = new ArrayList<>();
         for (var holder : manager.getAllRecipesFor(ModRecipeTypes.COOKING.get())) {
-            ans.add(new RecipeData(holder.id(),ModRecipeTypes.COOKING.get(),getIcon(),getResult(holder,level)));
+            ans.add(new RecipeData(
+                    holder.id(),
+                    ModRecipeTypes.COOKING.get(),
+                    getIcon(),
+                    getResult(holder,level)
+            ));
         }
 
         return ans;

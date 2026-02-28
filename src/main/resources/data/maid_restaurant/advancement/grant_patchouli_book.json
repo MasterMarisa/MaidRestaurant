@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "patchouli"
+    }
+  ],
+  "criteria": {
+    "tick": {
+      "trigger": "maid_restaurant:give_patchouli_book_config"
+    }
+  },
+  "requirements": [
+    [
+      "tick"
+    ]
+  ],
+  "rewards": {
+    "loot": [
+      "maid_restaurant:grant_patchouli_book"
+    ]
+  },
+  "sends_telemetry_event": true
+}

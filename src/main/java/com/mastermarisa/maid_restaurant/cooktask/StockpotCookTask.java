@@ -72,18 +72,14 @@ public class StockpotCookTask implements ICookTask {
     public List<ItemStack> getCurrentInput(Level level, BlockPos pos, EntityMaid maid) {
         List<ItemStack> ans = new ArrayList<>();
         if (level.getBlockEntity(pos) instanceof StockpotBlockEntity pot) {
-            ans.addAll(pot.getInputs().stream().dropWhile(ItemStack::isEmpty).toList());
+            ans.addAll(pot.getInputs().stream().filter(s -> !s.isEmpty()).toList());
             if (pot.getSoupBase() != null)
                 ans.add(pot.getSoupBase().getDisplayStack());
             if (pot.getStatus() == 3) {
-                RecipeHolder<StockpotRecipe> holder = pot.recipe;
-                List<Ingredient> ingredients = holder.value().getIngredients().stream().dropWhile(Ingredient::isEmpty).dropWhile(Ingredient::hasNoItems).toList();
-                for (var item : ingredients)
-                    if (item.getItems().length > 0)
-                        ans.add(item.getItems()[0]);
-                for (int i = 0;i < holder.value().result().getCount() - pot.getTakeoutCount();i++)
-                    ans.add(holder.value().carrier().getItems()[0]);
-                ans.add(SoupBaseManager.getSoupBase(holder.value().soupBase()).getDisplayStack());
+                StockpotRecipe recipe = pot.recipe.value();
+                recipe.getIngredients().stream().filter(i -> i.getItems().length > 0).forEach(s -> ans.add(s.getItems()[0]));
+                ans.add(recipe.carrier().getItems()[0].copyWithCount(recipe.result().getCount() - pot.getTakeoutCount()));
+                ans.add(SoupBaseManager.getSoupBase(recipe.soupBase()).getDisplayStack());
             }
         }
 

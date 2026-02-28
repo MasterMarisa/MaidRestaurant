@@ -1,0 +1,17 @@
+{
+  "name": "patchouli.maid_restaurant.book.categories.basic_management.order_menu.name",
+  "icon": "maid_restaurant:order_menu",
+  "category": "maid_restaurant:basic_management",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.basic_management.order_menu.page_1"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "maid_restaurant:order_menu",
+      "text": "patchouli.maid_restaurant.book.categories.basic_management.order_menu.page_2"
+    }
+  ],
+  "sortnum": 0
+}

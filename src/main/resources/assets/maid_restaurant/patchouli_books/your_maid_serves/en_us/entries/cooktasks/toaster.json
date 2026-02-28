@@ -1,0 +1,28 @@
+{
+  "name": "patchouli.maid_restaurant.book.categories.cooktasks.toaster.name",
+  "icon": "bakeries:toaster",
+  "category": "maid_restaurant:cooktasks",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.cooktasks.toaster.descr"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "patchouli.maid_restaurant.book.categories.cooktasks.toaster.name",
+      "multiblock": {
+        "mapping": {
+          "S": "bakeries:toaster[facing=south]"
+        },
+        "pattern":  [
+          ["S"],
+          ["0"]
+        ]
+      },
+      "text": "",
+      "enable_visualize": "false"
+    }
+  ],
+  "sortnum": 6,
+  "flag" : "mod:bakeries"
+}

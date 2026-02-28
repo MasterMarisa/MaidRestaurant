@@ -32,7 +32,7 @@ public class MaidStateManager {
             if (BlockUsageManager.getUserCount(pos) <= 0 || BlockUsageManager.isUsing(pos,maid.getUUID()))
                 handler.addAll(iCookTask.getCurrentInput(maid.level(),pos,maid));
         }
-        return ItemHandlerUtils.getRequired(required,handler).isEmpty() ? CookState.COOK : CookState.STORAGE;
+        return ItemHandlerUtils.containsAllRequired(required, handler) ? CookState.COOK : CookState.STORAGE;
     }
 
     public static ServeState serveState(EntityMaid maid, ServerLevel level) {

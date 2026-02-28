@@ -1,0 +1,30 @@
+{
+  "name": "patchouli.maid_restaurant.book.categories.cooktasks.cooking_pot.name",
+  "icon": "farmersdelight:cooking_pot",
+  "category": "maid_restaurant:cooktasks",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.cooktasks.cooking_pot.descr"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "patchouli.maid_restaurant.book.categories.cooktasks.cooking_pot.name",
+      "multiblock": {
+        "mapping": {
+          "S": "farmersdelight:cooking_pot",
+          "G": "farmersdelight:stove[lit=true,facing=north]"
+        },
+        "pattern":  [
+          ["S"],
+          ["G"],
+          ["0"]
+        ]
+      },
+      "text": "",
+      "enable_visualize": "false"
+    }
+  ],
+  "sortnum": 3,
+  "flag" : "mod:farmersdelight"
+}

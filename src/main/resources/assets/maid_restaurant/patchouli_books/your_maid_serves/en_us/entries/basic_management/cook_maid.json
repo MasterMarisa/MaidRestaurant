@@ -1,0 +1,24 @@
+{
+  "name": "patchouli.maid_restaurant.book.categories.basic_management.cook_maid.name",
+  "icon": "kaleidoscope_cookery:kitchen_shovel",
+  "category": "maid_restaurant:basic_management",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.basic_management.cook_maid.page_1"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.basic_management.cook_maid.page_2"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.basic_management.cook_maid.page_3"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.basic_management.cook_maid.page_4"
+    }
+  ],
+  "sortnum": 3
+}

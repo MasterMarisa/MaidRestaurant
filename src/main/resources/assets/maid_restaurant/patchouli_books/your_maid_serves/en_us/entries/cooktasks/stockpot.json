@@ -1,0 +1,29 @@
+{
+  "name": "patchouli.maid_restaurant.book.categories.cooktasks.stockpot.name",
+  "icon": "kaleidoscope_cookery:stockpot",
+  "category": "maid_restaurant:cooktasks",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.cooktasks.stockpot.descr"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "patchouli.maid_restaurant.book.categories.cooktasks.stockpot.name",
+      "multiblock": {
+        "mapping": {
+          "S": "kaleidoscope_cookery:stockpot[has_lid=true]",
+          "G": "kaleidoscope_cookery:stove[lit=true,facing=north]"
+        },
+        "pattern":  [
+          ["S"],
+          ["G"],
+          ["0"]
+        ]
+      },
+      "text": "",
+      "enable_visualize": "false"
+    }
+  ],
+  "sortnum": 0
+}

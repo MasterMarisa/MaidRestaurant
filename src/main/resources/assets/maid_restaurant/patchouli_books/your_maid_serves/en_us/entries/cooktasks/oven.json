@@ -1,0 +1,28 @@
+{
+  "name": "patchouli.maid_restaurant.book.categories.cooktasks.oven.name",
+  "icon": "bakeries:oven",
+  "category": "maid_restaurant:cooktasks",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.cooktasks.oven.descr"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "patchouli.maid_restaurant.book.categories.cooktasks.oven.name",
+      "multiblock": {
+        "mapping": {
+          "S": "bakeries:oven[facing=south]"
+        },
+        "pattern":  [
+          ["S"],
+          ["0"]
+        ]
+      },
+      "text": "",
+      "enable_visualize": "false"
+    }
+  ],
+  "sortnum": 4,
+  "flag" : "mod:bakeries"
+}

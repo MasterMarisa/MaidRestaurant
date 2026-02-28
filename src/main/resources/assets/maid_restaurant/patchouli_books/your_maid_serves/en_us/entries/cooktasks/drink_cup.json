@@ -1,0 +1,30 @@
+{
+  "name": "patchouli.maid_restaurant.book.categories.cooktasks.drink_cup.name",
+  "icon": "bakeries:drink_cup",
+  "category": "maid_restaurant:cooktasks",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.cooktasks.drink_cup.descr"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "patchouli.maid_restaurant.book.categories.cooktasks.drink_cup.name",
+      "multiblock": {
+        "mapping": {
+          "S": "bakeries:drink_cup",
+          "G": "bakeries:cupboard[facing=north]"
+        },
+        "pattern":  [
+          ["S"],
+          ["G"],
+          ["0"]
+        ]
+      },
+      "text": "",
+      "enable_visualize": "false"
+    }
+  ],
+  "sortnum": 7,
+  "flag" : "mod:bakeries"
+}

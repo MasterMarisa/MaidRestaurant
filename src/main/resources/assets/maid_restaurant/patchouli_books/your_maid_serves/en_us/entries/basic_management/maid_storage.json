@@ -1,0 +1,16 @@
+{
+  "name": "patchouli.maid_restaurant.book.categories.basic_management.maid_storage.name",
+  "icon": "minecraft:chest",
+  "category": "maid_restaurant:basic_management",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.basic_management.maid_storage.page_1"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.maid_restaurant.book.categories.basic_management.maid_storage.page_2"
+    }
+  ],
+  "sortnum": 1
+}
