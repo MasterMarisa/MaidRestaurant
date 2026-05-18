@@ -130,6 +130,10 @@ dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
+    // Touhou Little Maid
+    implementation fg.deobf("curse.maven:touhou-little-maid-355044:8061847")
+
+    // Kaleidoscope
     implementation fg.deobf("curse.maven:kaleidoscope-cookery-1309203:7966280")
     implementation fg.deobf("curse.maven:kaleidoscope-tavern-1475175:7785541")
 
