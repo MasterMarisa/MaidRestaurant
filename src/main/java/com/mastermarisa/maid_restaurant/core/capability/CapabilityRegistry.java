@@ -1,6 +1,7 @@
 package com.mastermarisa.maid_restaurant.core.capability;
 
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -14,8 +15,9 @@ public class CapabilityRegistry {
         registry.put(capability.getUID(), capability);
     }
 
+    @Nullable
     public static ICookCapability get(String uid) {
-        return registry.get(uid);
+        return registry.getOrDefault(uid, null);
     }
 
     public static Collection<ICookCapability> getAll() {
@@ -28,5 +30,6 @@ public class CapabilityRegistry {
 
     static {
         registry = new LinkedHashMap<>();
+        register(new CraftingTableCapability());
     }
 }

@@ -17,8 +17,9 @@ public class StorageRegistry {
         registry.put(storage.getUID(), storage);
     }
 
+    @Nullable
     public static IMaidStorage get(String uid) {
-        return registry.get(uid);
+        return registry.getOrDefault(uid, null);
     }
 
     public static Collection<IMaidStorage> getAll() {
@@ -30,7 +31,7 @@ public class StorageRegistry {
     }
 
     @Nullable
-    public static IMaidStorage tryGet(Level level, BlockPos pos) {
+    public static IMaidStorage tryGetAt(Level level, BlockPos pos) {
         for (var storage : getAll()) {
             if (storage.isValid(level, pos)) {
                 return storage;

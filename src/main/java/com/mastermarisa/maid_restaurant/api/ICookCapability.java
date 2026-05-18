@@ -7,6 +7,7 @@ import com.mastermarisa.maid_restaurant.core.zone.RestaurantZone;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
@@ -28,5 +29,7 @@ public interface ICookCapability {
 
     boolean validate(CookStep step, Level level);
 
-    List<ItemStack> getRequiredMaterials(CookStep step, Level level);
+    List<Ingredient> getRequiredMaterials(CookStep step, Level level);
+
+    default List<Ingredient> getRequiredTools(CookStep step, Level level) { return List.of(); }
 }

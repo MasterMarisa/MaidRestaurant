@@ -54,7 +54,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     }
 
     public boolean isLeaf() {
-        return combineStep == null && children.isEmpty();
+        return children.isEmpty();
     }
 
     public boolean hasCombineStep() {

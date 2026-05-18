@@ -1,10 +1,6 @@
 package com.mastermarisa.maid_restaurant.core.recipe;
 
-import com.google.common.collect.Lists;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.Nullable;
@@ -27,6 +23,15 @@ public class RecipeExecutionContext implements INBTSerializable<CompoundTag> {
     private boolean blocked;
     private ItemStack icon;
     private String displayName;
+
+    public RecipeExecutionContext() {
+        this.root = null;
+        this.targetPositions = new ArrayList<>();
+        this.tempData = new CompoundTag();
+        this.blocked = false;
+        this.icon = ItemStack.EMPTY;
+        this.displayName = "";
+    }
 
     public RecipeExecutionContext(RecipeNode recipeRoot) {
         this.root = ExecutionNode.fromRecipeTree(recipeRoot);
@@ -101,6 +106,7 @@ public class RecipeExecutionContext implements INBTSerializable<CompoundTag> {
         if (tag.contains(TAG_ROOT)) {
             RecipeNode recipeRoot = RecipeNode.fromNBT(tag.getCompound(TAG_ROOT));
             root = ExecutionNode.fromRecipeTree(recipeRoot);
+            root.computeState();
         }
         if (tag.contains(TAG_TARGET_POSITIONS)) {
             targetPositions = Arrays.stream(tag.getLongArray(TAG_TARGET_POSITIONS)).boxed().toList();
@@ -120,7 +126,7 @@ public class RecipeExecutionContext implements INBTSerializable<CompoundTag> {
     }
 
     public static RecipeExecutionContext fromNBT(CompoundTag tag) {
-        RecipeExecutionContext context = new RecipeExecutionContext(null);
+        RecipeExecutionContext context = new RecipeExecutionContext();
         context.deserializeNBT(tag);
         return context;
     }

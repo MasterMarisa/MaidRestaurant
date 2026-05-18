@@ -8,6 +8,8 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public interface IMaidStorage {
     String getUID();
 
@@ -15,7 +17,7 @@ public interface IMaidStorage {
 
     boolean isValid(Level level, BlockPos pos);
 
-    ItemStack extract(Level level, BlockPos pos, int slot, int amount, boolean simulate);
+    List<ItemStack> extract(Level level, BlockPos pos, Ingredient ingredient, int amount, boolean simulate);
 
     ItemStack insert(Level level, BlockPos pos, ItemStack stack, boolean simulate);
 

@@ -1,8 +1,15 @@
 package com.mastermarisa.maid_restaurant.core.zone;
 
+import com.github.tartaricacid.touhoulittlemaid.api.entity.data.TaskDataKey;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
+
+import javax.annotation.Nullable;
 
 public class RestaurantZone implements INBTSerializable<CompoundTag> {
     private static final String TAG_MIN = "min";
@@ -92,5 +99,31 @@ public class RestaurantZone implements INBTSerializable<CompoundTag> {
     @Override
     public String toString() {
         return "RestaurantZone[min=" + min.toShortString() + ", max=" + max.toShortString() + "]";
+    }
+
+    public static class DATA_KEY implements TaskDataKey<RestaurantZone> {
+        @Override
+        public ResourceLocation getKey() {
+            return MaidRestaurant.resourceLocation("restaurant_zone");
+        }
+
+        @Override
+        public CompoundTag writeSaveData(RestaurantZone zone) {
+            return zone.serializeNBT();
+        }
+
+        @Override
+        public RestaurantZone readSaveData(CompoundTag tag) {
+            RestaurantZone zone = new RestaurantZone();
+            zone.deserializeNBT(tag);
+            return zone;
+        }
+    }
+
+    @Nullable
+    public static RestaurantZone getZone(EntityMaid maid) {
+        RestaurantZone zone = maid.getData(ModTaskDataKeys.RESTAURANT_ZONE);
+        if (zone != null && zone.isValid()) return zone;
+        return null;
     }
 }

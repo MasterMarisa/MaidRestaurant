@@ -4,8 +4,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.common.util.INBTSerializable;
 
 public class CookStep implements INBTSerializable<CompoundTag> {
-    public static final String TAG_CAPABILITY_UID = "capability_uid";
-    public static final String TAG_PARAMS = "params";
+    public static final String RECIPE_ID = "recipe_id";
+    private static final String TAG_CAPABILITY_UID = "capability_uid";
+    private static final String TAG_PARAMS = "params";
 
     private String capabilityUID;
     private CompoundTag params;

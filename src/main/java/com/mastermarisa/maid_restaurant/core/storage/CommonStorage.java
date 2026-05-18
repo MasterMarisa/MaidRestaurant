@@ -1,5 +1,6 @@
 package com.mastermarisa.maid_restaurant.core.storage;
 
+import com.github.tartaricacid.touhoulittlemaid.util.ItemsUtil;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
 import com.mastermarisa.maid_restaurant.init.tag.TagMod;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
@@ -15,6 +16,8 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public class CommonStorage implements IMaidStorage {
     public static final String UID = "CommonStorage";
 
@@ -22,7 +25,7 @@ public class CommonStorage implements IMaidStorage {
     public String getUID() { return UID; }
 
     @Override
-    public ItemStack getIcon() { return new ItemStack(Items.CHEST); }
+    public ItemStack getIcon() { return Items.CHEST.getDefaultInstance(); }
 
     @Override
     public boolean isValid(Level level, BlockPos pos) {
@@ -30,12 +33,12 @@ public class CommonStorage implements IMaidStorage {
     }
 
     @Override
-    public ItemStack extract(Level level, BlockPos pos, int slot, int amount, boolean simulate) {
+    public List<ItemStack> extract(Level level, BlockPos pos, Ingredient ingredient, int amount, boolean simulate) {
         IItemHandler handler = getItemHandler(level,pos);
         if (handler != null) {
-            return handler.extractItem(slot, amount, simulate);
+            return ItemUtils.tryExtract(handler, amount, ingredient, false, simulate);
         }
-        return ItemStack.EMPTY;
+        return List.of();
     }
 
     @Override
