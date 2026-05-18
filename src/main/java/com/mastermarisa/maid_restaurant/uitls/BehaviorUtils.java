@@ -16,7 +16,7 @@ public class BehaviorUtils {
     }
 
     public static void setTarget(LivingEntity entity, PositionTracker tracker, TargetType type){
-        entity.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(p->{
+        entity.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(p -> {
             BlockUsageUtils.remove(p.currentBlockPosition(),entity.getUUID());
         });
         entity.getBrain().setMemory(ModEntities.TARGET_POS.get(),tracker);
@@ -24,7 +24,7 @@ public class BehaviorUtils {
     }
 
     public static void eraseTarget(LivingEntity entity){
-        entity.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(p->{
+        entity.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(p -> {
             BlockUsageUtils.remove(p.currentBlockPosition(),entity.getUUID());
         });
         entity.getBrain().eraseMemory(ModEntities.TARGET_POS.get());

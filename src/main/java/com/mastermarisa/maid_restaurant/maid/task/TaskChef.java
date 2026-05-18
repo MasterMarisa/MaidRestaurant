@@ -19,9 +19,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -74,15 +76,15 @@ public class TaskChef implements IMaidTask {
         ContextList contextList = ChefScheduler.getContextList(maid);
         contextList.getList().clear();
 
-        RecipeNode planks = new RecipeNode(Items.OAK_PLANKS.getDefaultInstance(), 3, null);
-        RecipeNode stone = new RecipeNode(Items.COBBLESTONE.getDefaultInstance(), 4, null);
-        RecipeNode iron = new RecipeNode(Items.IRON_INGOT.getDefaultInstance(), 1, null);
-        RecipeNode redStone = new RecipeNode(Items.REDSTONE.getDefaultInstance(), 1, null);
+        RecipeNode planks = new RecipeNode(Ingredient.of(ItemTags.PLANKS), 3, null);
+        RecipeNode stone = new RecipeNode(Ingredient.of(Items.COBBLESTONE), 4, null);
+        RecipeNode iron = new RecipeNode(Ingredient.of(Items.IRON_INGOT), 1, null);
+        RecipeNode redStone = new RecipeNode(Ingredient.of(Items.REDSTONE), 1, null);
 
-        RecipeNode piston = new RecipeNode(Items.PISTON.getDefaultInstance(), 1, null);
-        RecipeNode slime_ball = new RecipeNode(Items.SLIME_BALL.getDefaultInstance(), 1, null);
+        RecipeNode piston = new RecipeNode(Ingredient.of(Items.PISTON), 1, null);
+        RecipeNode slime_ball = new RecipeNode(Ingredient.of(Items.SLIME_BALL), 1, null);
 
-        RecipeNode sticky_piston = new RecipeNode(Items.STICKY_PISTON.getDefaultInstance(), 1, null);
+        RecipeNode sticky_piston = new RecipeNode(Ingredient.of(Items.STICKY_PISTON), 8, null);
 
         piston.setCombineStep(new CookStep(CraftingTableCapability.UID, tagWithRecipeId("minecraft:piston")));
         piston.setChildren(List.of(planks, stone, iron, redStone));

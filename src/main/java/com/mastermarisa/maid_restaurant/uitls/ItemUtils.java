@@ -5,6 +5,8 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.items.IItemHandler;
@@ -126,5 +128,67 @@ public class ItemUtils {
         }
 
         return count <= 0;
+    }
+
+    public static boolean areIngredientsEqual(Ingredient a, Ingredient b) {
+        if (!a.isVanilla() || !b.isVanilla()) {
+            return false;
+        }
+        List<TagKey<Item>> tagKeysA = new ArrayList<>();
+        List<TagKey<Item>> tagKeysB = new ArrayList<>();
+        List<ItemStack> itemsA = new ArrayList<>();
+        List<ItemStack> itemsB = new ArrayList<>();
+
+        for (Ingredient.Value value : a.values) {
+            if (value instanceof Ingredient.TagValue tagValue) {
+                tagKeysA.add(tagValue.tag);
+            } else if (value instanceof Ingredient.ItemValue itemValue) {
+                itemsA.add(itemValue.item);
+            } else {
+                return false;
+            }
+        }
+
+        for (Ingredient.Value value : b.values) {
+            if (value instanceof Ingredient.TagValue tagValue) {
+                tagKeysB.add(tagValue.tag);
+            } else if (value instanceof Ingredient.ItemValue itemValue) {
+                itemsB.add(itemValue.item);
+            } else {
+                return false;
+            }
+        }
+
+        if (tagKeysA.size() != tagKeysB.size() || itemsA.size() != itemsB.size()) {
+            return false;
+        }
+
+        for (TagKey<Item> keyA : tagKeysA) {
+            boolean matched = false;
+            for (TagKey<Item> keyB : tagKeysB) {
+                if (keyA.equals(keyB)) {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                return false;
+            }
+        }
+
+        for (ItemStack stackA : itemsA) {
+            boolean matched = false;
+            for (ItemStack stackB : itemsB) {
+                if (stackA.is(stackB.getItem())) {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

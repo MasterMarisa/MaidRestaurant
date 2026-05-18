@@ -27,3 +27,6 @@ replay_pid*
 /run/
 /run-data/
 /src/generated/resources/.cache/
+/.classpath
+/.project
+/.settings/org.eclipse.jdt.core.prefs

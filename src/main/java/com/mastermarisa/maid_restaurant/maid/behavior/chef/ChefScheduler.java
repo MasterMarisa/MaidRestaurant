@@ -5,8 +5,11 @@ import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.core.recipe.ContextList;
 import com.mastermarisa.maid_restaurant.core.recipe.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeExecutionContext;
+import com.mastermarisa.maid_restaurant.core.recipe.RecipeNode;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
+import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedList;
@@ -86,6 +89,21 @@ public class ChefScheduler {
      */
     public static void checkAndSubmit(ServerLevel level, EntityMaid maid) {
         MaidRestaurant.LOGGER.debug("[MaidRestaurant-DEBUG] Context Submitted.");
+        ContextList contextList = getContextList(maid);
+        LinkedList<RecipeExecutionContext> contexts = contextList.getList();
+        int current = contextList.getCurrentIndex();
+        if (current >= 0 && current < contexts.size()) {
+            RecipeExecutionContext context = contexts.get(current);
+            RecipeNode recipeNode = context.getRoot().getRecipeNode();
+            int count = ItemUtils.count(maid.getAvailableInv(false), recipeNode.getOutput());
+            if (count >= recipeNode.getOutputCount()) {
+                contexts.remove(current);
+                contextList.setCurrentIndex(-1);
+                checkUnblock(level, maid);
+                switchToNextContext(maid);
+                MaidRestaurant.LOGGER.debug("[MaidRestaurant-DEBUG] Context Resolved.");
+            }
+        }
     }
 
     /**

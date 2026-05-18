@@ -44,7 +44,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         ExecutionNode node = ChefScheduler.findNeedMaterialNode(maid);
         if (node == null) return false;
         MaidRestaurant.LOGGER.debug("node found");
-        int count = ItemUtils.count(maid.getAvailableInv(true), Ingredient.of(node.getRecipeNode().getOutput()));
+        int count = ItemUtils.count(maid.getAvailableInv(true), node.getRecipeNode().getOutput());
         if (count >= node.getRecipeNode().getOutputCount()) {
             node.setState(NodeState.DONE);
             if (node.getParent() != null) {
@@ -85,7 +85,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
     }
 
     private boolean searchStorage(ServerLevel level, EntityMaid maid, ExecutionNode node) {
-        Ingredient ingredient = Ingredient.of(node.getRecipeNode().getOutput());
+        Ingredient ingredient = node.getRecipeNode().getOutput();
         int required = node.getRecipeNode().getOutputCount() - ItemUtils.count(maid.getAvailableInv(true), ingredient);
         RestaurantZone zone = RestaurantZone.getZone(maid);
 
@@ -129,7 +129,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         IMaidStorage storage = StorageRegistry.tryGetAt(level, pos);
         if (storage == null) return;
 
-        Ingredient ingredient = Ingredient.of(node.getRecipeNode().getOutput());
+        Ingredient ingredient = node.getRecipeNode().getOutput();
         int required = node.getRecipeNode().getOutputCount() - ItemUtils.count(maid.getAvailableInv(true), ingredient);
 
         maid.swing(InteractionHand.OFF_HAND);

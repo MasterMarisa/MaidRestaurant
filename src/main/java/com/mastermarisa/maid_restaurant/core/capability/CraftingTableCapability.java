@@ -86,16 +86,13 @@ public class CraftingTableCapability implements ICookCapability {
 
         if (params.contains(CookStep.RECIPE_ID, Tag.TAG_STRING)) {
             ResourceLocation recipeId = ResourceLocation.tryParse(params.getString(CookStep.RECIPE_ID));
-            MaidRestaurant.LOGGER.debug("cookTick");
             if (recipeId == null) {
                 return CookResult.INTERRUPTED;
             }
-            MaidRestaurant.LOGGER.debug("id_existed");
             Optional<? extends Recipe<?>> recipeOpt = level.getRecipeManager().byKey(recipeId);
             if (recipeOpt.isEmpty()) {
                 return CookResult.INTERRUPTED;
             }
-            MaidRestaurant.LOGGER.debug("recipe_existed");
             Recipe<?> recipe = recipeOpt.get();
             result = recipe.getResultItem(level.registryAccess());
             ingredients = recipe.getIngredients().stream().filter(i -> !i.isEmpty()).toList();

@@ -1,6 +1,5 @@
 package com.mastermarisa.maid_restaurant.core.storage;
 
-import com.github.tartaricacid.touhoulittlemaid.util.ItemsUtil;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
 import com.mastermarisa.maid_restaurant.init.tag.TagMod;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;

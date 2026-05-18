@@ -104,7 +104,7 @@ public class ExecutionNode {
      */
     public void verifyAndRollback(ServerLevel level, EntityMaid maid) {
         if (isLeaf()) {
-            Ingredient ingredient = Ingredient.of(recipeNode.getOutput());
+            Ingredient ingredient = recipeNode.getOutput();
             boolean containing = ItemUtils.count(maid.getAvailableInv(false), ingredient) >= recipeNode.getOutputCount();
             if (!containing) {
                 state = NodeState.NEED_MATERIALS;
@@ -130,7 +130,7 @@ public class ExecutionNode {
     public boolean isReadyForExecution(ServerLevel level, EntityMaid maid, List<ExecutionNode> unreadyChildren) {
         boolean allChildrenDone = true;
         for (var child : children) {
-            Ingredient ingredient = Ingredient.of(child.recipeNode.getOutput());
+            Ingredient ingredient = child.recipeNode.getOutput();
             boolean containing = ItemUtils.count(maid.getAvailableInv(false), ingredient) >= child.recipeNode.getOutputCount();
             if (!containing) {
                 allChildrenDone = false;

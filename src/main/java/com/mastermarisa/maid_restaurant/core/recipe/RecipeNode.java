@@ -1,9 +1,12 @@
 package com.mastermarisa.maid_restaurant.core.recipe;
 
+import com.google.gson.JsonElement;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
@@ -16,27 +19,27 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     private static final String TAG_STEP = "step";
     private static final String TAG_CHILDREN = "children";
 
-    private ItemStack output;
+    private Ingredient output;
     private int outputCount;
     @Nullable
     private CookStep combineStep;
     private List<RecipeNode> children;
 
     public RecipeNode() {
-        this.output = ItemStack.EMPTY;
+        this.output = Ingredient.EMPTY;
         this.outputCount = 1;
         this.combineStep = null;
         this.children = new ArrayList<>();
     }
 
-    public RecipeNode(ItemStack output, int outputCount, @Nullable CookStep combineStep) {
-        this.output = output.copy();
+    public RecipeNode(Ingredient output, int outputCount, @Nullable CookStep combineStep) {
+        this.output = output;
         this.outputCount = outputCount;
         this.combineStep = combineStep != null ? combineStep.copy() : null;
         this.children = new ArrayList<>();
     }
 
-    public ItemStack getOutput() {
+    public Ingredient getOutput() {
         return output;
     }
 
@@ -61,8 +64,8 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         return combineStep != null;
     }
 
-    public void setOutput(ItemStack output, int outputCount) {
-        this.output = output.copy();
+    public void setOutput(Ingredient output, int outputCount) {
+        this.output = output;
         this.outputCount = outputCount;
     }
 
@@ -90,9 +93,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         if (!output.isEmpty()) {
-            CompoundTag outputTag = new CompoundTag();
-            output.save(outputTag);
-            tag.put(TAG_OUTPUT, outputTag);
+            tag.putString(TAG_OUTPUT, output.toJson().toString());
         }
         tag.putInt(TAG_OUTPUT_COUNT, outputCount);
 
@@ -114,9 +115,10 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     @Override
     public void deserializeNBT(CompoundTag tag) {
         if (tag.contains(TAG_OUTPUT)) {
-            output = ItemStack.of(tag.getCompound(TAG_OUTPUT));
+            JsonElement jsonElement = GsonHelper.parse(tag.getString(TAG_OUTPUT));
+            output = Ingredient.fromJson(jsonElement);
         } else {
-            output = ItemStack.EMPTY;
+            output = Ingredient.EMPTY;
         }
         outputCount = tag.getInt(TAG_OUTPUT_COUNT);
 
