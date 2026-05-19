@@ -1,7 +1,6 @@
 package com.mastermarisa.maid_restaurant.core.capability;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.recipe.CookStep;
 import com.mastermarisa.maid_restaurant.core.zone.RestaurantZone;

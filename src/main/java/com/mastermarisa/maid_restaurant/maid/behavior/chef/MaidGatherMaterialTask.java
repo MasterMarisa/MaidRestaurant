@@ -115,6 +115,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         if (best != null) {
             BehaviorUtils.setTarget(maid, new BlockPosTracker(best), TargetType.GATHER_MATERIAL);
             BehaviorUtils.setWalkAndLookTargetMemories(maid, best, best, movementSpeed, 0);
+            CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidApproachWorkBlockTask.UID, 5);
             return true;
         }
         ChefScheduler.checkUnblock(level, maid);

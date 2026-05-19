@@ -9,7 +9,6 @@ import com.mastermarisa.maid_restaurant.core.recipe.RecipeNode;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedList;

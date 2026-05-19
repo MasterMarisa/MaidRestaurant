@@ -101,7 +101,6 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
 
         // 验证前置需求
         readyNode.verifyAndRollback(level, maid);
-        MaidRestaurant.LOGGER.debug("ReadyNode State:" + readyNode.getState().name());
         if (readyNode.getState() != NodeState.READY) {
             return;
         }
