@@ -3,15 +3,15 @@
     "minecraft:chest",
     "minecraft:barrel",
     {
-      "id" : "create:depot",
+      "id": "create:depot",
       "required": false
     },
     {
-      "id" : "create:item_vault",
+      "id": "create:item_vault",
       "required": false
     },
     {
-      "id" : "create:weighted_ejector",
+      "id": "create:weighted_ejector",
       "required": false
     }
   ]

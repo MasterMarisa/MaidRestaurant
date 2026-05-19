@@ -85,11 +85,11 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
     }
 
     private boolean searchStorage(ServerLevel level, EntityMaid maid, ExecutionNode node) {
+        RestaurantZone zone = RestaurantZone.getZone(maid);
+        if (zone == null || !zone.isValid()) return false;
+
         Ingredient ingredient = node.getRecipeNode().getOutput();
         int required = node.getRecipeNode().getOutputCount() - ItemUtils.count(maid.getAvailableInv(true), ingredient);
-        RestaurantZone zone = RestaurantZone.getZone(maid);
-
-        if (zone == null || !zone.isValid()) return false;
 
         BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
         BlockPos best = null;

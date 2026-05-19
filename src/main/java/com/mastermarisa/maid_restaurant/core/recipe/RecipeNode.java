@@ -119,7 +119,10 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         } else {
             output = Ingredient.EMPTY;
         }
-        outputCount = tag.getInt(TAG_OUTPUT_COUNT);
+
+        if (tag.contains(TAG_OUTPUT_COUNT)) {
+            outputCount = tag.getInt(TAG_OUTPUT_COUNT);
+        }
 
         if (tag.contains(TAG_STEP)) {
             combineStep = CookStep.fromNBT(tag.getCompound(TAG_STEP));

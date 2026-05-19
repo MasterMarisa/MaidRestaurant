@@ -1,6 +1,7 @@
 package com.mastermarisa.maid_restaurant;
 
 import com.mastermarisa.maid_restaurant.init.ModEntities;
+import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -20,5 +21,6 @@ public class MaidRestaurant {
     public MaidRestaurant() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModEntities.MEMORY_MODULE_TYPES.register(modEventBus);
+        ModItems.ITEMS.register(modEventBus);
     }
 }

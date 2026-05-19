@@ -1,6 +1,7 @@
 package com.mastermarisa.maid_restaurant.datagen;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.datagen.model.ItemModelGenerator;
 import com.mastermarisa.maid_restaurant.datagen.tag.TagBlock;
 import com.mastermarisa.maid_restaurant.datagen.tag.TagItem;
 import net.minecraftforge.data.event.GatherDataEvent;
@@ -15,8 +16,11 @@ public class DataGenerators {
         var registries = event.getLookupProvider();
         var vanillaPack = generator.getVanillaPack(true);
         var helper = event.getExistingFileHelper();
+        var pack = generator.getPackOutput();
 
         var block = vanillaPack.addProvider(packOutput -> new TagBlock(packOutput, registries, helper));
         vanillaPack.addProvider(packOutput -> new TagItem(packOutput, registries, block.contentsGetter(), helper));
+
+        generator.addProvider(event.includeClient(), new ItemModelGenerator(pack, helper));
     }
 }

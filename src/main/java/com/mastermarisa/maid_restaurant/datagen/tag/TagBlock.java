@@ -4,6 +4,7 @@ import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.init.tag.TagMod;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.data.BlockTagsProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -20,7 +21,10 @@ public class TagBlock extends BlockTagsProvider {
     protected void addTags(HolderLookup.Provider provider) {
         tag(TagMod.STORAGE_BLOCK)
                 .add(Blocks.CHEST)
-                .add(Blocks.BARREL);
+                .add(Blocks.BARREL)
+                .addOptional(new ResourceLocation("create:depot"))
+                .addOptional(new ResourceLocation("create:item_vault"))
+                .addOptional(new ResourceLocation("create:weighted_ejector"));
     }
 }
 
