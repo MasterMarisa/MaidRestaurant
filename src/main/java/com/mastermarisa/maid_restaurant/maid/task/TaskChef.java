@@ -6,24 +6,11 @@ import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModItems;
 import com.google.common.collect.Lists;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.core.capability.CraftingTableCapability;
-import com.mastermarisa.maid_restaurant.core.recipe.ContextList;
-import com.mastermarisa.maid_restaurant.core.recipe.CookStep;
-import com.mastermarisa.maid_restaurant.core.recipe.RecipeExecutionContext;
-import com.mastermarisa.maid_restaurant.core.recipe.RecipeNode;
-import com.mastermarisa.maid_restaurant.core.zone.RestaurantZone;
-import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
-import com.mastermarisa.maid_restaurant.maid.behavior.chef.*;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -58,53 +45,13 @@ public class TaskChef implements IMaidTask {
 
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
-        test(maid);
         return Lists.newArrayList(
-                Pair.of(5, new MaidGatherMaterialTask(60, 0.4F, 3.0D)),
-                Pair.of(5, new MaidApproachWorkBlockTask(60, 0.4F, 1.0D)),
-                Pair.of(5, new MaidExecuteCookStepTask()),
-                Pair.of(5, new MaidSwitchContextTask(60))
+
         );
     }
 
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
         return Lists.newArrayList();
-    }
-
-    private static void test(EntityMaid maid) {
-        ContextList contextList = ChefScheduler.getContextList(maid);
-        contextList.getList().clear();
-
-        RecipeNode planks = new RecipeNode(Ingredient.of(ItemTags.PLANKS), 3, null);
-        RecipeNode stone = new RecipeNode(Ingredient.of(Items.COBBLESTONE), 4, null);
-        RecipeNode iron = new RecipeNode(Ingredient.of(Items.IRON_INGOT), 1, null);
-        RecipeNode redStone = new RecipeNode(Ingredient.of(Items.REDSTONE), 1, null);
-
-        RecipeNode piston = new RecipeNode(Ingredient.of(Items.PISTON), 1, null);
-        RecipeNode slime_ball = new RecipeNode(Ingredient.of(Items.SLIME_BALL), 1, null);
-
-        RecipeNode sticky_piston = new RecipeNode(Ingredient.of(Items.STICKY_PISTON), 8, null);
-
-        piston.setCombineStep(new CookStep(CraftingTableCapability.UID, tagWithRecipeId("minecraft:piston")));
-        piston.setChildren(List.of(planks, stone, iron, redStone));
-
-        sticky_piston.setCombineStep(new CookStep(CraftingTableCapability.UID, tagWithRecipeId("minecraft:sticky_piston")));
-        sticky_piston.setChildren(List.of(slime_ball, piston));
-
-        RecipeExecutionContext context = new RecipeExecutionContext(sticky_piston);
-        context.getRoot().computeState();
-        contextList.getList().add(context);
-        contextList.setCurrentIndex(0);
-        maid.setData(ModTaskDataKeys.RESTAURANT_ZONE, new RestaurantZone(
-                new BlockPos(0, -60, 1),
-                new BlockPos(6, -58, 7)
-        ));
-    }
-
-    private static CompoundTag tagWithRecipeId(String recipeId) {
-        CompoundTag params = new CompoundTag();
-        params.putString(CookStep.RECIPE_ID, recipeId);
-        return params;
     }
 }

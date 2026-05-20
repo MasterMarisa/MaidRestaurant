@@ -4,7 +4,7 @@
   "package": "com.mastermarisa.maid_restaurant.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-
+    "WorldRecipeLoaderMixin"
   ],
   "client": [
   ],

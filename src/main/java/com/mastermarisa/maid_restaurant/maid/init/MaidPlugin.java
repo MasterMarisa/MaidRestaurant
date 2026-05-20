@@ -17,7 +17,7 @@ public class MaidPlugin implements ILittleMaid {
 
     @Override
     public void addExtraMaidBrain(ExtraMaidBrainManager manager) {
-        manager.addExtraMaidBrain(new RestaurantMaidBrain());
+        manager.addExtraMaidBrain(new MaidBrain());
     }
 
     @Override

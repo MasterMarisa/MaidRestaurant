@@ -1,5 +1,7 @@
-package com.mastermarisa.maid_restaurant.core.recipe;
+package com.mastermarisa.maid_restaurant.core.schedule;
 
+import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
+import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -9,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class RecipeExecutionContext implements INBTSerializable<CompoundTag> {
+public class CookingDemand implements INBTSerializable<CompoundTag> {
     private static final String TAG_ROOT = "root";
     private static final String TAG_TARGET_POSITIONS = "target_positions";
     private static final String TAG_TEMP_DATA = "temp_data";
@@ -20,24 +22,21 @@ public class RecipeExecutionContext implements INBTSerializable<CompoundTag> {
     private ExecutionNode root;
     private List<Long> targetPositions;
     private CompoundTag tempData;
-    private boolean blocked;
     private ItemStack icon;
     private String displayName;
 
-    public RecipeExecutionContext() {
+    public CookingDemand() {
         this.root = null;
         this.targetPositions = new ArrayList<>();
         this.tempData = new CompoundTag();
-        this.blocked = false;
         this.icon = ItemStack.EMPTY;
         this.displayName = "";
     }
 
-    public RecipeExecutionContext(RecipeNode recipeRoot) {
+    public CookingDemand(RecipeNode recipeRoot) {
         this.root = ExecutionNode.fromRecipeTree(recipeRoot);
         this.targetPositions = new ArrayList<>();
         this.tempData = new CompoundTag();
-        this.blocked = false;
         this.icon = ItemStack.EMPTY;
         this.displayName = "";
     }
@@ -64,14 +63,6 @@ public class RecipeExecutionContext implements INBTSerializable<CompoundTag> {
         this.tempData = tempData;
     }
 
-    public boolean isBlocked() {
-        return blocked;
-    }
-
-    public void setBlocked(boolean blocked) {
-        this.blocked = blocked;
-    }
-
     public ItemStack getIcon() {
         return icon;
     }
@@ -95,7 +86,6 @@ public class RecipeExecutionContext implements INBTSerializable<CompoundTag> {
         tag.put(TAG_ROOT, root.getRecipeNode().serializeNBT());
         tag.putLongArray(TAG_TARGET_POSITIONS, targetPositions);
         tag.put(TAG_TEMP_DATA, tempData);
-        tag.putBoolean(TAG_BLOCKED, blocked);
         tag.put(TAG_ICON, icon.save(new CompoundTag()));
         tag.putString(TAG_DISPLAY_NAME, displayName);
         return tag;
@@ -114,9 +104,6 @@ public class RecipeExecutionContext implements INBTSerializable<CompoundTag> {
         if (tag.contains(TAG_TEMP_DATA)) {
             tempData = tag.getCompound(TAG_TEMP_DATA);
         }
-        if (tag.contains(TAG_BLOCKED)) {
-            blocked = tag.getBoolean(TAG_BLOCKED);
-        }
         if (tag.contains(TAG_ICON)) {
             icon = ItemStack.of(tag.getCompound(TAG_ICON));
         }
@@ -125,8 +112,8 @@ public class RecipeExecutionContext implements INBTSerializable<CompoundTag> {
         }
     }
 
-    public static RecipeExecutionContext fromNBT(CompoundTag tag) {
-        RecipeExecutionContext context = new RecipeExecutionContext();
+    public static CookingDemand fromNBT(CompoundTag tag) {
+        CookingDemand context = new CookingDemand();
         context.deserializeNBT(tag);
         return context;
     }

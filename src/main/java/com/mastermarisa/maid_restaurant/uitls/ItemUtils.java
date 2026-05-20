@@ -5,15 +5,14 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraftforge.common.crafting.PartialNBTIngredient;
+import net.minecraftforge.common.crafting.StrictNBTIngredient;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 public class ItemUtils {
@@ -57,50 +56,6 @@ public class ItemUtils {
         return count;
     }
 
-    public static List<ItemStack> toList(IItemHandler handler) {
-        List<ItemStack> itemStacks = new ArrayList<>();
-        for (int i = 0; i < handler.getSlots(); i++) {
-            ItemStack itemStack = handler.getStackInSlot(i);
-            if (!itemStack.isEmpty()) {
-                itemStacks.add(itemStack);
-            }
-        }
-        return itemStacks;
-    }
-
-    public static boolean allMatch(List<Ingredient> ingredients, List<ItemStack> itemStacks) {
-        LinkedList<ItemStack> available = new LinkedList<>();
-        for (var stack : itemStacks) {
-            if (!stack.isEmpty()) {
-                available.add(stack);
-            }
-        }
-
-        for (Ingredient ingredient : ingredients) {
-            if (ingredient.isEmpty()) continue;
-            boolean matched = false;
-            for (int j = 0; j < available.size(); j++) {
-                ItemStack stack = available.get(j);
-                if (ingredient.test(stack)) {
-                    stack.shrink(1);
-                    if (stack.isEmpty()) {
-                        available.remove(j);
-                    }
-                    matched = true;
-                    break;
-                }
-            }
-            if (!matched) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static boolean allMatch(List<Ingredient> ingredients, IItemHandler handler) {
-        return allMatch(ingredients, toList(handler));
-    }
-
     public static List<ItemStack> tryExtract(IItemHandler handler, int count, Ingredient ingredient, boolean strict, boolean simulate) {
         List<Integer> slots = findStackSlots(handler, ingredient);
         List<ItemStack> stacks = new ArrayList<>();
@@ -130,65 +85,37 @@ public class ItemUtils {
         return count <= 0;
     }
 
-    public static boolean areIngredientsEqual(Ingredient a, Ingredient b) {
-        if (!a.isVanilla() || !b.isVanilla()) {
-            return false;
-        }
-        List<TagKey<Item>> tagKeysA = new ArrayList<>();
-        List<TagKey<Item>> tagKeysB = new ArrayList<>();
-        List<ItemStack> itemsA = new ArrayList<>();
-        List<ItemStack> itemsB = new ArrayList<>();
-
-        for (Ingredient.Value value : a.values) {
-            if (value instanceof Ingredient.TagValue tagValue) {
-                tagKeysA.add(tagValue.tag);
-            } else if (value instanceof Ingredient.ItemValue itemValue) {
-                itemsA.add(itemValue.item);
-            } else {
-                return false;
-            }
+    public static boolean equals(Ingredient a, Ingredient b) {
+        if (a.isEmpty() || b.isEmpty()) {
+            return a.isEmpty() && b.isEmpty();
         }
 
-        for (Ingredient.Value value : b.values) {
-            if (value instanceof Ingredient.TagValue tagValue) {
-                tagKeysB.add(tagValue.tag);
-            } else if (value instanceof Ingredient.ItemValue itemValue) {
-                itemsB.add(itemValue.item);
-            } else {
-                return false;
-            }
-        }
-
-        if (tagKeysA.size() != tagKeysB.size() || itemsA.size() != itemsB.size()) {
+        if (a instanceof StrictNBTIngredient != b instanceof StrictNBTIngredient) {
             return false;
         }
 
-        for (TagKey<Item> keyA : tagKeysA) {
-            boolean matched = false;
-            for (TagKey<Item> keyB : tagKeysB) {
-                if (keyA.equals(keyB)) {
-                    matched = true;
+        if (a instanceof PartialNBTIngredient != b instanceof PartialNBTIngredient) {
+            return false;
+        }
+
+        ItemStack[] stacksA = a.getItems();
+        ItemStack[] stacksB = b.getItems();
+        if (stacksA.length != stacksB.length) {
+            return false;
+        }
+
+        boolean[] matchedB = new boolean[stacksB.length];
+        for (ItemStack stackA : stacksA) {
+            boolean found = false;
+            for (int i = 0; i < stacksB.length; i++) {
+                if (!matchedB[i] && ItemStack.isSameItemSameTags(stackA, stacksB[i])) {
+                    matchedB[i] = true;
+                    found = true;
                     break;
                 }
             }
-            if (!matched) {
-                return false;
-            }
+            if (!found) return false;
         }
-
-        for (ItemStack stackA : itemsA) {
-            boolean matched = false;
-            for (ItemStack stackB : itemsB) {
-                if (stackA.is(stackB.getItem())) {
-                    matched = true;
-                    break;
-                }
-            }
-            if (!matched) {
-                return false;
-            }
-        }
-
         return true;
     }
 }

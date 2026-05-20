@@ -7,7 +7,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
 import java.util.List;
 
-public class RestaurantMaidBrain implements IExtraMaidBrain {
+public class MaidBrain implements IExtraMaidBrain {
     @Override
     public List<MemoryModuleType<?>> getExtraMemoryTypes() {
         return Lists.newArrayList(

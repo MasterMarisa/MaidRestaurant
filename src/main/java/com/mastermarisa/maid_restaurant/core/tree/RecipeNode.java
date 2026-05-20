@@ -1,4 +1,4 @@
-package com.mastermarisa.maid_restaurant.core.recipe;
+package com.mastermarisa.maid_restaurant.core.tree;
 
 import com.google.gson.JsonElement;
 import net.minecraft.nbt.CompoundTag;
@@ -21,7 +21,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     private Ingredient output;
     private int outputCount;
     @Nullable
-    private CookStep combineStep;
+    private RecipeStep combineStep;
     private List<RecipeNode> children;
 
     public RecipeNode() {
@@ -31,7 +31,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         this.children = new ArrayList<>();
     }
 
-    public RecipeNode(Ingredient output, int outputCount, @Nullable CookStep combineStep) {
+    public RecipeNode(Ingredient output, int outputCount, @Nullable RecipeStep combineStep) {
         this.output = output;
         this.outputCount = outputCount;
         this.combineStep = combineStep != null ? combineStep.copy() : null;
@@ -47,7 +47,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     }
 
     @Nullable
-    public CookStep getCombineStep() {
+    public RecipeStep getCombineStep() {
         return combineStep;
     }
 
@@ -68,7 +68,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         this.outputCount = outputCount;
     }
 
-    public void setCombineStep(@Nullable CookStep step) {
+    public void setCombineStep(@Nullable RecipeStep step) {
         this.combineStep = step != null ? step.copy() : null;
     }
 
@@ -125,7 +125,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         }
 
         if (tag.contains(TAG_STEP)) {
-            combineStep = CookStep.fromNBT(tag.getCompound(TAG_STEP));
+            combineStep = RecipeStep.fromNBT(tag.getCompound(TAG_STEP));
         } else {
             combineStep = null;
         }

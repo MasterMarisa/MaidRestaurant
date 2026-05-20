@@ -1,6 +1,6 @@
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-package com.mastermarisa.maid_restaurant.client.gui.screen;
+package com.mastermarisa.maid_restaurant.uitls;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 

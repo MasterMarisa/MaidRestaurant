@@ -1,6 +1,5 @@
 package com.mastermarisa.maid_restaurant.item;
 
-import com.mastermarisa.maid_restaurant.client.gui.screen.CookingGuideEditScreen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -20,7 +19,7 @@ public class CookingGuideItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (level.isClientSide()) {
-            CookingGuideEditScreen.open(stack, hand);
+
         }
         return InteractionResultHolder.success(stack);
     }

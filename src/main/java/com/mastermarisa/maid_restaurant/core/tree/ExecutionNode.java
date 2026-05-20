@@ -1,4 +1,4 @@
-package com.mastermarisa.maid_restaurant.core.recipe;
+package com.mastermarisa.maid_restaurant.core.tree;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.Lists;
