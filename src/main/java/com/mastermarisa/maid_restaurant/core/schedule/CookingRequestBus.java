@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CookingDemandBus extends SavedData {
+public class CookingRequestBus extends SavedData {
     private static final String TAG_POOLS = "pools";
 
-    private ConcurrentHashMap<String, DemandPool> pools;
+    private ConcurrentHashMap<String, RequestPool> pools;
 
-    public CookingDemandBus() {
+    public CookingRequestBus() {
         pools = new ConcurrentHashMap<>();
     }
 
@@ -27,7 +27,7 @@ public class CookingDemandBus extends SavedData {
      * @param restaurantId 餐厅Id
      * @param demand 将入队的请求
      */
-    public void submit(String restaurantId, CookingDemand demand) {
+    public void submit(String restaurantId, CookingRequest demand) {
         getPool(restaurantId).submit(demand);
     }
 
@@ -39,7 +39,7 @@ public class CookingDemandBus extends SavedData {
      * @return 新认领的请求
      */
     @Nullable
-    public CookingDemand claim(String restaurantId, UUID maidUUID, long gameTime) {
+    public CookingRequest claim(String restaurantId, UUID maidUUID, long gameTime) {
         return getPool(restaurantId).claim(maidUUID, gameTime);
     }
 
@@ -51,7 +51,7 @@ public class CookingDemandBus extends SavedData {
      * @return 新认领的请求
      */
     @Nullable
-    public CookingDemand reclaim(String restaurantId, UUID maidUUID, long gameTime) {
+    public CookingRequest reclaim(String restaurantId, UUID maidUUID, long gameTime) {
         return getPool(restaurantId).reclaim(maidUUID, gameTime);
     }
 
@@ -80,12 +80,12 @@ public class CookingDemandBus extends SavedData {
      * @return 返还已认领的请求
      */
     @Nullable
-    public CookingDemand getClaimed(String restaurantId, UUID maidUUID) {
+    public CookingRequest getClaimed(String restaurantId, UUID maidUUID) {
         return getPool(restaurantId).getClaimed(maidUUID);
     }
 
-    private DemandPool getPool(String restaurantId) {
-        return pools.computeIfAbsent(restaurantId, DemandPool::new);
+    private RequestPool getPool(String restaurantId) {
+        return pools.computeIfAbsent(restaurantId, RequestPool::new);
     }
 
     @Override
@@ -98,39 +98,39 @@ public class CookingDemandBus extends SavedData {
         return tag;
     }
 
-    private static CookingDemandBus load(CompoundTag tag) {
-        CookingDemandBus bus = new CookingDemandBus();
+    private static CookingRequestBus load(CompoundTag tag) {
+        CookingRequestBus bus = new CookingRequestBus();
         if (tag.contains(TAG_POOLS)) {
             ListTag listTag = tag.getList(TAG_POOLS, Tag.TAG_COMPOUND);
             for (int i = 0; i < listTag.size(); i++) {
-                DemandPool pool = DemandPool.fromNBT(listTag.getCompound(i));
+                RequestPool pool = RequestPool.fromNBT(listTag.getCompound(i));
                 bus.pools.put(pool.restaurantId, pool);
             }
         }
         return bus;
     }
 
-    public static CookingDemandBus get(ServerLevel level) {
+    public static CookingRequestBus get(ServerLevel level) {
         return level.getDataStorage().computeIfAbsent(
-                CookingDemandBus::load,
-                CookingDemandBus::new,
+                CookingRequestBus::load,
+                CookingRequestBus::new,
                 "cooking_demand_bus"
         );
     }
 
-    private static class DemandPool implements INBTSerializable<CompoundTag> {
+    private static class RequestPool implements INBTSerializable<CompoundTag> {
         private static final String TAG_RESTAURANT_ID = "restaurant_id";
         private static final String TAG_ENTRIES = "entries";
 
         private String restaurantId;
-        private List<DemandEntry> entries;
+        private List<Entry> entries;
 
-        public DemandPool() {
+        public RequestPool() {
             this.restaurantId = "";
             this.entries = new LinkedList<>();
         }
 
-        public DemandPool(String restaurantId) {
+        public RequestPool(String restaurantId) {
             this.restaurantId = restaurantId;
             this.entries = new LinkedList<>();
         }
@@ -139,8 +139,8 @@ public class CookingDemandBus extends SavedData {
          * 入队一个请求
          * @param demand 将入队的请求
          */
-        public void submit(CookingDemand demand) {
-            entries.add(new DemandEntry(demand));
+        public void submit(CookingRequest demand) {
+            entries.add(new Entry(demand));
         }
 
         /**
@@ -150,8 +150,8 @@ public class CookingDemandBus extends SavedData {
          * @return 新认领的请求
          */
         @Nullable
-        public CookingDemand claim(UUID maidUUID, long gameTime) {
-            DemandEntry toClaim = null;
+        public CookingRequest claim(UUID maidUUID, long gameTime) {
+            Entry toClaim = null;
             for (var entry : entries) {
                 if (entry.claimedBy == null) {
                     toClaim = entry;
@@ -173,7 +173,7 @@ public class CookingDemandBus extends SavedData {
          * @return 新认领的请求
          */
         @Nullable
-        public CookingDemand reclaim(UUID maidUUID, long gameTime) {
+        public CookingRequest reclaim(UUID maidUUID, long gameTime) {
             int index = -1;
             for (int i = 0; i < entries.size(); i++) {
                 var entry = entries.get(i);
@@ -192,7 +192,7 @@ public class CookingDemandBus extends SavedData {
                 if (entry.claimedBy == null) {
                     entry.claimedBy = maidUUID;
                     entry.gameTime = gameTime;
-                    return entry.demand;
+                    return entry.request;
                 }
                 next = (next + 1) % entries.size();
                 attempts++;
@@ -219,7 +219,7 @@ public class CookingDemandBus extends SavedData {
          * @param maidUUID 女仆UUID
          */
         public void complete(UUID maidUUID) {
-            DemandEntry completed = null;
+            Entry completed = null;
             for (var entry : entries) {
                 if (entry.claimedBy != null && entry.claimedBy.equals(maidUUID)) {
                     completed = entry;
@@ -237,10 +237,10 @@ public class CookingDemandBus extends SavedData {
          * @return 返还已认领的请求
          */
         @Nullable
-        public CookingDemand getClaimed(UUID maidUUID) {
+        public CookingRequest getClaimed(UUID maidUUID) {
             for (var entry : entries) {
                 if (entry.claimedBy != null && entry.claimedBy.equals(maidUUID)) {
-                    return entry.demand;
+                    return entry.request;
                 }
             }
             return null;
@@ -267,37 +267,37 @@ public class CookingDemandBus extends SavedData {
                 ListTag listTag = tag.getList(TAG_ENTRIES, Tag.TAG_COMPOUND);
                 entries = new LinkedList<>();
                 for (int i = 0; i < listTag.size(); i++) {
-                    entries.add(DemandEntry.fromNBT(listTag.getCompound(i)));
+                    entries.add(Entry.fromNBT(listTag.getCompound(i)));
                 }
             }
         }
 
-        public static DemandPool fromNBT(CompoundTag tag) {
-            DemandPool pool = new DemandPool();
+        public static RequestPool fromNBT(CompoundTag tag) {
+            RequestPool pool = new RequestPool();
             pool.deserializeNBT(tag);
             return pool;
         }
 
-        private static class DemandEntry implements INBTSerializable<CompoundTag> {
-            private static final String TAG_DEMAND = "demand";
+        private static class Entry implements INBTSerializable<CompoundTag> {
+            private static final String TAG_REQUEST = "request";
             private static final String TAG_CLAIMED_BY = "claimed_by";
             private static final String TAG_GAME_TIME = "game_time";
 
-            private CookingDemand demand;
+            private CookingRequest request;
             @Nullable
             private UUID claimedBy;
             private long gameTime;
 
-            private DemandEntry() {}
+            private Entry() {}
 
-            public DemandEntry(CookingDemand demand) {
-                this.demand = demand;
+            public Entry(CookingRequest request) {
+                this.request = request;
             }
 
             @Override
             public CompoundTag serializeNBT() {
                 CompoundTag tag = new CompoundTag();
-                tag.put(TAG_DEMAND, demand.serializeNBT());
+                tag.put(TAG_REQUEST, request.serializeNBT());
                 if (claimedBy != null) {
                     tag.putUUID(TAG_CLAIMED_BY, claimedBy);
                 }
@@ -307,8 +307,8 @@ public class CookingDemandBus extends SavedData {
 
             @Override
             public void deserializeNBT(CompoundTag tag) {
-                if (tag.contains(TAG_DEMAND)) {
-                    this.demand = CookingDemand.fromNBT(tag.getCompound(TAG_DEMAND));
+                if (tag.contains(TAG_REQUEST)) {
+                    this.request = CookingRequest.fromNBT(tag.getCompound(TAG_REQUEST));
                 }
                 if (tag.contains(TAG_CLAIMED_BY)) {
                     this.claimedBy = tag.getUUID(TAG_CLAIMED_BY);
@@ -318,8 +318,8 @@ public class CookingDemandBus extends SavedData {
                 }
             }
 
-            public static DemandEntry fromNBT(CompoundTag tag) {
-                DemandEntry entry = new DemandEntry();
+            public static Entry fromNBT(CompoundTag tag) {
+                Entry entry = new Entry();
                 entry.deserializeNBT(tag);
                 return entry;
             }
