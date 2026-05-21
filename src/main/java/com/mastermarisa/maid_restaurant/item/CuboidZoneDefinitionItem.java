@@ -11,12 +11,10 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public class CuboidZoneDefinitionItem extends Item {
     private static final String TAG_ZONE = "zone";
@@ -72,14 +70,6 @@ public class CuboidZoneDefinitionItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         return InteractionResultHolder.pass(player.getItemInHand(hand));
-    }
-
-    @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level pLevel, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
-        CuboidZone zone = getZone(stack);
-        if (zone != null) {
-            tooltipComponents.add(Component.literal(zone.toString()));
-        }
     }
 
     @Nullable

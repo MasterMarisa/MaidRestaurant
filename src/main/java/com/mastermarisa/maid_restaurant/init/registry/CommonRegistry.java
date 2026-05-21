@@ -12,7 +12,7 @@ public class CommonRegistry {
     @SubscribeEvent
     public static void onBuildCreativeModeTabContents(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
-            event.accept(ModItems.COOKING_GUIDE.get());
+            event.accept(ModItems.CHEF_LICENSE.get());
             event.accept(ModItems.CUBOID_ZONE_DEFINITION.get());
             event.accept(ModItems.POINT_SET_ZONE_DEFINITION.get());
         }
