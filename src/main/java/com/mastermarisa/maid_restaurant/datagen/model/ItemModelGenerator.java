@@ -15,5 +15,6 @@ public class ItemModelGenerator extends ItemModelProvider {
     protected void registerModels() {
         basicItem(ModItems.COOKING_GUIDE.get());
         basicItem(ModItems.CUBOID_ZONE_DEFINITION.get());
+        basicItem(ModItems.POINT_SET_ZONE_DEFINITION.get());
     }
 }

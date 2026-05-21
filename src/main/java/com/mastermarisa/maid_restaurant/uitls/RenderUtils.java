@@ -1,4 +1,4 @@
-package com.mastermarisa.maid_restaurant.client.render;
+package com.mastermarisa.maid_restaurant.uitls;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -32,19 +32,16 @@ public class RenderUtils {
         Matrix4f matrix = poseStack.last().pose();
         Matrix3f normal = poseStack.last().normal();
 
-        // X-axis edges: yz at min/max combos, x from min to max
         renderFilledBox(consumer, matrix, normal, minX - t, maxX + t, minY - t, minY + t, minZ - t, minZ + t, r, g, b, a);
         renderFilledBox(consumer, matrix, normal, minX - t, maxX + t, minY - t, minY + t, maxZ - t, maxZ + t, r, g, b, a);
         renderFilledBox(consumer, matrix, normal, minX - t, maxX + t, maxY - t, maxY + t, minZ - t, minZ + t, r, g, b, a);
         renderFilledBox(consumer, matrix, normal, minX - t, maxX + t, maxY - t, maxY + t, maxZ - t, maxZ + t, r, g, b, a);
 
-        // Y-axis edges: xz at min/max combos, y from min to max
         renderFilledBox(consumer, matrix, normal, minX - t, minX + t, minY - t, maxY + t, minZ - t, minZ + t, r, g, b, a);
         renderFilledBox(consumer, matrix, normal, minX - t, minX + t, minY - t, maxY + t, maxZ - t, maxZ + t, r, g, b, a);
         renderFilledBox(consumer, matrix, normal, maxX - t, maxX + t, minY - t, maxY + t, minZ - t, minZ + t, r, g, b, a);
         renderFilledBox(consumer, matrix, normal, maxX - t, maxX + t, minY - t, maxY + t, maxZ - t, maxZ + t, r, g, b, a);
 
-        // Z-axis edges: xy at min/max combos, z from min to max
         renderFilledBox(consumer, matrix, normal, minX - t, minX + t, minY - t, minY + t, minZ - t, maxZ + t, r, g, b, a);
         renderFilledBox(consumer, matrix, normal, minX - t, minX + t, maxY - t, maxY + t, minZ - t, maxZ + t, r, g, b, a);
         renderFilledBox(consumer, matrix, normal, maxX - t, maxX + t, minY - t, minY + t, minZ - t, maxZ + t, r, g, b, a);

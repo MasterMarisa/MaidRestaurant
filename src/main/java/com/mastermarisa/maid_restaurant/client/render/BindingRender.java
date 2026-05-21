@@ -1,17 +1,15 @@
 package com.mastermarisa.maid_restaurant.client.render;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.uitls.ClientUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -23,7 +21,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = MaidRestaurant.MOD_ID)
 public class BindingRender {
     private static final ResourceLocation EMPTY_TEXTURE = MaidRestaurant.resourceLocation("textures/white.png");
-    private static BlockPos hoveredBlock = null;
+    private static BlockPos targetedBlockCache = null;
 
     @SubscribeEvent
     public static void onRender(RenderLevelStageEvent event) {
@@ -39,18 +37,13 @@ public class BindingRender {
             VertexConsumer consumer = bufferSource.getBuffer(RenderType.entitySolid(EMPTY_TEXTURE));
             Vec3 position = event.getCamera().getPosition().reverse();
 
-            HitResult hitResult = mc.hitResult;
-            if (hitResult != null && hitResult.getType().equals(HitResult.Type.BLOCK) && hitResult instanceof BlockHitResult hit) {
-                hoveredBlock = hit.getBlockPos();
-                Direction direction = hit.getDirection();
-                if (direction == Direction.UP || direction == Direction.DOWN) {
-                    hoveredBlock = hoveredBlock.relative(direction);
-                }
+            BlockPos targetedBlock = ClientUtils.getTargetedBlock();
+            if (targetedBlock != null) {
+                targetedBlockCache = targetedBlock;
             }
 
-            CuboidZoneRenderer.renderCuboidZoneSelection(poseStack, consumer, position, hoveredBlock);
+            CuboidZoneRenderer.render(poseStack, consumer, position, targetedBlockCache);
+            PointSetZoneRenderer.render(poseStack, consumer, position, targetedBlockCache);
         }
     }
-
-
 }

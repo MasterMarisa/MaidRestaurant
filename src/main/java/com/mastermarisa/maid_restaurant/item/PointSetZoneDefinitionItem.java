@@ -2,8 +2,8 @@ package com.mastermarisa.maid_restaurant.item;
 
 import com.mastermarisa.maid_restaurant.core.zone.PointSetZone;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -27,18 +27,29 @@ public class PointSetZoneDefinitionItem extends Item {
         Level level = context.getLevel();
         Player player = context.getPlayer();
         if (player == null) return InteractionResult.FAIL;
+        if (context.getHand() != InteractionHand.MAIN_HAND) return InteractionResult.FAIL;
 
         ItemStack stack = context.getItemInHand();
         BlockPos pos = context.getClickedPos();
+        Direction direction = context.getClickedFace();
+        if (direction == Direction.UP || direction == Direction.DOWN) {
+            pos = pos.relative(direction);
+        }
 
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
 
-        PointSetZone zone = new PointSetZone();
-        zone.add(pos);
+        PointSetZone zone = getZone(stack);
+        if (zone == null) {
+            zone = new PointSetZone();
+        }
+        if (zone.contains(pos)) {
+            zone.remove(pos);
+        } else {
+            zone.add(pos);
+        }
         setZone(stack, zone);
-        player.sendSystemMessage(Component.literal("位置已添加:" + pos.toShortString()));
         return InteractionResult.SUCCESS;
     }
 

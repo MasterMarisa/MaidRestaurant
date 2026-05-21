@@ -31,6 +31,7 @@ public class CuboidZoneDefinitionItem extends Item {
         Level level = context.getLevel();
         Player player = context.getPlayer();
         if (player == null) return InteractionResult.FAIL;
+        if (context.getHand() != InteractionHand.MAIN_HAND) return InteractionResult.FAIL;
 
         ItemStack stack = context.getItemInHand();
         BlockPos pos = context.getClickedPos();
