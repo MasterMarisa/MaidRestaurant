@@ -2,6 +2,7 @@ package com.mastermarisa.maid_restaurant.item;
 
 import com.mastermarisa.maid_restaurant.core.zone.CuboidZone;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -33,6 +34,10 @@ public class CuboidZoneDefinitionItem extends Item {
 
         ItemStack stack = context.getItemInHand();
         BlockPos pos = context.getClickedPos();
+        Direction direction = context.getClickedFace();
+        if (direction == Direction.UP || direction == Direction.DOWN) {
+            pos = pos.relative(direction);
+        }
 
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
@@ -41,13 +46,12 @@ public class CuboidZoneDefinitionItem extends Item {
         BlockPos tempVertex = getTempVertex(stack);
         if (tempVertex == null) {
             setTempVertex(stack, pos);
-            player.sendSystemMessage(Component.literal("§a已选中" + pos.toShortString()));
             return InteractionResult.SUCCESS;
         }
 
         if (tempVertex.equals(pos)) {
             clearTempVertex(stack);
-            player.sendSystemMessage(Component.literal("§c无效区域!"));
+            player.sendSystemMessage(Component.literal("§c顶点重叠!"));
             return InteractionResult.SUCCESS;
         }
 
@@ -60,9 +64,9 @@ public class CuboidZoneDefinitionItem extends Item {
         CuboidZone zone = new CuboidZone(tempVertex, pos);
         setZone(stack, zone);
         clearTempVertex(stack);
-        player.sendSystemMessage(Component.literal("§a区域已保存: " + zone));
         return InteractionResult.SUCCESS;
     }
+
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
@@ -92,7 +96,7 @@ public class CuboidZoneDefinitionItem extends Item {
     }
 
     @Nullable
-    private static BlockPos getTempVertex(ItemStack itemStack) {
+    public static BlockPos getTempVertex(ItemStack itemStack) {
         CompoundTag tag = itemStack.getOrCreateTag();
         if (tag.contains(TAG_TEMP_VERTEX)) {
             return BlockPos.of(tag.getLong(TAG_TEMP_VERTEX));

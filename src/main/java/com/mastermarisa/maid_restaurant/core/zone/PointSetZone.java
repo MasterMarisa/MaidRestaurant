@@ -6,16 +6,16 @@ import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 public class PointSetZone extends AbstractZone implements INBTSerializable<CompoundTag> {
     private static final String TAG_POINTS = "points";
 
-    private final List<BlockPos> points;
+    private final Set<BlockPos> points;
 
     public PointSetZone() {
-        this.points = new LinkedList<>();
+        this.points = new ConcurrentSkipListSet<>();
     }
 
     public void add(BlockPos pos) {
