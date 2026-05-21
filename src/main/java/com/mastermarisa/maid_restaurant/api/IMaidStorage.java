@@ -1,6 +1,6 @@
 package com.mastermarisa.maid_restaurant.api;
 
-import com.mastermarisa.maid_restaurant.core.zone.Zone;
+import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -24,19 +24,12 @@ public interface IMaidStorage {
     int count(Level level, BlockPos pos, Ingredient ingredient);
 
     @Nullable
-    default BlockPos searchContaining(ServerLevel level, Zone zone, Ingredient ingredient, int minAmount) {
-        if (!zone.isValid()) return null;
-        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
-        for (int x = zone.getMin().getX(); x <= zone.getMax().getX(); x++) {
-            for (int y = zone.getMin().getY(); y <= zone.getMax().getY(); y++) {
-                for (int z = zone.getMin().getZ(); z <= zone.getMax().getZ(); z++) {
-                    mutable.set(x, y, z);
-                    if (isValid(level, mutable)) {
-                        int count = count(level, mutable, ingredient);
-                        if (count >= minAmount) {
-                            return mutable.immutable();
-                        }
-                    }
+    default BlockPos searchContaining(ServerLevel level, AbstractZone zone, Ingredient ingredient, int minAmount) {
+        for (BlockPos pos : zone) {
+            if (isValid(level, pos)) {
+                int count = count(level, pos, ingredient);
+                if (count >= minAmount) {
+                    return pos;
                 }
             }
         }

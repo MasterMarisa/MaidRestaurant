@@ -13,6 +13,7 @@ public class CommonRegistry {
     public static void onBuildCreativeModeTabContents(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ModItems.COOKING_GUIDE.get());
+            event.accept(ModItems.CUBOID_ZONE_DEFINITION.get());
         }
     }
 }

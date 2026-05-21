@@ -5,7 +5,7 @@ import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
-import com.mastermarisa.maid_restaurant.core.zone.Zone;
+import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.core.BlockPos;
@@ -45,21 +45,11 @@ public class CraftingTableCapability implements ICookCapability {
 
     @Override
     @Nullable
-    public BlockPos searchWorkBlock(ServerLevel level, Zone zone, EntityMaid maid) {
-        if (!zone.isValid()) {
-            return null;
-        }
+    public BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
         List<BlockPos> found = new ArrayList<>();
-        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
-        for (int x = zone.getMin().getX(); x <= zone.getMax().getX(); x++) {
-            for (int y = zone.getMin().getY(); y <= zone.getMax().getY(); y++) {
-                for (int z = zone.getMin().getZ(); z <= zone.getMax().getZ(); z++) {
-                    mutable.set(x, y, z);
-                    if (level.getBlockState(mutable).is(Blocks.CRAFTING_TABLE)
-                            && !BlockUsageUtils.isUsed(mutable)) {
-                        found.add(mutable.immutable());
-                    }
-                }
+        for (BlockPos pos : zone) {
+            if (level.getBlockState(pos).is(Blocks.CRAFTING_TABLE) && !BlockUsageUtils.isUsed(pos)) {
+                found.add(pos);
             }
         }
         if (found.isEmpty()) {

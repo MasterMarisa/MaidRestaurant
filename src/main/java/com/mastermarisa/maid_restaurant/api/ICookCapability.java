@@ -3,7 +3,7 @@ package com.mastermarisa.maid_restaurant.api;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.core.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
-import com.mastermarisa.maid_restaurant.core.zone.Zone;
+import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -22,7 +22,7 @@ public interface ICookCapability {
     RecipeType<?> getRecipeType();
 
     @Nullable
-    BlockPos searchWorkBlock(ServerLevel level, Zone zone, EntityMaid maid);
+    BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid);
 
     boolean isValidWorkBlock(ServerLevel level, BlockPos pos);
 

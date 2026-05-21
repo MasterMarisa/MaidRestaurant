@@ -14,5 +14,6 @@ public class ItemModelGenerator extends ItemModelProvider {
     @Override
     protected void registerModels() {
         basicItem(ModItems.COOKING_GUIDE.get());
+        basicItem(ModItems.CUBOID_ZONE_DEFINITION.get());
     }
 }
