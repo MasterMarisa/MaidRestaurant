@@ -56,6 +56,13 @@ public class ItemUtils {
         return count;
     }
 
+    public static boolean contains(IItemHandler handler, Ingredient ingredient, int count) {
+        if (count == 1) {
+            return isStackIn(handler, ingredient);
+        }
+        return count(handler, ingredient) >= count;
+    }
+
     public static List<ItemStack> tryExtract(IItemHandler handler, int count, Ingredient ingredient, boolean strict, boolean simulate) {
         List<Integer> slots = findStackSlots(handler, ingredient);
         List<ItemStack> stacks = new ArrayList<>();

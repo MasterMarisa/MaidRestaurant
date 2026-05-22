@@ -187,52 +187,41 @@ public class CookingRequestBus extends SavedData {
          */
         @Nullable
         public CookingRequest claim(EntityMaid maid, long gameTime) {
-            Entry toClaim = null;
+            int index = findEntryIndex(maid);
+            if (index != -1) return null;
             for (var entry : entries) {
                 if (entry.claimedBy == null) {
-                    if (toClaim == null) {
-                        toClaim = entry;
-                    }
-                } else if (entry.claimedBy.equals(maid.getUUID())) {
-                    return null;
+                    entry.claimedBy = maid.getUUID();
+                    entry.gameTime = gameTime;
+                    return entry.request;
                 }
-            }
-            if (toClaim != null) {
-                toClaim.claimedBy = maid.getUUID();
-                toClaim.gameTime = gameTime;
-                return toClaim.request;
             }
             return null;
         }
 
         /**
          * 释放当前认领的请求,并尝试从请求池重新认领另一个请求
+         * @param level 所在Level
          * @param maid 女仆
-         * @param gameTime 时间戳
          * @return 新认领的请求
          */
         @Nullable
-        public CookingRequest reclaim(EntityMaid maid, long gameTime) {
-            int index = -1;
-            for (int i = 0; i < entries.size(); i++) {
-                var entry = entries.get(i);
-                if (entry.claimedBy != null && entry.claimedBy.equals(maid.getUUID())) {
-                    entry.release();
-                    index = i;
-                    break;
-                }
+        public CookingRequest reclaim(ServerLevel level, EntityMaid maid) {
+            int index = findEntryIndex(maid);
+            if (index != -1) {
+                entries.get(index).release();
             }
-
-            int next = (index + 1) % entries.size();
+            index = (index + 1) % entries.size();
             int attempts = 0;
             while (attempts < entries.size()) {
-                var entry = entries.get(next);
+                Entry entry = entries.get(index);
                 if (entry.claimedBy == null) {
                     entry.claimedBy = maid.getUUID();
-                    entry.gameTime = gameTime;
+//                    entry.gameTime = gameTime;
+//                    entry.request.getRoot().verifyAndUpdateState();
                     return entry.request;
                 }
-                next = (next + 1) % entries.size();
+                index = (index + 1) % entries.size();
                 attempts++;
             }
             return null;
@@ -243,11 +232,10 @@ public class CookingRequestBus extends SavedData {
          * @param maid 女仆
          */
         public boolean release(EntityMaid maid) {
-            for (var entry : entries) {
-                if (entry.claimedBy != null && entry.claimedBy.equals(maid.getUUID())) {
-                    entry.release();
-                    return true;
-                }
+            int index = findEntryIndex(maid);
+            if (index != -1) {
+                entries.get(index).release();
+                return true;
             }
             return false;
         }
@@ -308,6 +296,16 @@ public class CookingRequestBus extends SavedData {
             }
         }
 
+        private int findEntryIndex(EntityMaid maid) {
+            for (int i = 0; i < entries.size(); i++) {
+                Entry entry = entries.get(i);
+                if (entry.claimedBy != null && entry.claimedBy.equals(maid.getUUID())) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
         @Override
         public CompoundTag serializeNBT() {
             CompoundTag tag = new CompoundTag();
@@ -340,10 +338,6 @@ public class CookingRequestBus extends SavedData {
             return pool;
         }
 
-
-
-
-
         private static class Entry implements INBTSerializable<CompoundTag> {
             private static final String TAG_REQUEST = "request";
             private static final String TAG_CLAIMED_BY = "claimed_by";
@@ -358,6 +352,10 @@ public class CookingRequestBus extends SavedData {
 
             public Entry(CookingRequest request) {
                 this.request = request;
+            }
+
+            public void claim(ServerLevel level, EntityMaid maid) {
+
             }
 
             public void release() {

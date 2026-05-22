@@ -1,11 +1,8 @@
 package com.mastermarisa.maid_restaurant.core.tree;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.google.common.collect.Lists;
-import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -64,21 +61,15 @@ public class ExecutionNode {
     }
 
     /**
-     * 自推导自身及子树状态
+     * 根据子节点自推导自身状态
      */
     public void computeState() {
-        //如果 node 是叶节点，则保持当前状态（由外部设置）
+        //如果为叶节点,则保持当前状态
         if (isLeaf()) {
             return;
         }
 
-        // 先递归 computeState 所有子节点
-        for (ExecutionNode child : children) {
-            child.computeState();
-        }
-
         boolean allChildrenDone = true;
-
         for (ExecutionNode child : children) {
             if (child.state != NodeState.DONE) {
                 allChildrenDone = false;
@@ -86,115 +77,69 @@ public class ExecutionNode {
             }
         }
 
-        // 如果所有子节点 == DONE 且 本节点非 EXECUTING & DONE → 本节点 = READY
+        // 如果所有子节点都已完成且本节点非 EXECUTING & DONE → 本节点转为 READY
         if (allChildrenDone) {
             if (state != NodeState.EXECUTING && state != NodeState.DONE) {
                 state = NodeState.READY;
             }
         } else {
-            // 如果任何子节点 != DONE → 本节点 = WAITING
+            // 如果任何子节点未完成,则继续等待
             state = NodeState.WAITING;
         }
     }
 
     /**
-     * 验证前置条件并在不符合时回退自身及子树状态
-     * @param level 所处Level
+     * 验证并更新自身及子树状态
      * @param maid 女仆实体
      */
-    public void verifyAndRollback(ServerLevel level, EntityMaid maid) {
-        if (isLeaf()) {
-            Ingredient ingredient = recipeNode.getOutput();
-            boolean containing = ItemUtils.count(maid.getAvailableInv(false), ingredient) >= recipeNode.getOutputCount();
-            if (!containing) {
-                state = NodeState.NEED_MATERIALS;
-            }
-            return;
-        }
+    public void verifyAndUpdateState(EntityMaid maid) {
+        IItemHandler handler = maid.getAvailableInv(false);
+        boolean containing = ItemUtils.contains(handler, recipeNode.getOutput(), recipeNode.getOutputCount());
 
-        List<ExecutionNode> unreadyChildren = Lists.newArrayList();
-        if (!isReadyForExecution(level, maid, unreadyChildren)) {
+        if (isLeaf()) {
+            state = containing ? NodeState.DONE : NodeState.NEED_MATERIALS;
+        } else if (containing) {
+            // 只要自身满足条件,就不再关心子树状态,并将子树所有节点状态覆盖为 DONE
+            state = NodeState.DONE;
+            setSubtreeState(NodeState.DONE);
+        } else {
+            // 否则临时设为 WAITING,等待子树更新状态后重新推导
             state = NodeState.WAITING;
-            for (var child : unreadyChildren) {
-                child.verifyAndRollback(level, maid);
+            for (ExecutionNode child : children) {
+                child.verifyAndUpdateState(maid);
             }
+            computeState();
         }
     }
 
     /**
-     * @param level 所处Level
-     * @param maid 女仆实体
-     * @param unreadyChildren 函数会将未满足需求的子节点存入该List
-     * @return 深一层节点需求是否全部完成
+     * 将子树中的所有节点设置为目标状态
+     * @param state 目标状态
      */
-    public boolean isReadyForExecution(ServerLevel level, EntityMaid maid, List<ExecutionNode> unreadyChildren) {
-        boolean allChildrenDone = true;
-        for (var child : children) {
-            Ingredient ingredient = child.recipeNode.getOutput();
-            boolean containing = ItemUtils.count(maid.getAvailableInv(false), ingredient) >= child.recipeNode.getOutputCount();
-            if (!containing) {
-                allChildrenDone = false;
-                unreadyChildren.add(child);
-            }
+    public void setSubtreeState(NodeState state) {
+        for (ExecutionNode child : children) {
+            child.setState(state);
+            child.setSubtreeState(state);
         }
-        return allChildrenDone;
     }
 
     /**
-     * @return 树中任意一个状态为 NEED_MATERIALS 的叶节点
+     * 自顶向下搜索对应状态的节点
+     * @param state 目标状态
+     * @return 找到的节点
      */
     @Nullable
-    public ExecutionNode findNeedMaterialNode() {
-        MaidRestaurant.LOGGER.debug("State:" + state.name());
-        if (isLeaf()) {
-            return state == NodeState.NEED_MATERIALS ? this : null;
-        }
-
-        for (var child : children) {
-            ExecutionNode found = child.findNeedMaterialNode();
-            if (found != null) {
-                return found;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @return 树中任意一个状态为 READY 的节点
-     */
-    @Nullable
-    public ExecutionNode findReadyNode() {
-        if (state == NodeState.READY) {
+    public ExecutionNode findNode(NodeState state) {
+        if (this.state == state) {
             return this;
         }
 
-        for (var child : children) {
-            ExecutionNode found = child.findReadyNode();
+        for (ExecutionNode child : children) {
+            ExecutionNode found = child.findNode(state);
             if (found != null) {
                 return found;
             }
         }
-
-        return null;
-    }
-
-    /**
-     * @return 树中任意一个状态为 EXECUTING 的节点
-     */
-    @Nullable
-    public ExecutionNode findExecutingNode() {
-        if (state == NodeState.EXECUTING) {
-            return this;
-        }
-
-        for (var child : children) {
-            ExecutionNode found = child.findExecutingNode();
-            if (found != null) {
-                return found;
-            }
-        }
-
         return null;
     }
 }

@@ -3,7 +3,6 @@ package com.mastermarisa.maid_restaurant.core.schedule;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
-import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
@@ -94,50 +93,5 @@ public class ChefScheduler {
         String id = ChefLicenseItem.getRestaurantId(license);
         CookingRequestBus bus = CookingRequestBus.get(level);
         return bus.reclaim(id, maid, level.getGameTime());
-    }
-
-    /**
-     * 尝试在当前上下文中搜索状态为 NEED_MATERIAL 的叶节点
-     * @param level 所在Level
-     * @param maid 女仆实体
-     * @return 状态为 NEED_MATERIAL 的叶节点
-     */
-    @Nullable
-    public static ExecutionNode findNeedMaterialNode(ServerLevel level, EntityMaid maid) {
-        CookingRequest request = getOrClaimRequest(level, maid);
-        if (request != null) {
-            return request.getRoot().findNeedMaterialNode();
-        }
-        return null;
-    }
-
-    /**
-     * 尝试在当前上下文中搜索状态为 READY 的节点
-     * @param level 所在Level
-     * @param maid 女仆实体
-     * @return 状态为 READY 的节点
-     */
-    @Nullable
-    public static ExecutionNode findReadyNode(ServerLevel level, EntityMaid maid) {
-        CookingRequest request = getOrClaimRequest(level, maid);
-        if (request != null) {
-            return request.getRoot().findReadyNode();
-        }
-        return null;
-    }
-
-    /**
-     * 尝试在当前上下文中搜索状态为 EXECUTING 的节点
-     * @param level 所在Level
-     * @param maid 女仆实体
-     * @return 状态为 EXECUTING 的节点
-     */
-    @Nullable
-    public static ExecutionNode findExecutingNode(ServerLevel level, EntityMaid maid) {
-        CookingRequest request = getOrClaimRequest(level, maid);
-        if (request != null) {
-            return request.getRoot().findExecutingNode();
-        }
-        return null;
     }
 }
