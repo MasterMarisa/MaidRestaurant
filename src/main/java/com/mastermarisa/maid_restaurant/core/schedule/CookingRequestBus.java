@@ -1,5 +1,6 @@
 package com.mastermarisa.maid_restaurant.core.schedule;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -34,54 +35,54 @@ public class CookingRequestBus extends SavedData {
     /**
      * 从请求池认领一个请求,若有已认领的请求则不做处理
      * @param restaurantId 餐厅Id
-     * @param maidUUID 女仆的UUID
+     * @param maid 女仆的
      * @param gameTime 时间戳
      * @return 新认领的请求
      */
     @Nullable
-    public CookingRequest claim(String restaurantId, UUID maidUUID, long gameTime) {
-        return getPool(restaurantId).claim(maidUUID, gameTime);
+    public CookingRequest claim(String restaurantId, EntityMaid maid, long gameTime) {
+        return getPool(restaurantId).claim(maid, gameTime);
     }
 
     /**
      * 释放当前认领的请求,并尝试从请求池重新认领另一个请求
      * @param restaurantId 餐厅Id
-     * @param maidUUID 女仆UUID
+     * @param maid 女仆
      * @param gameTime 时间戳
      * @return 新认领的请求
      */
     @Nullable
-    public CookingRequest reclaim(String restaurantId, UUID maidUUID, long gameTime) {
-        return getPool(restaurantId).reclaim(maidUUID, gameTime);
+    public CookingRequest reclaim(String restaurantId, EntityMaid maid, long gameTime) {
+        return getPool(restaurantId).reclaim(maid, gameTime);
     }
 
     /**
      * 释放女仆已认领的请求
      * @param restaurantId 餐厅Id
-     * @param maidUUID 女仆UUID
+     * @param maid 女仆
      */
-    public void release(String restaurantId, UUID maidUUID) {
-        getPool(restaurantId).release(maidUUID);
+    public void release(String restaurantId, EntityMaid maid) {
+        getPool(restaurantId).release(maid);
     }
 
     /**
      * 出队一个已完成的请求
      * @param restaurantId 餐厅Id
-     * @param maidUUID 女仆UUID
+     * @param maid 女仆
      */
-    public void complete(String restaurantId, UUID maidUUID) {
-        getPool(restaurantId).complete(maidUUID);
+    public void complete(String restaurantId, EntityMaid maid) {
+        getPool(restaurantId).complete(maid);
     }
 
     /**
      * 获取女仆已认领的请求
      * @param restaurantId 餐厅Id
-     * @param maidUUID 女仆UUID
+     * @param maid 女仆
      * @return 返还已认领的请求
      */
     @Nullable
-    public CookingRequest getClaimed(String restaurantId, UUID maidUUID) {
-        return getPool(restaurantId).getClaimed(maidUUID);
+    public CookingRequest getClaimed(String restaurantId, EntityMaid maid) {
+        return getPool(restaurantId).getClaimed(maid);
     }
 
     private RequestPool getPool(String restaurantId) {
@@ -145,22 +146,22 @@ public class CookingRequestBus extends SavedData {
 
         /**
          * 从请求池认领一个请求,若有已认领的请求则不做处理
-         * @param maidUUID 女仆的UUID
+         * @param maid 女仆
          * @param gameTime 时间戳
          * @return 新认领的请求
          */
         @Nullable
-        public CookingRequest claim(UUID maidUUID, long gameTime) {
+        public CookingRequest claim(EntityMaid maid, long gameTime) {
             Entry toClaim = null;
             for (var entry : entries) {
                 if (entry.claimedBy == null) {
                     toClaim = entry;
-                } else if (entry.claimedBy.equals(maidUUID)) {
+                } else if (entry.claimedBy.equals(maid.getUUID())) {
                     return null;
                 }
             }
             if (toClaim != null) {
-                toClaim.claimedBy = maidUUID;
+                toClaim.claimedBy = maid.getUUID();
                 toClaim.gameTime = gameTime;
             }
             return null;
@@ -168,16 +169,16 @@ public class CookingRequestBus extends SavedData {
 
         /**
          * 释放当前认领的请求,并尝试从请求池重新认领另一个请求
-         * @param maidUUID 女仆UUID
+         * @param maid 女仆
          * @param gameTime 时间戳
          * @return 新认领的请求
          */
         @Nullable
-        public CookingRequest reclaim(UUID maidUUID, long gameTime) {
+        public CookingRequest reclaim(EntityMaid maid, long gameTime) {
             int index = -1;
             for (int i = 0; i < entries.size(); i++) {
                 var entry = entries.get(i);
-                if (entry.claimedBy != null && entry.claimedBy.equals(maidUUID)) {
+                if (entry.claimedBy != null && entry.claimedBy.equals(maid.getUUID())) {
                     entry.claimedBy = null;
                     entry.gameTime = 0;
                     index = i;
@@ -190,7 +191,7 @@ public class CookingRequestBus extends SavedData {
             while (attempts < entries.size()) {
                 var entry = entries.get(next);
                 if (entry.claimedBy == null) {
-                    entry.claimedBy = maidUUID;
+                    entry.claimedBy = maid.getUUID();
                     entry.gameTime = gameTime;
                     return entry.request;
                 }
@@ -202,11 +203,11 @@ public class CookingRequestBus extends SavedData {
 
         /**
          * 释放女仆已认领的请求
-         * @param maidUUID 女仆UUID
+         * @param maid 女仆
          */
-        public void release(UUID maidUUID) {
+        public void release(EntityMaid maid) {
             for (var entry : entries) {
-                if (entry.claimedBy != null && entry.claimedBy.equals(maidUUID)) {
+                if (entry.claimedBy != null && entry.claimedBy.equals(maid.getUUID())) {
                     entry.claimedBy = null;
                     entry.gameTime = 0;
                     break;
@@ -216,12 +217,12 @@ public class CookingRequestBus extends SavedData {
 
         /**
          * 出队一个已完成的请求
-         * @param maidUUID 女仆UUID
+         * @param maid 女仆
          */
-        public void complete(UUID maidUUID) {
+        public void complete(EntityMaid maid) {
             Entry completed = null;
             for (var entry : entries) {
-                if (entry.claimedBy != null && entry.claimedBy.equals(maidUUID)) {
+                if (entry.claimedBy != null && entry.claimedBy.equals(maid.getUUID())) {
                     completed = entry;
                     break;
                 }
@@ -233,13 +234,13 @@ public class CookingRequestBus extends SavedData {
 
         /**
          * 获取女仆已认领的请求
-         * @param maidUUID 女仆UUID
+         * @param maid 女仆
          * @return 返还已认领的请求
          */
         @Nullable
-        public CookingRequest getClaimed(UUID maidUUID) {
+        public CookingRequest getClaimed(EntityMaid maid) {
             for (var entry : entries) {
-                if (entry.claimedBy != null && entry.claimedBy.equals(maidUUID)) {
+                if (entry.claimedBy != null && entry.claimedBy.equals(maid.getUUID())) {
                     return entry.request;
                 }
             }
@@ -322,6 +323,29 @@ public class CookingRequestBus extends SavedData {
                 Entry entry = new Entry();
                 entry.deserializeNBT(tag);
                 return entry;
+            }
+        }
+    }
+
+    public static class Token implements INBTSerializable<CompoundTag> {
+        private static final String TAG_RESTAURANT_ID = "restaurant_id";
+        public String restaurantId;
+
+        public Token(String restaurantId) {
+            this.restaurantId = restaurantId;
+        }
+
+        @Override
+        public CompoundTag serializeNBT() {
+            CompoundTag tag = new CompoundTag();
+            tag.putString(TAG_RESTAURANT_ID, restaurantId);
+            return tag;
+        }
+
+        @Override
+        public void deserializeNBT(CompoundTag tag) {
+            if (tag.contains(TAG_RESTAURANT_ID)) {
+                restaurantId = tag.getString(TAG_RESTAURANT_ID);
             }
         }
     }
