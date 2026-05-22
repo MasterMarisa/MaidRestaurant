@@ -1,12 +1,19 @@
 package com.mastermarisa.maid_restaurant.core.schedule;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 import java.util.LinkedList;
@@ -14,10 +21,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Mod.EventBusSubscriber(modid = MaidRestaurant.MOD_ID)
 public class CookingRequestBus extends SavedData {
     private static final String TAG_POOLS = "pools";
 
-    private ConcurrentHashMap<String, RequestPool> pools;
+    private final ConcurrentHashMap<String, RequestPool> pools;
 
     public CookingRequestBus() {
         pools = new ConcurrentHashMap<>();
@@ -30,6 +38,7 @@ public class CookingRequestBus extends SavedData {
      */
     public void submit(String restaurantId, CookingRequest demand) {
         getPool(restaurantId).submit(demand);
+        setDirty();
     }
 
     /**
@@ -41,7 +50,11 @@ public class CookingRequestBus extends SavedData {
      */
     @Nullable
     public CookingRequest claim(String restaurantId, EntityMaid maid, long gameTime) {
-        return getPool(restaurantId).claim(maid, gameTime);
+        CookingRequest request = getPool(restaurantId).claim(maid, gameTime);
+        if (request != null) {
+            setDirty();
+        }
+        return request;
     }
 
     /**
@@ -53,7 +66,9 @@ public class CookingRequestBus extends SavedData {
      */
     @Nullable
     public CookingRequest reclaim(String restaurantId, EntityMaid maid, long gameTime) {
-        return getPool(restaurantId).reclaim(maid, gameTime);
+        CookingRequest request = getPool(restaurantId).reclaim(maid, gameTime);
+        setDirty();
+        return request;
     }
 
     /**
@@ -62,7 +77,9 @@ public class CookingRequestBus extends SavedData {
      * @param maid 女仆
      */
     public void release(String restaurantId, EntityMaid maid) {
-        getPool(restaurantId).release(maid);
+        if (getPool(restaurantId).release(maid)) {
+            setDirty();
+        }
     }
 
     /**
@@ -71,7 +88,9 @@ public class CookingRequestBus extends SavedData {
      * @param maid 女仆
      */
     public void complete(String restaurantId, EntityMaid maid) {
-        getPool(restaurantId).complete(maid);
+        if (getPool(restaurantId).complete(maid)) {
+            setDirty();
+        }
     }
 
     /**
@@ -119,6 +138,22 @@ public class CookingRequestBus extends SavedData {
         );
     }
 
+    @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
+        MinecraftServer server = event.getServer();
+        for (ServerLevel level : server.getAllLevels()) {
+            long gameTime = level.getGameTime();
+            // 每15秒检测一次合法性,取最近的质数减少并发
+            if (gameTime % 293 == 0) {
+                for (var pool : CookingRequestBus.get(level).pools.values()) {
+                    pool.validate(level);
+                }
+            }
+        }
+    }
+
+
+
     private static class RequestPool implements INBTSerializable<CompoundTag> {
         private static final String TAG_RESTAURANT_ID = "restaurant_id";
         private static final String TAG_ENTRIES = "entries";
@@ -155,7 +190,9 @@ public class CookingRequestBus extends SavedData {
             Entry toClaim = null;
             for (var entry : entries) {
                 if (entry.claimedBy == null) {
-                    toClaim = entry;
+                    if (toClaim == null) {
+                        toClaim = entry;
+                    }
                 } else if (entry.claimedBy.equals(maid.getUUID())) {
                     return null;
                 }
@@ -163,6 +200,7 @@ public class CookingRequestBus extends SavedData {
             if (toClaim != null) {
                 toClaim.claimedBy = maid.getUUID();
                 toClaim.gameTime = gameTime;
+                return toClaim.request;
             }
             return null;
         }
@@ -179,8 +217,7 @@ public class CookingRequestBus extends SavedData {
             for (int i = 0; i < entries.size(); i++) {
                 var entry = entries.get(i);
                 if (entry.claimedBy != null && entry.claimedBy.equals(maid.getUUID())) {
-                    entry.claimedBy = null;
-                    entry.gameTime = 0;
+                    entry.release();
                     index = i;
                     break;
                 }
@@ -205,21 +242,21 @@ public class CookingRequestBus extends SavedData {
          * 释放女仆已认领的请求
          * @param maid 女仆
          */
-        public void release(EntityMaid maid) {
+        public boolean release(EntityMaid maid) {
             for (var entry : entries) {
                 if (entry.claimedBy != null && entry.claimedBy.equals(maid.getUUID())) {
-                    entry.claimedBy = null;
-                    entry.gameTime = 0;
-                    break;
+                    entry.release();
+                    return true;
                 }
             }
+            return false;
         }
 
         /**
          * 出队一个已完成的请求
          * @param maid 女仆
          */
-        public void complete(EntityMaid maid) {
+        public boolean complete(EntityMaid maid) {
             Entry completed = null;
             for (var entry : entries) {
                 if (entry.claimedBy != null && entry.claimedBy.equals(maid.getUUID())) {
@@ -229,7 +266,9 @@ public class CookingRequestBus extends SavedData {
             }
             if (completed != null) {
                 entries.remove(completed);
+                return true;
             }
+            return false;
         }
 
         /**
@@ -245,6 +284,28 @@ public class CookingRequestBus extends SavedData {
                 }
             }
             return null;
+        }
+
+        /**
+         * 校验委托持有者的合法性,释放被非法占用的委托
+         */
+        public void validate(ServerLevel level) {
+            for (var entry : entries) {
+                if (entry.claimedBy == null) continue;
+                if (!(level.getEntity(entry.claimedBy) instanceof EntityMaid maid)) {
+                    entry.release();
+                    continue;
+                }
+                ItemStack license = ChefScheduler.getChefLicense(maid);
+                if (license.isEmpty()) {
+                    entry.release();
+                    continue;
+                }
+                String id = ChefLicenseItem.getRestaurantId(license);
+                if (!id.equals(restaurantId)) {
+                    entry.release();
+                }
+            }
         }
 
         @Override
@@ -279,6 +340,10 @@ public class CookingRequestBus extends SavedData {
             return pool;
         }
 
+
+
+
+
         private static class Entry implements INBTSerializable<CompoundTag> {
             private static final String TAG_REQUEST = "request";
             private static final String TAG_CLAIMED_BY = "claimed_by";
@@ -293,6 +358,11 @@ public class CookingRequestBus extends SavedData {
 
             public Entry(CookingRequest request) {
                 this.request = request;
+            }
+
+            public void release() {
+                claimedBy = null;
+                gameTime = 0;
             }
 
             @Override
@@ -323,29 +393,6 @@ public class CookingRequestBus extends SavedData {
                 Entry entry = new Entry();
                 entry.deserializeNBT(tag);
                 return entry;
-            }
-        }
-    }
-
-    public static class Token implements INBTSerializable<CompoundTag> {
-        private static final String TAG_RESTAURANT_ID = "restaurant_id";
-        public String restaurantId;
-
-        public Token(String restaurantId) {
-            this.restaurantId = restaurantId;
-        }
-
-        @Override
-        public CompoundTag serializeNBT() {
-            CompoundTag tag = new CompoundTag();
-            tag.putString(TAG_RESTAURANT_ID, restaurantId);
-            return tag;
-        }
-
-        @Override
-        public void deserializeNBT(CompoundTag tag) {
-            if (tag.contains(TAG_RESTAURANT_ID)) {
-                restaurantId = tag.getString(TAG_RESTAURANT_ID);
             }
         }
     }
