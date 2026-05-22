@@ -2,17 +2,12 @@ package com.mastermarisa.maid_restaurant.core.schedule;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
@@ -24,110 +19,142 @@ import java.util.concurrent.ConcurrentHashMap;
 @Mod.EventBusSubscriber(modid = MaidRestaurant.MOD_ID)
 public class CookingRequestBus extends SavedData {
     private static final String TAG_POOLS = "pools";
+    private static final String TAG_RESTAURANT_ID = "restaurant_id";
+    private static final String TAG_ENTRIES = "entries";
 
-    private final ConcurrentHashMap<String, RequestPool> pools;
+    private final ConcurrentHashMap<String, List<Entry>> pools;
 
     public CookingRequestBus() {
         pools = new ConcurrentHashMap<>();
     }
 
     /**
-     * 入队一个请求
+     * 向请求池中添加一个新的委托
      * @param restaurantId 餐厅Id
-     * @param demand 将入队的请求
+     * @param request 要添加的烹饪请求
      */
-    public void submit(String restaurantId, CookingRequest demand) {
-        getPool(restaurantId).submit(demand);
+    public void add(String restaurantId, CookingRequest request) {
+        getEntries(restaurantId).add(new Entry(request));
         setDirty();
     }
 
     /**
-     * 从请求池认领一个请求,若有已认领的请求则不做处理
+     * 认领一个未被占用的委托
      * @param restaurantId 餐厅Id
-     * @param maid 女仆的
-     * @param gameTime 时间戳
-     * @return 新认领的请求
+     * @param level 所在世界
+     * @param maid 女仆实体
+     * @return 新认领的委托，如果没有可用委托则返回 null
      */
     @Nullable
-    public CookingRequest claim(String restaurantId, EntityMaid maid, long gameTime) {
-        CookingRequest request = getPool(restaurantId).claim(maid, gameTime);
-        if (request != null) {
-            setDirty();
+    public CookingRequest claim(String restaurantId, ServerLevel level, EntityMaid maid) {
+        List<Entry> entries = getEntries(restaurantId);
+        int index = findEntryIndex(entries, maid);
+        if (index == -1) {
+            for (var entry : entries) {
+                if (entry.claimedBy == null) {
+                    entry.claim(level, maid);
+                    setDirty();
+                    return entry.request;
+                }
+            }
         }
-        return request;
+        return null;
     }
 
     /**
-     * 释放当前认领的请求,并尝试从请求池重新认领另一个请求
+     * 释放当前女仆占用的委托，并尝试认领另一个未被占用的委托
      * @param restaurantId 餐厅Id
-     * @param maid 女仆
-     * @param gameTime 时间戳
-     * @return 新认领的请求
+     * @param level 所在世界
+     * @param maid 女仆实体
+     * @return 新认领的委托
      */
     @Nullable
-    public CookingRequest reclaim(String restaurantId, EntityMaid maid, long gameTime) {
-        CookingRequest request = getPool(restaurantId).reclaim(maid, gameTime);
-        setDirty();
-        return request;
-    }
-
-    /**
-     * 释放女仆已认领的请求
-     * @param restaurantId 餐厅Id
-     * @param maid 女仆
-     */
-    public void release(String restaurantId, EntityMaid maid) {
-        if (getPool(restaurantId).release(maid)) {
-            setDirty();
+    public CookingRequest reclaim(String restaurantId, ServerLevel level, EntityMaid maid) {
+        List<Entry> entries = getEntries(restaurantId);
+        int index = findEntryIndex(entries, maid);
+        if (index != -1) {
+            entries.get(index).release(level);
         }
-    }
-
-    /**
-     * 出队一个已完成的请求
-     * @param restaurantId 餐厅Id
-     * @param maid 女仆
-     */
-    public void complete(String restaurantId, EntityMaid maid) {
-        if (getPool(restaurantId).complete(maid)) {
-            setDirty();
+        index = (index + 1) % entries.size();
+        int attempts = 0;
+        while (attempts < entries.size()) {
+            Entry entry = entries.get(index);
+            if (entry.claimedBy == null) {
+                entry.claim(level, maid);
+                setDirty();
+                return entry.request;
+            }
+            index = (index + 1) % entries.size();
+            attempts++;
         }
+        return null;
     }
 
     /**
-     * 获取女仆已认领的请求
+     * 获取当前女仆已认领的委托
      * @param restaurantId 餐厅Id
-     * @param maid 女仆
-     * @return 返还已认领的请求
+     * @param maid 女仆实体
+     * @return 已认领的委托
      */
     @Nullable
     public CookingRequest getClaimed(String restaurantId, EntityMaid maid) {
-        return getPool(restaurantId).getClaimed(maid);
+        List<Entry> entries = getEntries(restaurantId);
+        int index = findEntryIndex(entries, maid);
+        return index != -1 ? entries.get(index).request : null;
     }
 
-    private RequestPool getPool(String restaurantId) {
-        return pools.computeIfAbsent(restaurantId, RequestPool::new);
-    }
-
-    @Override
-    public CompoundTag save(CompoundTag tag) {
-        ListTag listTag = new ListTag();
-        for (var pool : pools.values()) {
-            listTag.add(pool.serializeNBT());
+    /**
+     * 释放当前女仆占用的委托
+     * @param restaurantId 餐厅Id
+     * @param level 所在世界
+     * @param maid 女仆实体
+     * @return 如果成功释放则返回 true，否则返回 false
+     */
+    public boolean release(String restaurantId, ServerLevel level, EntityMaid maid) {
+        List<Entry> entries = getEntries(restaurantId);
+        int index = findEntryIndex(entries, maid);
+        if (index != -1) {
+            entries.get(index).release(level);
+            setDirty();
+            return true;
         }
-        tag.put(TAG_POOLS, listTag);
-        return tag;
+        return false;
     }
 
-    private static CookingRequestBus load(CompoundTag tag) {
-        CookingRequestBus bus = new CookingRequestBus();
-        if (tag.contains(TAG_POOLS)) {
-            ListTag listTag = tag.getList(TAG_POOLS, Tag.TAG_COMPOUND);
-            for (int i = 0; i < listTag.size(); i++) {
-                RequestPool pool = RequestPool.fromNBT(listTag.getCompound(i));
-                bus.pools.put(pool.restaurantId, pool);
+    /**
+     * 提交已完成委托，从请求池中移除当前女仆占用的委托
+     * @param restaurantId 餐厅Id
+     * @param maid 女仆实体
+     * @return 如果成功移除则返回 true，否则返回 false
+     */
+    public boolean submit(String restaurantId, EntityMaid maid) {
+        List<Entry> entries = getEntries(restaurantId);
+        int index = findEntryIndex(entries, maid);
+        if (index != -1) {
+            entries.remove(index);
+            setDirty();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 根据女仆 UUID 查找其在 entries 列表中的索引位置
+     * @param maid 女仆实体
+     * @return 索引值，如果未找到则返回 -1
+     */
+    private int findEntryIndex(List<Entry> entries, EntityMaid maid) {
+        for (int i = 0; i < entries.size(); i++) {
+            Entry entry = entries.get(i);
+            if (entry.claimedBy != null && entry.claimedBy.equals(maid.getUUID())) {
+                return i;
             }
         }
-        return bus;
+        return -1;
+    }
+
+    private List<Entry> getEntries(String restaurantId) {
+        return pools.computeIfAbsent(restaurantId, k -> new LinkedList<>());
     }
 
     public static CookingRequestBus get(ServerLevel level) {
@@ -138,260 +165,107 @@ public class CookingRequestBus extends SavedData {
         );
     }
 
-    @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        MinecraftServer server = event.getServer();
-        for (ServerLevel level : server.getAllLevels()) {
-            long gameTime = level.getGameTime();
-            // 每15秒检测一次合法性,取最近的质数减少并发
-            if (gameTime % 293 == 0) {
-                for (var pool : CookingRequestBus.get(level).pools.values()) {
-                    pool.validate(level);
-                }
+    @Override
+    public CompoundTag save(CompoundTag tag) {
+        ListTag listTag = new ListTag();
+        for (var entry : pools.entrySet()) {
+            CompoundTag poolTag = new CompoundTag();
+            poolTag.putString(TAG_RESTAURANT_ID, entry.getKey());
+            ListTag entriesTag = new ListTag();
+            for (Entry e : entry.getValue()) {
+                entriesTag.add(e.serializeNBT());
             }
+            poolTag.put(TAG_ENTRIES, entriesTag);
+            listTag.add(poolTag);
         }
+        tag.put(TAG_POOLS, listTag);
+        return tag;
     }
 
-
-
-    private static class RequestPool implements INBTSerializable<CompoundTag> {
-        private static final String TAG_RESTAURANT_ID = "restaurant_id";
-        private static final String TAG_ENTRIES = "entries";
-
-        private String restaurantId;
-        private List<Entry> entries;
-
-        public RequestPool() {
-            this.restaurantId = "";
-            this.entries = new LinkedList<>();
+    private static CookingRequestBus load(CompoundTag tag) {
+        CookingRequestBus bus = new CookingRequestBus();
+        if (tag.contains(TAG_POOLS)) {
+            ListTag listTag = tag.getList(TAG_POOLS, Tag.TAG_COMPOUND);
+            for (int i = 0; i < listTag.size(); i++) {
+                CompoundTag poolTag = listTag.getCompound(i);
+                String restaurantId = poolTag.getString(TAG_RESTAURANT_ID);
+                List<Entry> entries = new LinkedList<>();
+                ListTag entriesTag = poolTag.getList(TAG_ENTRIES, Tag.TAG_COMPOUND);
+                for (int j = 0; j < entriesTag.size(); j++) {
+                    entries.add(Entry.fromNBT(entriesTag.getCompound(j)));
+                }
+                bus.pools.put(restaurantId, entries);
+            }
         }
+        return bus;
+    }
 
-        public RequestPool(String restaurantId) {
-            this.restaurantId = restaurantId;
-            this.entries = new LinkedList<>();
-        }
+    private static class Entry implements INBTSerializable<CompoundTag> {
+        private static final String TAG_REQUEST = "request";
+        private static final String TAG_CLAIMED_BY = "claimed_by";
+        private static final String TAG_LAST_CLAIMED_TIME = "last_claimed_time";
+        private static final String TAG_LAST_RELEASED_TIME = "last_released_time";
 
-        /**
-         * 入队一个请求
-         * @param demand 将入队的请求
-         */
-        public void submit(CookingRequest demand) {
-            entries.add(new Entry(demand));
-        }
-
-        /**
-         * 从请求池认领一个请求,若有已认领的请求则不做处理
-         * @param maid 女仆
-         * @param gameTime 时间戳
-         * @return 新认领的请求
-         */
+        private CookingRequest request;
         @Nullable
-        public CookingRequest claim(EntityMaid maid, long gameTime) {
-            int index = findEntryIndex(maid);
-            if (index != -1) return null;
-            for (var entry : entries) {
-                if (entry.claimedBy == null) {
-                    entry.claimedBy = maid.getUUID();
-                    entry.gameTime = gameTime;
-                    return entry.request;
-                }
-            }
-            return null;
+        private UUID claimedBy;
+        private long lastClaimedTime;
+        private long lastReleasedTime;
+
+        public Entry() {
+            this.lastClaimedTime = -1;
+            this.lastReleasedTime = -1;
         }
 
-        /**
-         * 释放当前认领的请求,并尝试从请求池重新认领另一个请求
-         * @param level 所在Level
-         * @param maid 女仆
-         * @return 新认领的请求
-         */
-        @Nullable
-        public CookingRequest reclaim(ServerLevel level, EntityMaid maid) {
-            int index = findEntryIndex(maid);
-            if (index != -1) {
-                entries.get(index).release();
-            }
-            index = (index + 1) % entries.size();
-            int attempts = 0;
-            while (attempts < entries.size()) {
-                Entry entry = entries.get(index);
-                if (entry.claimedBy == null) {
-                    entry.claimedBy = maid.getUUID();
-//                    entry.gameTime = gameTime;
-//                    entry.request.getRoot().verifyAndUpdateState();
-                    return entry.request;
-                }
-                index = (index + 1) % entries.size();
-                attempts++;
-            }
-            return null;
+        public Entry(CookingRequest request) {
+            this.request = request;
+            this.lastClaimedTime = -1;
+            this.lastReleasedTime = -1;
         }
 
-        /**
-         * 释放女仆已认领的请求
-         * @param maid 女仆
-         */
-        public boolean release(EntityMaid maid) {
-            int index = findEntryIndex(maid);
-            if (index != -1) {
-                entries.get(index).release();
-                return true;
-            }
-            return false;
+        public void claim(ServerLevel level, EntityMaid maid) {
+            this.request.getRoot().verifyAndUpdateState(maid);
+            this.claimedBy = maid.getUUID();
+            this.lastClaimedTime = level.getGameTime();
         }
 
-        /**
-         * 出队一个已完成的请求
-         * @param maid 女仆
-         */
-        public boolean complete(EntityMaid maid) {
-            Entry completed = null;
-            for (var entry : entries) {
-                if (entry.claimedBy != null && entry.claimedBy.equals(maid.getUUID())) {
-                    completed = entry;
-                    break;
-                }
-            }
-            if (completed != null) {
-                entries.remove(completed);
-                return true;
-            }
-            return false;
-        }
-
-        /**
-         * 获取女仆已认领的请求
-         * @param maid 女仆
-         * @return 返还已认领的请求
-         */
-        @Nullable
-        public CookingRequest getClaimed(EntityMaid maid) {
-            for (var entry : entries) {
-                if (entry.claimedBy != null && entry.claimedBy.equals(maid.getUUID())) {
-                    return entry.request;
-                }
-            }
-            return null;
-        }
-
-        /**
-         * 校验委托持有者的合法性,释放被非法占用的委托
-         */
-        public void validate(ServerLevel level) {
-            for (var entry : entries) {
-                if (entry.claimedBy == null) continue;
-                if (!(level.getEntity(entry.claimedBy) instanceof EntityMaid maid)) {
-                    entry.release();
-                    continue;
-                }
-                ItemStack license = ChefScheduler.getChefLicense(maid);
-                if (license.isEmpty()) {
-                    entry.release();
-                    continue;
-                }
-                String id = ChefLicenseItem.getRestaurantId(license);
-                if (!id.equals(restaurantId)) {
-                    entry.release();
-                }
-            }
-        }
-
-        private int findEntryIndex(EntityMaid maid) {
-            for (int i = 0; i < entries.size(); i++) {
-                Entry entry = entries.get(i);
-                if (entry.claimedBy != null && entry.claimedBy.equals(maid.getUUID())) {
-                    return i;
-                }
-            }
-            return -1;
+        public void release(ServerLevel level) {
+            this.claimedBy = null;
+            this.lastReleasedTime = level.getGameTime();
         }
 
         @Override
         public CompoundTag serializeNBT() {
             CompoundTag tag = new CompoundTag();
-            tag.putString(TAG_RESTAURANT_ID, restaurantId);
-            ListTag listTag = new ListTag();
-            for (var entry : entries) {
-                listTag.add(entry.serializeNBT());
+            tag.put(TAG_REQUEST, request.serializeNBT());
+            if (claimedBy != null) {
+                tag.putUUID(TAG_CLAIMED_BY, claimedBy);
             }
-            tag.put(TAG_ENTRIES, listTag);
+            tag.putLong(TAG_LAST_CLAIMED_TIME, lastClaimedTime);
+            tag.putLong(TAG_LAST_RELEASED_TIME, lastReleasedTime);
             return tag;
         }
 
         @Override
         public void deserializeNBT(CompoundTag tag) {
-            if (tag.contains(TAG_RESTAURANT_ID)) {
-                restaurantId = tag.getString(TAG_RESTAURANT_ID);
+            if (tag.contains(TAG_REQUEST)) {
+                this.request = CookingRequest.fromNBT(tag.getCompound(TAG_REQUEST));
             }
-            if (tag.contains(TAG_ENTRIES)) {
-                ListTag listTag = tag.getList(TAG_ENTRIES, Tag.TAG_COMPOUND);
-                entries = new LinkedList<>();
-                for (int i = 0; i < listTag.size(); i++) {
-                    entries.add(Entry.fromNBT(listTag.getCompound(i)));
-                }
+            if (tag.contains(TAG_CLAIMED_BY)) {
+                this.claimedBy = tag.getUUID(TAG_CLAIMED_BY);
+            }
+            if (tag.contains(TAG_LAST_CLAIMED_TIME)) {
+                this.lastClaimedTime = tag.getLong(TAG_LAST_CLAIMED_TIME);
+            }
+            if (tag.contains(TAG_LAST_RELEASED_TIME)) {
+                this.lastReleasedTime = tag.getLong(TAG_LAST_RELEASED_TIME);
             }
         }
 
-        public static RequestPool fromNBT(CompoundTag tag) {
-            RequestPool pool = new RequestPool();
-            pool.deserializeNBT(tag);
-            return pool;
-        }
-
-        private static class Entry implements INBTSerializable<CompoundTag> {
-            private static final String TAG_REQUEST = "request";
-            private static final String TAG_CLAIMED_BY = "claimed_by";
-            private static final String TAG_GAME_TIME = "game_time";
-
-            private CookingRequest request;
-            @Nullable
-            private UUID claimedBy;
-            private long gameTime;
-
-            private Entry() {}
-
-            public Entry(CookingRequest request) {
-                this.request = request;
-            }
-
-            public void claim(ServerLevel level, EntityMaid maid) {
-
-            }
-
-            public void release() {
-                claimedBy = null;
-                gameTime = 0;
-            }
-
-            @Override
-            public CompoundTag serializeNBT() {
-                CompoundTag tag = new CompoundTag();
-                tag.put(TAG_REQUEST, request.serializeNBT());
-                if (claimedBy != null) {
-                    tag.putUUID(TAG_CLAIMED_BY, claimedBy);
-                }
-                tag.putLong(TAG_GAME_TIME, gameTime);
-                return tag;
-            }
-
-            @Override
-            public void deserializeNBT(CompoundTag tag) {
-                if (tag.contains(TAG_REQUEST)) {
-                    this.request = CookingRequest.fromNBT(tag.getCompound(TAG_REQUEST));
-                }
-                if (tag.contains(TAG_CLAIMED_BY)) {
-                    this.claimedBy = tag.getUUID(TAG_CLAIMED_BY);
-                }
-                if (tag.contains(TAG_GAME_TIME)) {
-                    this.gameTime = tag.getLong(TAG_GAME_TIME);
-                }
-            }
-
-            public static Entry fromNBT(CompoundTag tag) {
-                Entry entry = new Entry();
-                entry.deserializeNBT(tag);
-                return entry;
-            }
+        public static Entry fromNBT(CompoundTag tag) {
+            Entry entry = new Entry();
+            entry.deserializeNBT(tag);
+            return entry;
         }
     }
 }
