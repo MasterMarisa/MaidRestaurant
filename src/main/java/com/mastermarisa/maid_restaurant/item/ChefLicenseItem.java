@@ -1,5 +1,6 @@
 package com.mastermarisa.maid_restaurant.item;
 
+import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.inventory.ZoneDefinitionHandler;
 import com.mastermarisa.maid_restaurant.inventory.container.ChefLicenseContainer;
 import net.minecraft.nbt.CompoundTag;
@@ -20,6 +21,7 @@ import net.minecraftforge.network.NetworkHooks;
 import javax.annotation.Nullable;
 
 public class ChefLicenseItem extends Item implements MenuProvider {
+    private static final String TAG_RESTAURANT_ID = "restaurant_id";
     private static final String TAG_INVENTORY = "inventory";
 
     public ChefLicenseItem(Properties properties) {
@@ -39,10 +41,18 @@ public class ChefLicenseItem extends Item implements MenuProvider {
     }
 
     public static String getRestaurantId(ItemStack itemStack) {
+        CompoundTag tag = itemStack.getOrCreateTag();
+        if (tag.contains(TAG_RESTAURANT_ID)) {
+            return tag.getString(TAG_RESTAURANT_ID);
+        }
         return "";
     }
 
-    public static void setRestaurantId(ItemStack itemStack, String id) {}
+    public static void setRestaurantId(ItemStack itemStack, String id) {
+        CompoundTag tag = itemStack.getOrCreateTag();
+        tag.putString(TAG_RESTAURANT_ID, id);
+        MaidRestaurant.LOGGER.debug("Set RestaurantID:" + id);
+    }
 
     public static ZoneDefinitionHandler getInventory(ItemStack stack) {
         ZoneDefinitionHandler handler = new ZoneDefinitionHandler(12);

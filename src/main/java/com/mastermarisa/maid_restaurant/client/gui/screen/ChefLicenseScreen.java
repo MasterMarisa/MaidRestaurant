@@ -2,8 +2,12 @@ package com.mastermarisa.maid_restaurant.client.gui.screen;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.inventory.container.ChefLicenseContainer;
+import com.mastermarisa.maid_restaurant.network.NetworkHandler;
+import com.mastermarisa.maid_restaurant.network.message.RestaurantIdUpdateMessage;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -11,6 +15,8 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContainer> {
     public static final ResourceLocation backgroundImage = MaidRestaurant.resourceLocation("textures/gui/chef_license.png");
+
+    private EditBox chefIdField;
 
     public ChefLicenseScreen(ChefLicenseContainer container, Inventory inventory, Component title) {
         super(container, inventory, title);
@@ -21,6 +27,19 @@ public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContai
     @Override
     protected void init() {
         super.init();
+        int fieldX = this.leftPos + 43;
+        int fieldY = this.topPos + 18;
+        this.chefIdField = new EditBox(
+                this.font,
+                fieldX, fieldY,
+                90, 16,
+                Component.literal("")
+        );
+        this.chefIdField.setMaxLength(50);
+        this.chefIdField.setBordered(false);
+        this.chefIdField.setEditable(true);
+        this.chefIdField.setCanLoseFocus(false);
+        this.addRenderableWidget(this.chefIdField);
     }
 
     @Override
@@ -32,19 +51,42 @@ public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContai
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float pt) {
         super.render(graphics, mouseX, mouseY, pt);
+        this.chefIdField.render(graphics, mouseX, mouseY, pt);
         this.renderTooltip(graphics, mouseX, mouseY);
     }
 
     @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (!this.chefIdField.isFocused()) {
+            return super.keyPressed(keyCode, scanCode, modifiers);
+        }
+
+        if (keyCode == InputConstants.KEY_RETURN) {
+            this.chefIdField.setCanLoseFocus(true);
+            this.chefIdField.setFocused(false);
+            this.chefIdField.setCanLoseFocus(false);
+            String text = this.chefIdField.getValue().trim();
+            if (!text.isEmpty()) {
+                NetworkHandler.sendToServer(new RestaurantIdUpdateMessage(text));
+            }
+            return true;
+        }
+
+        return this.chefIdField.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
     public void resize(Minecraft pMinecraft, int pWidth, int pHeight) {
+        String text = this.chefIdField != null ? this.chefIdField.getValue() : "";
         super.resize(pMinecraft, pWidth, pHeight);
+        this.chefIdField.setValue(text);
     }
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {}
-
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        return super.keyPressed(keyCode, scanCode, modifiers);
-    }
 }
