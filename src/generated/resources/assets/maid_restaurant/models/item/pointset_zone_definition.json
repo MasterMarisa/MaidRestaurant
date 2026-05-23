@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "maid_restaurant:item/point_set_zone_definition"
+    "layer0": "maid_restaurant:item/pointset_zone_definition"
   }
 }

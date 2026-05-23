@@ -43,7 +43,7 @@ public class BindingRender {
             }
 
             CuboidZoneRenderer.render(poseStack, consumer, position, targetedBlockCache);
-            PointSetZoneRenderer.render(poseStack, consumer, position, targetedBlockCache);
+            PointsetZoneRenderer.render(poseStack, consumer, position, targetedBlockCache);
         }
     }
 }

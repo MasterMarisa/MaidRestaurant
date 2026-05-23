@@ -2,12 +2,11 @@ package com.mastermarisa.maid_restaurant.core.zone;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class CuboidZone extends AbstractZone implements INBTSerializable<CompoundTag> {
+public class CuboidZone extends AbstractZone {
     private static final String TAG_MIN = "min";
     private static final String TAG_MAX = "max";
 

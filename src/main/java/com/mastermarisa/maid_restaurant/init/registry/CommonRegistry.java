@@ -14,7 +14,7 @@ public class CommonRegistry {
         if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ModItems.CHEF_LICENSE.get());
             event.accept(ModItems.CUBOID_ZONE_DEFINITION.get());
-            event.accept(ModItems.POINT_SET_ZONE_DEFINITION.get());
+            event.accept(ModItems.POINTSET_ZONE_DEFINITION.get());
         }
     }
 }

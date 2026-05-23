@@ -17,13 +17,13 @@ public record RestaurantIdUpdateMessage(String id) {
         return new RestaurantIdUpdateMessage(buf.readUtf());
     }
 
-    public static void handle(RestaurantIdUpdateMessage packet, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ServerPlayer player = ctx.get().getSender();
+    public static void handle(RestaurantIdUpdateMessage packet, Supplier<NetworkEvent.Context> context) {
+        context.get().enqueueWork(() -> {
+            ServerPlayer player = context.get().getSender();
             if (player != null && player.getMainHandItem().is(ModItems.CHEF_LICENSE.get())) {
                 ChefLicenseItem.setRestaurantId(player.getMainHandItem(), packet.id);
             }
         });
-        ctx.get().setPacketHandled(true);
+        context.get().setPacketHandled(true);
     }
 }

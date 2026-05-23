@@ -4,7 +4,7 @@ import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import com.mastermarisa.maid_restaurant.item.CookingGuideItem;
 import com.mastermarisa.maid_restaurant.item.CuboidZoneDefinitionItem;
-import com.mastermarisa.maid_restaurant.item.PointSetZoneDefinitionItem;
+import com.mastermarisa.maid_restaurant.item.PointsetZoneDefinitionItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
@@ -16,5 +16,5 @@ public interface ModItems {
     RegistryObject<Item> COOKING_GUIDE = ITEMS.register("cooking_guide", () -> new CookingGuideItem(new Item.Properties()));
     RegistryObject<Item> CHEF_LICENSE = ITEMS.register("chef_license", () -> new ChefLicenseItem(new Item.Properties().stacksTo(1)));
     RegistryObject<Item> CUBOID_ZONE_DEFINITION = ITEMS.register("cuboid_zone_definition", () -> new CuboidZoneDefinitionItem(new Item.Properties()));
-    RegistryObject<Item> POINT_SET_ZONE_DEFINITION = ITEMS.register("point_set_zone_definition", () -> new PointSetZoneDefinitionItem(new Item.Properties()));
+    RegistryObject<Item> POINTSET_ZONE_DEFINITION = ITEMS.register("pointset_zone_definition", () -> new PointsetZoneDefinitionItem(new Item.Properties()));
 }

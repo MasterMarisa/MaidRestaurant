@@ -1,7 +1,5 @@
 package com.mastermarisa.maid_restaurant.item;
 
-import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.inventory.ZoneDefinitionHandler;
 import com.mastermarisa.maid_restaurant.inventory.container.ChefLicenseContainer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -51,11 +49,10 @@ public class ChefLicenseItem extends Item implements MenuProvider {
     public static void setRestaurantId(ItemStack itemStack, String id) {
         CompoundTag tag = itemStack.getOrCreateTag();
         tag.putString(TAG_RESTAURANT_ID, id);
-        MaidRestaurant.LOGGER.debug("Set RestaurantID:" + id);
     }
 
-    public static ZoneDefinitionHandler getInventory(ItemStack stack) {
-        ZoneDefinitionHandler handler = new ZoneDefinitionHandler(12);
+    public static ItemStackHandler getInventory(ItemStack stack) {
+        ItemStackHandler handler = new ItemStackHandler(12);
         CompoundTag tag = stack.getTag();
         if (tag != null && tag.contains(TAG_INVENTORY)) {
             handler.deserializeNBT(tag.getCompound(TAG_INVENTORY));

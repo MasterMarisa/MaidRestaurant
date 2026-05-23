@@ -2,19 +2,18 @@ package com.mastermarisa.maid_restaurant.core.zone;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-public class PointSetZone extends AbstractZone implements INBTSerializable<CompoundTag> {
+public class PointsetZone extends AbstractZone {
     private static final String TAG_POINTS = "points";
 
     private final Set<BlockPos> points;
 
-    public PointSetZone() {
+    public PointsetZone() {
         this.points = new ConcurrentSkipListSet<>();
     }
 
@@ -51,8 +50,8 @@ public class PointSetZone extends AbstractZone implements INBTSerializable<Compo
         }
     }
 
-    public static PointSetZone fromNBT(CompoundTag tag) {
-        PointSetZone zone = new PointSetZone();
+    public static PointsetZone fromNBT(CompoundTag tag) {
+        PointsetZone zone = new PointsetZone();
         zone.deserializeNBT(tag);
         return zone;
     }

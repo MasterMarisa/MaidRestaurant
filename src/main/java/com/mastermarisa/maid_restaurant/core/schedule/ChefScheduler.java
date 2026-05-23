@@ -5,7 +5,9 @@ import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHand
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.tree.NodeState;
+import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModItems;
+import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -25,6 +27,42 @@ public class ChefScheduler {
             return ItemStack.EMPTY;
         }
         return handler.getStackInSlot(index);
+    }
+
+    /**
+     * 获取该女仆定义的工作区
+     * @param maid 女仆实体
+     * @return 工作区
+     */
+    @Nullable
+    public static AbstractZone getWorkZone(EntityMaid maid) {
+        ItemStack license = getChefLicense(maid);
+        if (license.isEmpty()) {
+            return null;
+        }
+        ChefInfo chefInfo = maid.getData(ModTaskDataKeys.CHEF_INFO);
+        if (chefInfo == null) {
+            return null;
+        }
+        return chefInfo.getWorkZone();
+    }
+
+    /**
+     * 获取该女仆定义的储存区
+     * @param maid 女仆实体
+     * @return 储存区
+     */
+    @Nullable
+    public static AbstractZone getStorageZone(EntityMaid maid) {
+        ItemStack license = getChefLicense(maid);
+        if (license.isEmpty()) {
+            return null;
+        }
+        ChefInfo chefInfo = maid.getData(ModTaskDataKeys.CHEF_INFO);
+        if (chefInfo == null) {
+            return null;
+        }
+        return chefInfo.getStorageZone();
     }
 
     /**

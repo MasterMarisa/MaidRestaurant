@@ -1,8 +1,8 @@
 package com.mastermarisa.maid_restaurant.client.render;
 
-import com.mastermarisa.maid_restaurant.core.zone.PointSetZone;
+import com.mastermarisa.maid_restaurant.core.zone.PointsetZone;
 import com.mastermarisa.maid_restaurant.init.ModItems;
-import com.mastermarisa.maid_restaurant.item.PointSetZoneDefinitionItem;
+import com.mastermarisa.maid_restaurant.item.PointsetZoneDefinitionItem;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -18,7 +18,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import javax.annotation.Nullable;
 
 @OnlyIn(Dist.CLIENT)
-public class PointSetZoneRenderer {
+public class PointsetZoneRenderer {
     private static final float[] GRAN_BLUE = new float[]{ 139 / 255F, 193 / 255F, 250 / 255F, 1};
     private static final float SELECTOR_TRANSITION_SPEED = 0.2f;
     private static final Vec3CacheHolder selectorCache = new Vec3CacheHolder();
@@ -32,11 +32,11 @@ public class PointSetZoneRenderer {
         }
 
         ItemStack definition = player.getMainHandItem();
-        if (!definition.is(ModItems.POINT_SET_ZONE_DEFINITION.get())) {
+        if (!definition.is(ModItems.POINTSET_ZONE_DEFINITION.get())) {
             return;
         }
 
-        PointSetZone zone = PointSetZoneDefinitionItem.getZone(definition);
+        PointsetZone zone = PointsetZoneDefinitionItem.getZone(definition);
         if (zone != null) {
             for (BlockPos pos : zone) {
                 RenderUtils.renderThickAABB(

@@ -1,6 +1,6 @@
 package com.mastermarisa.maid_restaurant.item;
 
-import com.mastermarisa.maid_restaurant.core.zone.PointSetZone;
+import com.mastermarisa.maid_restaurant.core.zone.PointsetZone;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -15,10 +15,10 @@ import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 
-public class PointSetZoneDefinitionItem extends Item {
+public class PointsetZoneDefinitionItem extends Item {
     private static final String TAG_ZONE = "zone";
 
-    public PointSetZoneDefinitionItem(Properties properties) {
+    public PointsetZoneDefinitionItem(Properties properties) {
         super(properties);
     }
 
@@ -40,9 +40,9 @@ public class PointSetZoneDefinitionItem extends Item {
             return InteractionResult.SUCCESS;
         }
 
-        PointSetZone zone = getZone(stack);
+        PointsetZone zone = getZone(stack);
         if (zone == null) {
-            zone = new PointSetZone();
+            zone = new PointsetZone();
         }
         if (zone.contains(pos)) {
             zone.remove(pos);
@@ -59,15 +59,15 @@ public class PointSetZoneDefinitionItem extends Item {
     }
 
     @Nullable
-    public static PointSetZone getZone(ItemStack itemStack) {
+    public static PointsetZone getZone(ItemStack itemStack) {
         CompoundTag tag = itemStack.getOrCreateTag();
         if (tag.contains(TAG_ZONE)) {
-            return PointSetZone.fromNBT(tag.getCompound(TAG_ZONE));
+            return PointsetZone.fromNBT(tag.getCompound(TAG_ZONE));
         }
         return null;
     }
 
-    public static void setZone(ItemStack itemStack, PointSetZone zone) {
+    public static void setZone(ItemStack itemStack, PointsetZone zone) {
         CompoundTag tag = itemStack.getOrCreateTag();
         tag.put(TAG_ZONE, zone.serializeNBT());
     }

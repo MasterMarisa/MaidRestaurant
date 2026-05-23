@@ -2,8 +2,9 @@ package com.mastermarisa.maid_restaurant.inventory.container;
 
 import com.mastermarisa.maid_restaurant.init.ModContainers;
 import com.mastermarisa.maid_restaurant.init.ModItems;
-import com.mastermarisa.maid_restaurant.inventory.ZoneDefinitionHandler;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
+import com.mastermarisa.maid_restaurant.item.CuboidZoneDefinitionItem;
+import com.mastermarisa.maid_restaurant.item.PointsetZoneDefinitionItem;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -20,7 +21,7 @@ public class ChefLicenseContainer extends AbstractContainerMenu {
     public static final MenuType<ChefLicenseContainer> TYPE = IForgeMenuType.create(ChefLicenseContainer::new);
 
     private final ItemStack license;
-    private final ZoneDefinitionHandler inventory;
+    private final ItemStackHandler inventory;
 
     public ChefLicenseContainer(int id, Inventory playerInv, ItemStack license) {
         super(ModContainers.CHEF_LICENSE_CONTAINER.get(), id);
@@ -88,6 +89,10 @@ public class ChefLicenseContainer extends AbstractContainerMenu {
         }
     }
 
+    public ItemStack getLicense() {
+        return license;
+    }
+
     private static class LicenseSlotHandler extends SlotItemHandler {
         private final ItemStack license;
 
@@ -99,6 +104,12 @@ public class ChefLicenseContainer extends AbstractContainerMenu {
         @Override
         public void setChanged() {
             ChefLicenseItem.setInventory(license, (ItemStackHandler) this.getItemHandler());
+        }
+
+        @Override
+        public boolean mayPlace(ItemStack stack) {
+            return stack.getItem() instanceof PointsetZoneDefinitionItem
+                    || stack.getItem() instanceof CuboidZoneDefinitionItem;
         }
     }
 }

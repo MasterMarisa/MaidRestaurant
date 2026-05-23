@@ -2,9 +2,11 @@ package com.mastermarisa.maid_restaurant.client.gui.screen;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.inventory.container.ChefLicenseContainer;
+import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import com.mastermarisa.maid_restaurant.network.NetworkHandler;
 import com.mastermarisa.maid_restaurant.network.message.RestaurantIdUpdateMessage;
 import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -14,7 +16,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContainer> {
-    public static final ResourceLocation backgroundImage = MaidRestaurant.resourceLocation("textures/gui/chef_license.png");
+    private static final ResourceLocation backgroundImage = MaidRestaurant.resourceLocation("textures/gui/chef_license.png");
+    private static final Component workZoneLabel = Component.literal("工作区").withStyle(ChatFormatting.BOLD);
+    private static final Component storageZoneLabel = Component.literal("储存区").withStyle(ChatFormatting.BOLD);
 
     private EditBox chefIdField;
 
@@ -39,6 +43,10 @@ public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContai
         this.chefIdField.setBordered(false);
         this.chefIdField.setEditable(true);
         this.chefIdField.setCanLoseFocus(false);
+        String existingId = ChefLicenseItem.getRestaurantId(this.menu.getLicense());
+        if (!existingId.isEmpty()) {
+            this.chefIdField.setValue(existingId);
+        }
         this.addRenderableWidget(this.chefIdField);
     }
 
@@ -88,5 +96,10 @@ public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContai
     }
 
     @Override
-    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {}
+    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
+        int width = font.width(workZoneLabel);
+        graphics.drawString(font, workZoneLabel, 52 - width / 2, 42, 14737632, false);
+        width = font.width(storageZoneLabel);
+        graphics.drawString(font, storageZoneLabel, 124 - width / 2, 42, 14737632, false);
+    }
 }
