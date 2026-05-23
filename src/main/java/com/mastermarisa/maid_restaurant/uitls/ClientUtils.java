@@ -37,4 +37,12 @@ public class ClientUtils {
         }
         return null;
     }
+
+    public static int getScreenCenterX(){
+        return Minecraft.getInstance().getWindow().getGuiScaledWidth() / 2;
+    }
+
+    public static int getScreenCenterY(){
+        return Minecraft.getInstance().getWindow().getGuiScaledHeight() / 2;
+    }
 }

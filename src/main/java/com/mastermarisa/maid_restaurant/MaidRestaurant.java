@@ -1,5 +1,6 @@
 package com.mastermarisa.maid_restaurant;
 
+import com.mastermarisa.maid_restaurant.init.ModContainers;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mojang.logging.LogUtils;
@@ -22,5 +23,6 @@ public class MaidRestaurant {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModEntities.MEMORY_MODULE_TYPES.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
+        ModContainers.CONTAINER_TYPES.register(modEventBus);
     }
 }

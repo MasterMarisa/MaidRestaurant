@@ -5,7 +5,6 @@ import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHand
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.tree.NodeState;
-import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import net.minecraft.server.level.ServerLevel;
@@ -26,34 +25,6 @@ public class ChefScheduler {
             return ItemStack.EMPTY;
         }
         return handler.getStackInSlot(index);
-    }
-
-    /**
-     * 获取女仆的工作区
-     * @param maid 女仆
-     * @return 工作区
-     */
-    @Nullable
-    public static AbstractZone getWorkZone(EntityMaid maid) {
-        ItemStack license = getChefLicense(maid);
-        if (license.isEmpty()) {
-            return null;
-        }
-        return ChefLicenseItem.getWorkZone(license);
-    }
-
-    /**
-     * 获取女仆的库存区
-     * @param maid 女仆
-     * @return 库存区
-     */
-    @Nullable
-    public static AbstractZone getStorageZone(EntityMaid maid) {
-        ItemStack license = getChefLicense(maid);
-        if (license.isEmpty()) {
-            return null;
-        }
-        return ChefLicenseItem.getStorageZone(license);
     }
 
     /**
