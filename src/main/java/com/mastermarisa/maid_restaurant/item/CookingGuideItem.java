@@ -1,5 +1,6 @@
 package com.mastermarisa.maid_restaurant.item;
 
+import com.mastermarisa.maid_restaurant.client.gui.screen.RecipeTreeScreen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -18,10 +19,13 @@ public class CookingGuideItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (level.isClientSide()) {
-
+        if (hand != InteractionHand.MAIN_HAND) {
+            return InteractionResultHolder.fail(stack);
         }
-        return InteractionResultHolder.success(stack);
+        if (level.isClientSide()) {
+            RecipeTreeScreen.open(stack);
+        }
+        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }
 
     public static CompoundTag getRecipeRoot(ItemStack itemStack) {

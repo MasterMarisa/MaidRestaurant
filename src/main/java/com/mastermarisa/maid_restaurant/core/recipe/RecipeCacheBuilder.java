@@ -20,7 +20,7 @@ public class RecipeCacheBuilder {
     // 配方ID -> 堆叠处理过的 Ingredient 列表
     private static final ConcurrentHashMap<ResourceLocation, List<IngredientStack>> INGREDIENT_STACK_MAP;
     // Ingredient -> 输出匹配 Ingredient 的配方ID
-    private static final ConcurrentHashMap<Ingredient, List<ResourceLocation>> MATCHED_RECIPE_MAP;
+    public static final ConcurrentHashMap<Ingredient, List<ResourceLocation>> MATCHED_RECIPE_MAP;
 
     public static void buildCache(RecipeManager recipeManager, RegistryAccess registryAccess) {
         INGREDIENT_STACK_MAP.clear();
