@@ -6,6 +6,9 @@ import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModItems;
 import com.google.common.collect.Lists;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.maid.behavior.chef.MaidApproachWorkBlockTask;
+import com.mastermarisa.maid_restaurant.maid.behavior.chef.MaidExecuteCookStepTask;
+import com.mastermarisa.maid_restaurant.maid.behavior.chef.MaidGatherMaterialTask;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -46,7 +49,9 @@ public class TaskChef implements IMaidTask {
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         return Lists.newArrayList(
-
+                Pair.of(5, new MaidGatherMaterialTask(60, 0.4F, 3.0D)),
+                Pair.of(5, new MaidApproachWorkBlockTask(60, 0.4F, 1.0D)),
+                Pair.of(5, new MaidExecuteCookStepTask())
         );
     }
 

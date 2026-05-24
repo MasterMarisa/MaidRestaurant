@@ -3,12 +3,15 @@ package com.mastermarisa.maid_restaurant.core.schedule;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
+import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.tree.NodeState;
+import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
+import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 
@@ -123,6 +126,29 @@ public class ChefScheduler {
             return;
         }
         CookingRequestBus.get(level).release(restaurantId, level, maid);
+    }
+
+    public static void trySubmitRequest(ServerLevel level, EntityMaid maid) {
+        ItemStack license = getChefLicense(maid);
+        if (license.isEmpty()) {
+            return;
+        }
+        String restaurantId = ChefLicenseItem.getRestaurantId(license);
+        if (restaurantId.isEmpty()) {
+            return;
+        }
+        CookingRequestBus bus = CookingRequestBus.get(level);
+        CookingRequest request = bus.getClaimed(restaurantId, maid);
+        if (request == null) {
+            return;
+        }
+        ExecutionNode root = request.getRoot();
+        RecipeNode recipeNode = root.getRecipeNode();
+        int count = ItemUtils.count(maid.getAvailableInv(false), recipeNode.getOutput());
+        if (count >= recipeNode.getOutputCount()) {
+            bus.submit(restaurantId, maid);
+            MaidRestaurant.LOGGER.debug("[MaidRestaurant-DEBUG] Context Submitted.");
+        }
     }
 
     /**
