@@ -72,11 +72,6 @@ public class CuboidZone extends AbstractZone {
         }
     }
 
-    @Override
-    public String toString() {
-        return "CuboidZone[min=" + min.toShortString() + ", max=" + max.toShortString() + "]";
-    }
-
     public static CuboidZone fromNBT(CompoundTag tag) {
         CuboidZone zone = new CuboidZone();
         zone.deserializeNBT(tag);

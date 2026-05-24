@@ -2,7 +2,7 @@ package com.mastermarisa.maid_restaurant.client.render;
 
 import com.mastermarisa.maid_restaurant.core.zone.PointsetZone;
 import com.mastermarisa.maid_restaurant.init.ModItems;
-import com.mastermarisa.maid_restaurant.item.PointsetZoneDefinitionItem;
+import com.mastermarisa.maid_restaurant.item.ZoneDefinitionItem;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -36,7 +36,7 @@ public class PointsetZoneRenderer {
             return;
         }
 
-        PointsetZone zone = PointsetZoneDefinitionItem.getZone(definition);
+        PointsetZone zone = (PointsetZone) ZoneDefinitionItem.getZone(definition);
         if (zone != null) {
             for (BlockPos pos : zone) {
                 RenderUtils.renderThickAABB(

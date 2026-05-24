@@ -2,12 +2,16 @@ package com.mastermarisa.maid_restaurant.core.schedule;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
@@ -26,6 +30,17 @@ public class CookingRequestBus extends SavedData {
 
     public CookingRequestBus() {
         pools = new ConcurrentHashMap<>();
+    }
+
+    @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
+        for (ServerLevel level : event.getServer().getAllLevels()) {
+            // 每15秒检测一次委托占有者的合法性，取最近的质数防止与其他任务的相位重叠
+            if (level.getGameTime() % 293 != 0) {
+                continue;
+            }
+            CookingRequestBus.get(level).validateAll(level);
+        }
     }
 
     /**
@@ -136,6 +151,36 @@ public class CookingRequestBus extends SavedData {
             return true;
         }
         return false;
+    }
+
+    /**
+     * 校验所有委托占用的合法性，释放被非法占用的委托
+     * @param level 所在世界
+     */
+    public void validateAll(ServerLevel level) {
+        for (var entries : pools.entrySet()) {
+            for (Entry entry : entries.getValue()) {
+                if (entry.claimedBy == null) {
+                    continue;
+                }
+                if (!(level.getEntity(entry.claimedBy) instanceof EntityMaid maid)) {
+                    entry.release(level);
+                    setDirty();
+                    continue;
+                }
+                ItemStack license = ChefScheduler.getChefLicense(maid);
+                if (license.isEmpty()) {
+                    entry.release(level);
+                    setDirty();
+                    continue;
+                }
+                String restaurantId = ChefLicenseItem.getRestaurantId(license);
+                if (!restaurantId.equals(entries.getKey())) {
+                    entry.release(level);
+                    setDirty();
+                }
+            }
+        }
     }
 
     /**

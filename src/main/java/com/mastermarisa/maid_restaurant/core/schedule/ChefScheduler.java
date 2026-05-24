@@ -78,6 +78,9 @@ public class ChefScheduler {
             return null;
         }
         String restaurantId = ChefLicenseItem.getRestaurantId(license);
+        if (restaurantId.isEmpty()) {
+            return null;
+        }
         CookingRequestBus bus = CookingRequestBus.get(level);
         CookingRequest request = bus.getClaimed(restaurantId, maid);
         if (request != null) {
@@ -99,6 +102,9 @@ public class ChefScheduler {
             return null;
         }
         String restaurantId = ChefLicenseItem.getRestaurantId(license);
+        if (restaurantId.isEmpty()) {
+            return null;
+        }
         return CookingRequestBus.get(level).reclaim(restaurantId, level, maid);
     }
 
@@ -113,6 +119,9 @@ public class ChefScheduler {
             return;
         }
         String restaurantId = ChefLicenseItem.getRestaurantId(license);
+        if (restaurantId.isEmpty()) {
+            return;
+        }
         CookingRequestBus.get(level).release(restaurantId, level, maid);
     }
 

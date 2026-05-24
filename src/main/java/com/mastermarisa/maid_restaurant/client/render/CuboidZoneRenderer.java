@@ -3,6 +3,7 @@ package com.mastermarisa.maid_restaurant.client.render;
 import com.mastermarisa.maid_restaurant.core.zone.CuboidZone;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.CuboidZoneDefinitionItem;
+import com.mastermarisa.maid_restaurant.item.ZoneDefinitionItem;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -65,7 +66,7 @@ public class CuboidZoneRenderer {
             return;
         }
 
-        CuboidZone zone = CuboidZoneDefinitionItem.getZone(definition);
+        CuboidZone zone = (CuboidZone) ZoneDefinitionItem.getZone(definition);
         if (zone != null) {
             AABB aabb = fromTo(zone.getMin(), zone.getMax());
             RenderUtils.renderThickAABB(

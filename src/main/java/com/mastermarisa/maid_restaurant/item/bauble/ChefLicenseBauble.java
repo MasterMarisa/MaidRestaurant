@@ -8,8 +8,7 @@ import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.core.zone.CombinedZoneWrapper;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
-import com.mastermarisa.maid_restaurant.item.CuboidZoneDefinitionItem;
-import com.mastermarisa.maid_restaurant.item.PointsetZoneDefinitionItem;
+import com.mastermarisa.maid_restaurant.item.ZoneDefinitionItem;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -40,21 +39,13 @@ public class ChefLicenseBauble implements IMaidBauble {
         List<AbstractZone> storageZones = new ArrayList<>();
         for (int i = 0; i < handler.getSlots(); i++) {
             ItemStack itemStack = handler.getStackInSlot(i);
-            if (itemStack.isEmpty()) {
-                continue;
-            }
-            AbstractZone zone;
-            if (itemStack.getItem() instanceof CuboidZoneDefinitionItem) {
-                zone = CuboidZoneDefinitionItem.getZone(itemStack);
-            } else if (itemStack.getItem() instanceof PointsetZoneDefinitionItem) {
-                zone = PointsetZoneDefinitionItem.getZone(itemStack);
-            } else {
-                throw new IllegalStateException("Unsupported zone definition type: " + itemStack.getItem().getClass());
-            }
-            if (i < 6) {
-                workZones.add(zone);
-            } else {
-                storageZones.add(zone);
+            if (itemStack.getItem() instanceof ZoneDefinitionItem) {
+                AbstractZone zone = ZoneDefinitionItem.getZone(itemStack);
+                if (i < 6) {
+                    workZones.add(zone);
+                } else {
+                    storageZones.add(zone);
+                }
             }
         }
         CombinedZoneWrapper workZoneWrapper = workZones.isEmpty() ? null : new CombinedZoneWrapper(workZones);

@@ -37,16 +37,7 @@ public class CombinedZoneWrapper extends AbstractZone {
         CompoundTag tag = new CompoundTag();
         ListTag listTag = new ListTag();
         for (AbstractZone zone : zones) {
-            CompoundTag zoneTag = new CompoundTag();
-            if (zone instanceof CuboidZone) {
-                zoneTag.putString("type", "cuboid");
-            } else if (zone instanceof PointsetZone) {
-                zoneTag.putString("type", "pointset");
-            } else {
-                throw new IllegalArgumentException("Unsupported zone type: " + zone.getClass());
-            }
-            zoneTag.put("data", zone.serializeNBT());
-            listTag.add(zoneTag);
+            listTag.add(AbstractZone.REGISTRY.serialize(zone));
         }
         tag.put("zones", listTag);
         return tag;
@@ -57,15 +48,7 @@ public class CombinedZoneWrapper extends AbstractZone {
         zones.clear();
         ListTag listTag = tag.getList("zones", Tag.TAG_COMPOUND);
         for (int i = 0; i < listTag.size(); i++) {
-            CompoundTag zoneTag = listTag.getCompound(i);
-            String type = zoneTag.getString("type");
-            CompoundTag dataTag = zoneTag.getCompound("data");
-            AbstractZone zone = switch (type) {
-                case "cuboid" -> CuboidZone.fromNBT(dataTag);
-                case "pointset" -> PointsetZone.fromNBT(dataTag);
-                default -> throw new IllegalStateException("Unsupported zone type: " + type);
-            };
-            zones.add(zone);
+            zones.add(AbstractZone.REGISTRY.deserialize(listTag.getCompound(i)));
         }
     }
 

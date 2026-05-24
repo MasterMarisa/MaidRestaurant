@@ -3,8 +3,7 @@ package com.mastermarisa.maid_restaurant.inventory.container;
 import com.mastermarisa.maid_restaurant.init.ModContainers;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
-import com.mastermarisa.maid_restaurant.item.CuboidZoneDefinitionItem;
-import com.mastermarisa.maid_restaurant.item.PointsetZoneDefinitionItem;
+import com.mastermarisa.maid_restaurant.item.ZoneDefinitionItem;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -108,8 +107,7 @@ public class ChefLicenseContainer extends AbstractContainerMenu {
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return stack.getItem() instanceof PointsetZoneDefinitionItem
-                    || stack.getItem() instanceof CuboidZoneDefinitionItem;
+            return stack.getItem() instanceof ZoneDefinitionItem;
         }
     }
 }

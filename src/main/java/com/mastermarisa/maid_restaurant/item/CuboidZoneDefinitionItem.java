@@ -9,15 +9,13 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 
-public class CuboidZoneDefinitionItem extends Item {
-    private static final String TAG_ZONE = "zone";
+public class CuboidZoneDefinitionItem extends ZoneDefinitionItem {
     private static final String TAG_TEMP_VERTEX = "temp_vertex";
 
     public CuboidZoneDefinitionItem(Properties properties) {
@@ -70,20 +68,6 @@ public class CuboidZoneDefinitionItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         return InteractionResultHolder.pass(player.getItemInHand(hand));
-    }
-
-    @Nullable
-    public static CuboidZone getZone(ItemStack itemStack) {
-        CompoundTag tag = itemStack.getOrCreateTag();
-        if (tag.contains(TAG_ZONE)) {
-            return CuboidZone.fromNBT(tag.getCompound(TAG_ZONE));
-        }
-        return null;
-    }
-
-    public static void setZone(ItemStack itemStack, CuboidZone zone) {
-        CompoundTag tag = itemStack.getOrCreateTag();
-        tag.put(TAG_ZONE, zone.serializeNBT());
     }
 
     @Nullable
