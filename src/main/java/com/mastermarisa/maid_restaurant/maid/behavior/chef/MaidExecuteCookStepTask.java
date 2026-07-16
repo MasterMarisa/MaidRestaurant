@@ -82,14 +82,13 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
 
         if (result == CookResult.DONE) {
             if (node.getParent() == null) {
-                ChefScheduler.trySubmitRequest(level, maid);
-                node.verifyAndUpdateState(maid);
+                node.verifyAndUpdateState(level, maid);
             } else {
                 node.setState(NodeState.DONE);
                 node.getParent().computeState();
             }
         } else if (result == CookResult.INTERRUPTED) {
-            node.verifyAndUpdateState(maid);
+            node.verifyAndUpdateState(level, maid);
         }
         CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidGatherMaterialTask.UID, 5);
         CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidApproachWorkBlockTask.UID, 5);

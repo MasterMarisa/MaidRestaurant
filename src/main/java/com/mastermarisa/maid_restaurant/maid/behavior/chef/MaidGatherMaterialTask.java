@@ -50,7 +50,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         }
         IItemHandler maidInv = maid.getAvailableInv(false);
         RecipeNode recipeNode = node.getRecipeNode();
-        if (ItemUtils.contains(maidInv, recipeNode.getOutput(), recipeNode.getOutputCount())) {
+        if (ItemUtils.contains(maidInv, recipeNode.getOutput(), recipeNode.getCount())) {
             node.setState(NodeState.DONE);
             if (node.getParent() != null) {
                 node.getParent().computeState();
@@ -98,7 +98,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         IItemHandler maidInv = maid.getAvailableInv(false);
         RecipeNode recipeNode = node.getRecipeNode();
         Ingredient ingredient = recipeNode.getOutput();
-        int required = recipeNode.getOutputCount() - ItemUtils.count(maidInv, ingredient);
+        int required = recipeNode.getCount() - ItemUtils.count(maidInv, ingredient);
 
         BlockPos best = null;
         double bestDist = Double.MAX_VALUE;
@@ -133,7 +133,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         IItemHandler maidInv = maid.getAvailableInv(false);
         RecipeNode recipeNode = node.getRecipeNode();
         Ingredient ingredient = recipeNode.getOutput();
-        int required = recipeNode.getOutputCount() - ItemUtils.count(maidInv, ingredient);
+        int required = recipeNode.getCount() - ItemUtils.count(maidInv, ingredient);
 
         maid.swing(InteractionHand.OFF_HAND);
         if (ItemUtils.tryTake(level, pos, storage, maidInv, ingredient, required)) {

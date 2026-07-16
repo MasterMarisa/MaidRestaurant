@@ -145,7 +145,7 @@ public class ChefScheduler {
         ExecutionNode root = request.getRoot();
         RecipeNode recipeNode = root.getRecipeNode();
         int count = ItemUtils.count(maid.getAvailableInv(false), recipeNode.getOutput());
-        if (count >= recipeNode.getOutputCount()) {
+        if (count >= recipeNode.getCount()) {
             bus.submit(restaurantId, maid);
             MaidRestaurant.LOGGER.debug("[MaidRestaurant-DEBUG] Context Submitted.");
         }

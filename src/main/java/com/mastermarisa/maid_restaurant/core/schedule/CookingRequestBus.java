@@ -69,6 +69,7 @@ public class CookingRequestBus extends SavedData {
                 if (entry.claimedBy == null) {
                     entry.claim(level, maid);
                     setDirty();
+                    MaidRestaurant.LOGGER.debug("[MaidRestaurant-DEBUG] Request Claimed.");
                     return entry.request;
                 }
             }
@@ -269,9 +270,10 @@ public class CookingRequestBus extends SavedData {
         }
 
         public void claim(ServerLevel level, EntityMaid maid) {
-            this.request.getRoot().verifyAndUpdateState(maid);
             this.claimedBy = maid.getUUID();
             this.lastClaimedTime = level.getGameTime();
+            this.request.getRoot().verifyAndUpdateState(level, maid);
+            ChefScheduler.trySubmitRequest(level, maid);
         }
 
         public void release(ServerLevel level) {

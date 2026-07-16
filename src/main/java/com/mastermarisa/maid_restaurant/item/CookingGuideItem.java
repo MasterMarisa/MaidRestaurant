@@ -1,6 +1,6 @@
 package com.mastermarisa.maid_restaurant.item;
 
-import com.mastermarisa.maid_restaurant.client.gui.screen.RecipeTreeScreen;
+import com.mastermarisa.maid_restaurant.client.gui.screen.CookingGuideScreen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -23,7 +23,7 @@ public class CookingGuideItem extends Item {
             return InteractionResultHolder.fail(stack);
         }
         if (level.isClientSide()) {
-            RecipeTreeScreen.open(stack);
+            CookingGuideScreen.open(stack);
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }

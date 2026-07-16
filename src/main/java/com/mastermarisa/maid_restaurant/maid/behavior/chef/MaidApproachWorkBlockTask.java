@@ -119,7 +119,7 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
         }
 
         // 验证前置需求
-        node.verifyAndUpdateState(maid);
+        node.verifyAndUpdateState(level, maid);
         if (node.getState() != NodeState.READY) {
             return;
         }

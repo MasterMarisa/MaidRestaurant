@@ -9,9 +9,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 public abstract class UIElement {
     protected static final Minecraft mc;
@@ -25,35 +23,31 @@ public abstract class UIElement {
         this.frame = frame;
     }
 
-    protected void render(GuiGraphics graphics, int mouseX, int mouseY) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY) {
         this.children.forEach((child) -> child.render(graphics, mouseX, mouseY));
     }
 
-    public static void render(GuiGraphics graphics, UIElement element, int mouseX, int mouseY) {
-        render(graphics, Collections.singletonList(element), mouseX, mouseY);
-    }
-
-    public static void render(GuiGraphics graphics, List<? extends UIElement> elements, int mouseX, int mouseY) {
-        elements.forEach((element) -> element.render(graphics, mouseX, mouseY));
-    }
-
-    public static void renderToolTip(GuiGraphics graphics, UIElement element, int mouseX, int mouseY) {
-        element.getRecursiveChildren().forEach((e) -> e.tryRenderTooltip(graphics, mouseX, mouseY));
-    }
-
-    protected void tryRenderTooltip(GuiGraphics graphics, int mouseX, int mouseY){
+    public void tryRenderTooltip(GuiGraphics graphics, int mouseX, int mouseY){
         tryRenderTooltip(graphics, ItemStack.EMPTY, mouseX, mouseY);
     }
 
-    protected void tryRenderTooltip(GuiGraphics graphics, ItemStack itemStack, int mouseX, int mouseY){
+    public void tryRenderTooltip(GuiGraphics graphics, ItemStack itemStack, int mouseX, int mouseY){
         boolean hover = hasTooltip() && frame.contains(mouseX,mouseY);
         if (hover){
             renderTooltip(graphics, itemStack, tooltip, mouseX, mouseY);
         }
     }
 
-    protected final void renderTooltip(GuiGraphics graphics, ItemStack itemStack, List<? extends FormattedText> tooltip, int mouseX, int mouseY) {
+    public final void renderTooltip(GuiGraphics graphics, ItemStack itemStack, List<? extends FormattedText> tooltip, int mouseX, int mouseY) {
         graphics.renderComponentTooltip(font, tooltip, mouseX, mouseY, itemStack);
+    }
+
+    public boolean onMouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        return this.children.stream().anyMatch(c -> c.onMouseScrolled(mouseX,mouseY,scrollX,scrollY));
+    }
+
+    public boolean onMouseClicked(double mouseX, double mouseY, int button) {
+        return this.children.stream().anyMatch(c -> c.onMouseClicked(mouseX,mouseY,button));
     }
 
     public void addChild(UIElement element){
@@ -62,10 +56,6 @@ public abstract class UIElement {
 
     public void removeChild(UIElement element){
         children.remove(element);
-    }
-
-    protected Stream<UIElement> getRecursiveChildren() {
-        return Stream.concat(Stream.of(this), this.children.stream().flatMap(UIElement::getRecursiveChildren));
     }
 
     public boolean hasTooltip(){ return !this.tooltip.isEmpty();}

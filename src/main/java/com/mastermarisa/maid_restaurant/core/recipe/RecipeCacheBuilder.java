@@ -8,14 +8,12 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.compress.utils.Lists;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Mod.EventBusSubscriber(modid = MaidRestaurant.MOD_ID)
 public class RecipeCacheBuilder {
     // 配方ID -> 堆叠处理过的 Ingredient 列表
     private static final ConcurrentHashMap<ResourceLocation, List<IngredientStack>> INGREDIENT_STACK_MAP;

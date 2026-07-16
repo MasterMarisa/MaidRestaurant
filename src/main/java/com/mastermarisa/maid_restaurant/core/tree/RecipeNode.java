@@ -19,21 +19,21 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     private static final String TAG_CHILDREN = "children";
 
     private Ingredient output;
-    private int outputCount;
+    private int count;
     @Nullable
     private RecipeStep combineStep;
     private List<RecipeNode> children;
 
     public RecipeNode() {
         this.output = Ingredient.EMPTY;
-        this.outputCount = 1;
+        this.count = 1;
         this.combineStep = null;
         this.children = new ArrayList<>();
     }
 
-    public RecipeNode(Ingredient output, int outputCount, @Nullable RecipeStep combineStep) {
+    public RecipeNode(Ingredient output, int count, @Nullable RecipeStep combineStep) {
         this.output = output;
-        this.outputCount = outputCount;
+        this.count = count;
         this.combineStep = combineStep != null ? combineStep.copy() : null;
         this.children = new ArrayList<>();
     }
@@ -42,8 +42,8 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         return output;
     }
 
-    public int getOutputCount() {
-        return outputCount;
+    public int getCount() {
+        return count;
     }
 
     @Nullable
@@ -55,6 +55,8 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         return children;
     }
 
+    public boolean isEmpty() { return output.isEmpty(); }
+
     public boolean isLeaf() {
         return children.isEmpty();
     }
@@ -65,7 +67,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
 
     public void setOutput(Ingredient output, int outputCount) {
         this.output = output;
-        this.outputCount = outputCount;
+        this.count = outputCount;
     }
 
     public void setCombineStep(@Nullable RecipeStep step) {
@@ -81,7 +83,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     }
 
     public RecipeNode deepCopy() {
-        RecipeNode copy = new RecipeNode(output, outputCount, combineStep);
+        RecipeNode copy = new RecipeNode(output, count, combineStep);
         for (RecipeNode child : children) {
             copy.addChild(child.deepCopy());
         }
@@ -94,7 +96,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         if (!output.isEmpty()) {
             tag.putString(TAG_OUTPUT, output.toJson().toString());
         }
-        tag.putInt(TAG_OUTPUT_COUNT, outputCount);
+        tag.putInt(TAG_OUTPUT_COUNT, count);
 
         if (combineStep != null) {
             tag.put(TAG_STEP, combineStep.serializeNBT());
@@ -121,7 +123,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         }
 
         if (tag.contains(TAG_OUTPUT_COUNT)) {
-            outputCount = tag.getInt(TAG_OUTPUT_COUNT);
+            count = tag.getInt(TAG_OUTPUT_COUNT);
         }
 
         if (tag.contains(TAG_STEP)) {

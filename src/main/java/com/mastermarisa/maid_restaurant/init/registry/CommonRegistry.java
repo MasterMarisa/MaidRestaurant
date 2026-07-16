@@ -22,6 +22,7 @@ public class CommonRegistry {
             event.accept(ModItems.CHEF_LICENSE.get());
             event.accept(ModItems.CUBOID_ZONE_DEFINITION.get());
             event.accept(ModItems.POINTSET_ZONE_DEFINITION.get());
+            event.accept(ModItems.COOKING_GUIDE.get());
         }
     }
 

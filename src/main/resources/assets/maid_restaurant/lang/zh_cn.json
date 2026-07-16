@@ -1,5 +1,6 @@
 {
   "item.maid_restaurant.chef_license" : "厨师执照",
   "item.maid_restaurant.cuboid_zone_definition" : "长方体区域定义",
-  "item.maid_restaurant.pointset_zone_definition" : "点集区域定义"
+  "item.maid_restaurant.pointset_zone_definition" : "点集区域定义",
+  "cook_capability.maid_restaurant.crafting_table.name" : "合成台"
 }

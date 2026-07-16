@@ -2,6 +2,7 @@ package com.mastermarisa.maid_restaurant.core.tree;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
@@ -92,9 +93,9 @@ public class ExecutionNode {
      * 验证并更新自身及子树状态
      * @param maid 女仆实体
      */
-    public void verifyAndUpdateState(EntityMaid maid) {
+    public void verifyAndUpdateState(ServerLevel level, EntityMaid maid) {
         IItemHandler handler = maid.getAvailableInv(false);
-        boolean containing = ItemUtils.contains(handler, recipeNode.getOutput(), recipeNode.getOutputCount());
+        boolean containing = ItemUtils.contains(handler, recipeNode.getOutput(), recipeNode.getCount());
 
         if (isLeaf()) {
             state = containing ? NodeState.DONE : NodeState.NEED_MATERIALS;
@@ -106,7 +107,7 @@ public class ExecutionNode {
             // 否则临时设为 WAITING,等待子树更新状态后重新推导
             state = NodeState.WAITING;
             for (ExecutionNode child : children) {
-                child.verifyAndUpdateState(maid);
+                child.verifyAndUpdateState(level, maid);
             }
             computeState();
         }
