@@ -49,8 +49,4 @@ public class CapabilityRegistry {
     public static void clear() {
         registry.clear();
     }
-
-    static {
-        register(new CraftingTableCapability());
-    }
 }

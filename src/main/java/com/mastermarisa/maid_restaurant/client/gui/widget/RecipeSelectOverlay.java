@@ -185,7 +185,10 @@ public class RecipeSelectOverlay extends UIElement {
             this.recipeType = recipeType;
             this.callback = callback;
             if (recipeType != null) {
-                this.tooltip.add(Component.translatable("cook_capability.maid_restaurant.crafting_table.name"));
+                ICookCapability capability = CapabilityRegistry.get(recipeType);
+                if (capability != null) {
+                    this.tooltip.add(Component.translatable("cook_capability.maid_restaurant.%s.name".formatted(capability.getUID())));
+                }
             }
         }
 
@@ -197,7 +200,10 @@ public class RecipeSelectOverlay extends UIElement {
             this.recipeType = recipeType;
             this.tooltip.clear();
             if (recipeType != null) {
-                this.tooltip.add(Component.translatable("cook_capability.maid_restaurant.crafting_table.name"));
+                ICookCapability capability = CapabilityRegistry.get(recipeType);
+                if (capability != null) {
+                    this.tooltip.add(Component.translatable("cook_capability.maid_restaurant.%s.name".formatted(capability.getUID())));
+                }
             }
         }
 

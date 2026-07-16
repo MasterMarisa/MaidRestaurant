@@ -2,6 +2,7 @@ package com.mastermarisa.maid_restaurant.core.schedule;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.core.tree.NodeState;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -98,6 +99,10 @@ public class CookingRequestBus extends SavedData {
             if (entry.claimedBy == null) {
                 entry.claim(level, maid);
                 setDirty();
+                if (entry.request.getRoot().getState() == NodeState.DONE) {
+                    entries.remove(entry);
+                    return null;
+                }
                 return entry.request;
             }
             index = (index + 1) % entries.size();
@@ -273,7 +278,6 @@ public class CookingRequestBus extends SavedData {
             this.claimedBy = maid.getUUID();
             this.lastClaimedTime = level.getGameTime();
             this.request.getRoot().verifyAndUpdateState(level, maid);
-            ChefScheduler.trySubmitRequest(level, maid);
         }
 
         public void release(ServerLevel level) {

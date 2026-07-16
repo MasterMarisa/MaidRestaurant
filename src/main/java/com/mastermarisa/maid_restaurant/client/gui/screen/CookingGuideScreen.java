@@ -63,15 +63,6 @@ public class CookingGuideScreen extends Screen {
         this.root = tag.isEmpty() ? new RecipeNode() : RecipeNode.fromNBT(tag);
         rebindIngredient(this.root);
         this.searchBox.setResponder(this::onSearchBoxContentChanged);
-//        if (minecraft.level != null) {
-//            Rectangle frame = new Rectangle(
-//                    ClientUtils.getScreenCenterX() - 110, ClientUtils.getScreenCenterY() - 91,
-//                    220, 182
-//            );
-//            this.selectOverlay = new RecipeSelectOverlay(frame, minecraft.level, null,
-//                    (t, i) -> {MaidRestaurant.LOGGER.debug("");});
-//            this.selectOverlay.open(RecipeType.CRAFTING);
-//        }
     }
 
     public static void open(ItemStack stack) {

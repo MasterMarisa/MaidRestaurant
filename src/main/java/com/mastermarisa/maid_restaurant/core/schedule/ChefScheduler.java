@@ -86,10 +86,13 @@ public class ChefScheduler {
         }
         CookingRequestBus bus = CookingRequestBus.get(level);
         CookingRequest request = bus.getClaimed(restaurantId, maid);
-        if (request != null) {
-            return request;
+        if (request == null) {
+            request = bus.claim(restaurantId, level, maid);
         }
-        return bus.claim(restaurantId, level, maid);
+        if (request != null && trySubmitRequest(level, maid)) {
+            request = null;
+        }
+        return request;
     }
 
     /**
@@ -128,19 +131,19 @@ public class ChefScheduler {
         CookingRequestBus.get(level).release(restaurantId, level, maid);
     }
 
-    public static void trySubmitRequest(ServerLevel level, EntityMaid maid) {
+    public static boolean trySubmitRequest(ServerLevel level, EntityMaid maid) {
         ItemStack license = getChefLicense(maid);
         if (license.isEmpty()) {
-            return;
+            return false;
         }
         String restaurantId = ChefLicenseItem.getRestaurantId(license);
         if (restaurantId.isEmpty()) {
-            return;
+            return false;
         }
         CookingRequestBus bus = CookingRequestBus.get(level);
         CookingRequest request = bus.getClaimed(restaurantId, maid);
         if (request == null) {
-            return;
+            return false;
         }
         ExecutionNode root = request.getRoot();
         RecipeNode recipeNode = root.getRecipeNode();
@@ -148,7 +151,9 @@ public class ChefScheduler {
         if (count >= recipeNode.getCount()) {
             bus.submit(restaurantId, maid);
             MaidRestaurant.LOGGER.debug("[MaidRestaurant-DEBUG] Context Submitted.");
+            return true;
         }
+        return false;
     }
 
     /**

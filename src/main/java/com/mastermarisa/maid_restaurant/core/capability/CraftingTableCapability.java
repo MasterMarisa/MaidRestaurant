@@ -101,7 +101,7 @@ public class CraftingTableCapability implements ICookCapability {
             level.addFreshEntity(itemEntity);
         }
 
-        maid.swing(InteractionHand.OFF_HAND);
+        maid.swing(InteractionHand.MAIN_HAND);
         return CookResult.DONE;
     }
 }

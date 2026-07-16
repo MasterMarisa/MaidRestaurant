@@ -1,0 +1,13 @@
+package com.mastermarisa.maid_restaurant.compat.kaleidoscope_cookery;
+
+import net.minecraftforge.fml.ModList;
+
+public class KaleidoscopeCookeryCompat {
+    public static final boolean LOADED = ModList.get().isLoaded("kaleidoscope_cookery");
+
+    public static void register() {
+        if (LOADED) {
+            PotCapability.register();
+        }
+    }
+}

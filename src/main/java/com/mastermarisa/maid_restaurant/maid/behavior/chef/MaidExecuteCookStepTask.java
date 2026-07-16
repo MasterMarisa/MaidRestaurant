@@ -21,7 +21,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 
 public class MaidExecuteCookStepTask extends MaidTickRateTask {
     public MaidExecuteCookStepTask() {
-        super(ImmutableMap.of(ModEntities.TARGET_POS.get(), MemoryStatus.VALUE_PRESENT), 5);
+        super(ImmutableMap.of(ModEntities.TARGET_POS.get(), MemoryStatus.VALUE_PRESENT), 10);
     }
 
     @Override
@@ -82,6 +82,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
 
         if (result == CookResult.DONE) {
             if (node.getParent() == null) {
+                ChefScheduler.trySubmitRequest(level, maid);
                 node.verifyAndUpdateState(level, maid);
             } else {
                 node.setState(NodeState.DONE);
