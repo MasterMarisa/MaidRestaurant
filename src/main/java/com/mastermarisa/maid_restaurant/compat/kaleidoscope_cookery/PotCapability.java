@@ -23,6 +23,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -172,8 +174,9 @@ public class PotCapability implements ICookCapability {
                         return CookResult.INTERRUPTED;
                     }
                 } else {
-                    be.takeOutProduct(level, fakePlayer, ModItems.KITCHEN_SHOVEL.get().getDefaultInstance());
-                    ItemUtils.getAllFromInv(fakePlayer.getInventory(), maid);
+                    Pig pig = new Pig(EntityType.PIG, level);
+                    be.takeOutProduct(level, pig, ModItems.KITCHEN_SHOVEL.get().getDefaultInstance());
+                    ItemUtils.getItemToMaid(maid, pig.getMainHandItem());
                     maid.swing(InteractionHand.MAIN_HAND);
                     return CookResult.DONE;
                 }
