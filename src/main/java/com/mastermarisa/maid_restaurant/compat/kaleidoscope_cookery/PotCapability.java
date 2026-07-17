@@ -16,6 +16,7 @@ import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
+import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtils;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -27,6 +28,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
@@ -156,19 +158,22 @@ public class PotCapability implements ICookCapability {
                 maid.swing(InteractionHand.MAIN_HAND);
             }
             case 2 -> {
+                FakePlayer fakePlayer = FakePlayerUtils.getPlayer(level);
                 if (be.hasCarrier()){
                     List<ItemStack> carriers = ItemUtils.tryExtract(maidInv, be.getResult().getCount(), recipe.carrier(),true, false);
                     if (!carriers.isEmpty()) {
                         for (var stack : carriers) {
-                            be.takeOutProduct(level, maid, stack);
+                            be.takeOutProduct(level, fakePlayer, stack);
                         }
+                        ItemUtils.getAllFromInv(fakePlayer.getInventory(), maid);
                         maid.swing(InteractionHand.MAIN_HAND);
                         return CookResult.DONE;
                     } else {
                         return CookResult.INTERRUPTED;
                     }
                 } else {
-                    be.takeOutProduct(level, maid, ModItems.KITCHEN_SHOVEL.get().getDefaultInstance());
+                    be.takeOutProduct(level, fakePlayer, ModItems.KITCHEN_SHOVEL.get().getDefaultInstance());
+                    ItemUtils.getAllFromInv(fakePlayer.getInventory(), maid);
                     maid.swing(InteractionHand.MAIN_HAND);
                     return CookResult.DONE;
                 }

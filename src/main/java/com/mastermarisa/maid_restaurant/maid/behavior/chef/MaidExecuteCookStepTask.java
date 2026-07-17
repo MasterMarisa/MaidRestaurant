@@ -2,6 +2,7 @@ package com.mastermarisa.maid_restaurant.maid.behavior.chef;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
+import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.core.capability.CookResult;
@@ -17,6 +18,8 @@ import com.mastermarisa.maid_restaurant.uitls.BehaviorUtils;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 
 public class MaidExecuteCookStepTask extends MaidTickRateTask {
@@ -44,6 +47,11 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
         String capabilityUID = step.getCapabilityUID();
         ICookCapability capability = CapabilityRegistry.get(capabilityUID);
         return capability != null && capability.isValidWorkBlock(level, pos);
+    }
+
+    @Override
+    protected void start(ServerLevel pLevel, EntityMaid pEntity, long pGameTime) {
+        MaidRestaurant.LOGGER.debug("MaidExecuteCookStepTask - START");
     }
 
     @Override
@@ -79,14 +87,20 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
 
         BlockPos pos = maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).orElseThrow().currentBlockPosition();
         CookResult result = capability.cookTick(level, maid, pos, step);
+        maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos.above()));
 
         if (result == CookResult.DONE) {
             if (node.getParent() == null) {
                 ChefScheduler.trySubmitRequest(level, maid);
                 node.verifyAndUpdateState(level, maid);
             } else {
-                node.setState(NodeState.DONE);
+                node.verifyAndUpdateState(level, maid);
                 node.getParent().computeState();
+                MaidRestaurant.LOGGER.debug("Node State: " + node.getState());
+//                if (node.getState() == NodeState.EXECUTING) {
+//                    node.setState(NodeState.DONE);
+//                    node.getParent().computeState();
+//                }
             }
         } else if (result == CookResult.INTERRUPTED) {
             node.verifyAndUpdateState(level, maid);

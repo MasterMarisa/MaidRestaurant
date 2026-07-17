@@ -184,11 +184,13 @@ public class StockpotCapability implements ICookCapability {
                     }
                     List<ItemStack> carriers = ItemUtils.tryExtract(maidInv, recipe.result().getCount(), recipe.carrier(), true, false);
                     if (!carriers.isEmpty()) {
+                        FakePlayer fakePlayer = FakePlayerUtils.getPlayer(level);
                         for (var stack : carriers) {
                             for (int i = 0; i < stack.getCount(); i++) {
-                                be.takeOutProduct(level, maid, stack.copyWithCount(1));
+                                be.takeOutProduct(level, fakePlayer, stack.copyWithCount(1));
                             }
                         }
+                        ItemUtils.getAllFromInv(fakePlayer.getInventory(), maid);
                         maid.swing(InteractionHand.MAIN_HAND);
                         return CookResult.DONE;
                     }
@@ -204,8 +206,8 @@ public class StockpotCapability implements ICookCapability {
         pot.setLidItem(ItemStack.EMPTY);
         pot.setChanged();
         level.setBlockAndUpdate(pos,level.getBlockState(pos).setValue(StockpotBlock.HAS_LID, false));
+        ItemUtils.getItemToMaid(maid, lid);
         maid.playSound(SoundEvents.LANTERN_BREAK, 0.5F, 0.5F);
-        ItemUtils.getItemToLivingEntity(maid, lid);
         maid.swing(InteractionHand.OFF_HAND);
     }
 

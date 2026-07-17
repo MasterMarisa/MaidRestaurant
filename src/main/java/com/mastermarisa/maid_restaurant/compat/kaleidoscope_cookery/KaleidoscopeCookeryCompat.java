@@ -7,6 +7,7 @@ public class KaleidoscopeCookeryCompat {
 
     public static void register() {
         if (LOADED) {
+            ChoppingBoardCapability.register();
             PotCapability.register();
             StockpotCapability.register();
         }

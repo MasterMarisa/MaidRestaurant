@@ -1,5 +1,6 @@
 package com.mastermarisa.maid_restaurant.uitls;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -10,6 +11,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -151,5 +153,25 @@ public class ItemUtils {
                 }
             }
         }
+    }
+
+    public static void getItemToMaid(EntityMaid maid, ItemStack stack) {
+        ItemStack remainder = ItemHandlerHelper.insertItemStacked(maid.getAvailableInv(false), stack, false);
+        if (!remainder.isEmpty()) {
+            ItemEntity dropItem = maid.spawnAtLocation(stack);
+            if (dropItem != null) {
+                dropItem.setPickUpDelay(0);
+            }
+        }
+    }
+
+    public static void getAllFromInv(Inventory inventory, EntityMaid maid) {
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack itemStack = inventory.getItem(i);
+            if (!itemStack.isEmpty()) {
+                getItemToMaid(maid, itemStack);
+            }
+        }
+        inventory.clearContent();
     }
 }

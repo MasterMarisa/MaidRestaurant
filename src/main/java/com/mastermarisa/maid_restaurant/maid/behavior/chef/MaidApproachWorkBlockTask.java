@@ -2,6 +2,7 @@ package com.mastermarisa.maid_restaurant.maid.behavior.chef;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
+import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
@@ -45,6 +46,11 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
             return false;
         }
         return searchWorkBlock(level, maid, node);
+    }
+
+    @Override
+    protected void start(ServerLevel pLevel, EntityMaid pEntity, long pGameTime) {
+        MaidRestaurant.LOGGER.debug("MaidApproachWorkBlockTask - START");
     }
 
     @Override

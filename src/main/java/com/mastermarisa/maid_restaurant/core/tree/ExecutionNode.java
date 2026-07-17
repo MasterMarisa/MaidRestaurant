@@ -1,6 +1,7 @@
 package com.mastermarisa.maid_restaurant.core.tree;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.items.IItemHandler;
@@ -96,6 +97,8 @@ public class ExecutionNode {
     public void verifyAndUpdateState(ServerLevel level, EntityMaid maid) {
         IItemHandler handler = maid.getAvailableInv(false);
         boolean containing = ItemUtils.contains(handler, recipeNode.getOutput(), recipeNode.getCount());
+        MaidRestaurant.LOGGER.debug("Ingredient: " + recipeNode.getOutput().getItems()[0].getDescriptionId());
+        MaidRestaurant.LOGGER.debug("Containing: " + ItemUtils.count(handler, recipeNode.getOutput()) + "/" + containing);
 
         if (isLeaf()) {
             state = containing ? NodeState.DONE : NodeState.NEED_MATERIALS;
