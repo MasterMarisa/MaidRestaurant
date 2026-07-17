@@ -26,6 +26,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
@@ -45,6 +46,7 @@ public class CookingGuideScreen extends Screen {
     private final List<NodeEntry> entries;
     private final List<ButtonEntry> buttons;
     private final EditBox searchBox;
+    private Vec2 offset;
     private RecipeNode root;
     @Nullable
     private RecipeNode selectedNode;
@@ -63,6 +65,7 @@ public class CookingGuideScreen extends Screen {
         this.root = tag.isEmpty() ? new RecipeNode() : RecipeNode.fromNBT(tag);
         rebindIngredient(this.root);
         this.searchBox.setResponder(this::onSearchBoxContentChanged);
+        this.offset = Vec2.ZERO;
     }
 
     public static void open(ItemStack stack) {
@@ -101,15 +104,20 @@ public class CookingGuideScreen extends Screen {
         super.render(graphics, mouseX, mouseY, partialTick);
         var window = minecraft.getWindow();
         graphics.fill(0, 0, window.getGuiScaledWidth(), window.getGuiScaledHeight(), BG.getRGB());
-        if (this.entries.size() <= 1) {
-            graphics.drawCenteredString(font, "+", 22, 26, Color.WHITE.getRGB());
-        } else {
-            for (int i = 0; i < this.entries.size(); i++) {
-                renderNode(graphics, i, this.entries.get(i), mouseX, mouseY);
+        PoseStack pose = graphics.pose();
+        pose.pushPose();
+        {
+            pose.translate(offset.x, offset.y, 0);
+            if (this.entries.size() <= 1) {
+                graphics.drawCenteredString(font, "+", 22, 26, Color.WHITE.getRGB());
+            } else {
+                for (int i = 0; i < this.entries.size(); i++) {
+                    renderNode(graphics, i, this.entries.get(i), mouseX, mouseY);
+                }
             }
         }
+        pose.popPose();
         if (selectOverlay != null) {
-            PoseStack pose = graphics.pose();
             pose.pushPose();
             {
                 pose.translate(0, 0, 300);
@@ -125,29 +133,31 @@ public class CookingGuideScreen extends Screen {
         if (selectOverlay != null && selectOverlay.onMouseClicked(pMouseX, pMouseY, pButton)) {
             return true;
         }
-        for (var button : this.buttons) {
-            if (button.frame.contains(pMouseX, pMouseY)) {
-                if (button.button == 0) {
-                    NodeEntry entry = this.entries.get(button.index);
-                    entry.node.getChildren().clear();
-                    entry.node.setCombineStep(null);
-                    if (button.index == 0) {
-                        this.root = new RecipeNode();
-                    }
-                    save();
-                    init();
-                } else if (button.button == 1) {
-                    Ingredient ingredient = null;
-                    if (button.index != -1) {
+        if (pButton == 0) {
+            for (var button : this.buttons) {
+                if (button.frame.contains(pMouseX - offset.x, pMouseY - offset.y)) {
+                    if (button.button == 0) {
                         NodeEntry entry = this.entries.get(button.index);
-                        ingredient = entry.node.getOutput();
-                        this.selectedNode = entry.node;
+                        entry.node.getChildren().clear();
+                        entry.node.setCombineStep(null);
+                        if (button.index == 0) {
+                            this.root = new RecipeNode();
+                        }
+                        save();
+                        init();
+                    } else if (button.button == 1) {
+                        Ingredient ingredient = null;
+                        if (button.index != -1) {
+                            NodeEntry entry = this.entries.get(button.index);
+                            ingredient = entry.node.getOutput();
+                            this.selectedNode = entry.node;
+                        }
+                        if (minecraft.level != null) {
+                            openSelectOverlay(minecraft.level, ingredient);
+                        }
                     }
-                    if (minecraft.level != null) {
-                        openSelectOverlay(minecraft.level, ingredient);
-                    }
+                    return true;
                 }
-                return true;
             }
         }
         if (selectOverlay != null && !this.searchBox.isHovered()) {
@@ -164,6 +174,16 @@ public class CookingGuideScreen extends Screen {
             return true;
         }
         return super.mouseScrolled(pMouseX, pMouseY, pDelta);
+    }
+
+    @Override
+    public boolean mouseDragged(double pMouseX, double pMouseY, int pButton, double pDragX, double pDragY) {
+        if (pButton == 1) {
+            float x = Math.min(0, (float) (offset.x + pDragX * 0.6));
+            float y = Math.min(0, (float) (offset.y + pDragY * 0.6));
+            this.offset = new Vec2(x, y);
+        }
+        return super.mouseDragged(pMouseX, pMouseY, pButton, pDragX, pDragY);
     }
 
     @Override
@@ -293,8 +313,8 @@ public class CookingGuideScreen extends Screen {
     }
 
     private void renderNode(GuiGraphics graphics, int row, NodeEntry entry, int mouseX, int mouseY) {
-        int x = 30 + entry.depth * INDENT_WIDTH;
-        int y = 20 + row * ROW_HEIGHT;
+        int x = (int) (30 + entry.depth * INDENT_WIDTH);
+        int y = (int) (20 + row * ROW_HEIGHT);
         RecipeNode node = entry.node;
         RecipeStep step = node.getCombineStep();
         ItemStack icon = Items.CHEST.getDefaultInstance();

@@ -64,7 +64,7 @@ public class PotCapability implements ICookCapability {
     public BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
         List<BlockPos> found = new ArrayList<>();
         for (BlockPos pos : zone) {
-            if (level.getBlockState(pos).is(ModBlocks.POT.get()) && !BlockUsageUtils.isUsed(pos)) {
+            if (level.getBlockState(pos).is(ModBlocks.POT.get()) && !BlockUsageUtils.isUsed(pos.below())) {
                 found.add(pos);
             }
         }
@@ -82,7 +82,6 @@ public class PotCapability implements ICookCapability {
     @Override
     public List<Ingredient> getRequiredIngredients(Recipe<?> recipe) {
         List<Ingredient> ingredients = new ArrayList<>(ICookCapability.super.getRequiredIngredients(recipe));
-        ingredients.add(KITCHEN_SHOVEL);
         ingredients.add(OIL);
         PotRecipe potRecipe = (PotRecipe) recipe;
         if (!potRecipe.carrier().isEmpty()) {
@@ -90,6 +89,7 @@ public class PotCapability implements ICookCapability {
                 ingredients.add(potRecipe.carrier());
             }
         }
+        ingredients.add(KITCHEN_SHOVEL);
         return ingredients;
     }
 

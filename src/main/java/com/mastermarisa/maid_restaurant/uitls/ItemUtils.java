@@ -5,6 +5,12 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.common.crafting.PartialNBTIngredient;
@@ -124,5 +130,26 @@ public class ItemUtils {
             if (!found) return false;
         }
         return true;
+    }
+
+    public static void getItemToLivingEntity(LivingEntity entity, ItemStack stack) {
+        getItemToLivingEntity(entity, stack, -1);
+    }
+
+    public static void getItemToLivingEntity(LivingEntity entity, ItemStack stack, int preferredSlot) {
+        if (!stack.isEmpty()) {
+            if (entity.getMainHandItem().isEmpty()) {
+                RandomSource random = entity.level().random;
+                entity.setItemInHand(InteractionHand.MAIN_HAND, stack);
+                entity.playSound(SoundEvents.ITEM_PICKUP, 0.2F, ((random.nextFloat() - random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
+            } else if (entity instanceof Player player) {
+                ItemHandlerHelper.giveItemToPlayer(player, stack, preferredSlot);
+            } else {
+                ItemEntity dropItem = entity.spawnAtLocation(stack);
+                if (dropItem != null) {
+                    dropItem.setPickUpDelay(0);
+                }
+            }
+        }
     }
 }
