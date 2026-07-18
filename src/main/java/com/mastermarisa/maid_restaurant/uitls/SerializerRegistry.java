@@ -11,7 +11,7 @@ import java.util.function.Function;
 
 public class SerializerRegistry<T extends INBTSerializable<CompoundTag>> {
     private final Map<ResourceLocation, Function<CompoundTag, ? extends T>> deserializerByKey = new LinkedHashMap<>();
-    private final Map<Class<? extends T>, ResourceLocation> keyByClass = new IdentityHashMap<>();
+    public final Map<Class<? extends T>, ResourceLocation> keyByClass = new IdentityHashMap<>();
 
     public <U extends T> void register(
             ResourceLocation key,

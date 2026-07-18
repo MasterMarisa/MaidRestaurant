@@ -16,7 +16,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 @Mod.EventBusSubscriber(modid = MaidRestaurant.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class NetworkHandler {
     private static final String PROTOCOL_VERSION = "1.0.0";
-    private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(MaidRestaurant.resourceLocation("network"), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
+    private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(MaidRestaurant.modLoc("network"), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
     private static int packetId = 0;
 
     public static void init() {

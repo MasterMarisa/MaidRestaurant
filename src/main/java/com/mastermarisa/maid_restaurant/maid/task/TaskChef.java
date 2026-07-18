@@ -19,7 +19,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class TaskChef implements IMaidTask {
-    public static final ResourceLocation UID = MaidRestaurant.resourceLocation("chef");
+    public static final ResourceLocation UID = MaidRestaurant.modLoc("chef");
 
     @Override
     public ResourceLocation getUid() {

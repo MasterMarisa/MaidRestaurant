@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.Nullable;
 
-public class ChefInfo implements INBTSerializable<CompoundTag> {
+public class ChefInformation implements INBTSerializable<CompoundTag> {
     private static final String TAG_WORK_ZONE = "work_zone";
     private static final String TAG_STORAGE_ZONE = "storage_zone";
 
@@ -17,9 +17,9 @@ public class ChefInfo implements INBTSerializable<CompoundTag> {
     @Nullable
     private CombinedZoneWrapper storageZone;
 
-    public ChefInfo() {}
+    public ChefInformation() {}
 
-    public ChefInfo(@Nullable CombinedZoneWrapper workZone, @Nullable CombinedZoneWrapper storageZone) {
+    public ChefInformation(@Nullable CombinedZoneWrapper workZone, @Nullable CombinedZoneWrapper storageZone) {
         this.workZone = workZone;
         this.storageZone = storageZone;
     }
@@ -56,26 +56,26 @@ public class ChefInfo implements INBTSerializable<CompoundTag> {
         }
     }
 
-    public static ChefInfo fromNBT(CompoundTag tag) {
-        ChefInfo info = new ChefInfo();
+    public static ChefInformation fromNBT(CompoundTag tag) {
+        ChefInformation info = new ChefInformation();
         info.deserializeNBT(tag);
         return info;
     }
 
-    public static class DataKey implements TaskDataKey<ChefInfo> {
-        private static final ResourceLocation KEY = MaidRestaurant.resourceLocation("chef_info");
+    public static class DataKey implements TaskDataKey<ChefInformation> {
+        private static final ResourceLocation KEY = MaidRestaurant.modLoc("chef_info");
 
         @Override
         public ResourceLocation getKey() { return KEY; }
 
         @Override
-        public CompoundTag writeSaveData(ChefInfo chefInfo) {
+        public CompoundTag writeSaveData(ChefInformation chefInfo) {
             return chefInfo.serializeNBT();
         }
 
         @Override
-        public ChefInfo readSaveData(CompoundTag compoundTag) {
-            return ChefInfo.fromNBT(compoundTag);
+        public ChefInformation readSaveData(CompoundTag compoundTag) {
+            return ChefInformation.fromNBT(compoundTag);
         }
     }
 }

@@ -3,7 +3,7 @@ package com.mastermarisa.maid_restaurant.item.bauble;
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
-import com.mastermarisa.maid_restaurant.core.schedule.ChefInfo;
+import com.mastermarisa.maid_restaurant.core.schedule.ChefInformation;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.core.zone.CombinedZoneWrapper;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
@@ -50,7 +50,7 @@ public class ChefLicenseBauble implements IMaidBauble {
         }
         CombinedZoneWrapper workZoneWrapper = workZones.isEmpty() ? null : new CombinedZoneWrapper(workZones);
         CombinedZoneWrapper storageZoneWrapper = storageZones.isEmpty() ? null : new CombinedZoneWrapper(storageZones);
-        ChefInfo chefInfo = new ChefInfo(workZoneWrapper, storageZoneWrapper);
+        ChefInformation chefInfo = new ChefInformation(workZoneWrapper, storageZoneWrapper);
         maid.setData(ModTaskDataKeys.CHEF_INFO, chefInfo);
     }
 

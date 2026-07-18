@@ -20,7 +20,7 @@ import net.minecraftforge.fml.common.Mod;
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(modid = MaidRestaurant.MOD_ID)
 public class BindingRender {
-    private static final ResourceLocation EMPTY_TEXTURE = MaidRestaurant.resourceLocation("textures/white.png");
+    private static final ResourceLocation EMPTY_TEXTURE = MaidRestaurant.modLoc("textures/white.png");
     private static BlockPos targetedBlockCache = null;
 
     @SubscribeEvent

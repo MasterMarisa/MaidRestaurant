@@ -12,18 +12,18 @@ public interface TagMod {
     TagKey<Block> STORAGE_BLOCK = blockTag("storage_block");
 
     static TagKey<Item> itemTag(String name) {
-        return TagKey.create(Registries.ITEM, MaidRestaurant.resourceLocation(name));
+        return TagKey.create(Registries.ITEM, MaidRestaurant.modLoc(name));
     }
 
     static TagKey<Block> blockTag(String name) {
-        return TagKey.create(Registries.BLOCK, MaidRestaurant.resourceLocation(name));
+        return TagKey.create(Registries.BLOCK, MaidRestaurant.modLoc(name));
     }
 
     static TagKey<EntityType<?>> entityTag(String name) {
-        return TagKey.create(Registries.ENTITY_TYPE, MaidRestaurant.resourceLocation(name));
+        return TagKey.create(Registries.ENTITY_TYPE, MaidRestaurant.modLoc(name));
     }
 
     static TagKey<DamageType> damageTypeTag(String name) {
-        return TagKey.create(Registries.DAMAGE_TYPE, MaidRestaurant.resourceLocation(name));
+        return TagKey.create(Registries.DAMAGE_TYPE, MaidRestaurant.modLoc(name));
     }
 }

@@ -4,7 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
 import com.mastermarisa.maid_restaurant.core.schedule.CookingRequest;
-import com.mastermarisa.maid_restaurant.core.schedule.CookingRequestBus;
+import com.mastermarisa.maid_restaurant.core.schedule.RequestBus;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import com.mastermarisa.maid_restaurant.maid.task.TaskChef;
 import net.minecraft.server.level.ServerLevel;
@@ -27,7 +27,7 @@ public class EntityJoinLevel {
             ItemStack itemStack = ChefScheduler.getChefLicense(maid);
             if (!itemStack.isEmpty()) {
                 String id = ChefLicenseItem.getRestaurantId(itemStack);
-                CookingRequest request = CookingRequestBus.get(level).getClaimed(id, maid);
+                CookingRequest request = RequestBus.getInstance(level, CookingRequest.class).getClaimed(id, maid);
                 if (request != null) {
                     request.getRoot().verifyAndUpdateState(level, maid);
                 }

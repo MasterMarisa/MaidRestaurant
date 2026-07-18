@@ -18,7 +18,7 @@ public abstract class AbstractZone implements Iterable<BlockPos>, INBTSerializab
         REGISTRY.register(COMBINED_ZONE_WRAPPER, CombinedZoneWrapper.class, CombinedZoneWrapper::fromNBT);
     }
 
-    public static final ResourceLocation CUBOID_ZONE = MaidRestaurant.resourceLocation("cuboid_zone");
-    public static final ResourceLocation POINTSET_ZONE = MaidRestaurant.resourceLocation("pointset_zone");
-    public static final ResourceLocation COMBINED_ZONE_WRAPPER = MaidRestaurant.resourceLocation("combined_zone_wrapper");
+    public static final ResourceLocation CUBOID_ZONE = MaidRestaurant.modLoc("cuboid_zone");
+    public static final ResourceLocation POINTSET_ZONE = MaidRestaurant.modLoc("pointset_zone");
+    public static final ResourceLocation COMBINED_ZONE_WRAPPER = MaidRestaurant.modLoc("combined_zone_wrapper");
 }

@@ -16,7 +16,7 @@ public class MaidRestaurant {
     public static final String MOD_ID = "maid_restaurant";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public static ResourceLocation resourceLocation(String path) {
+    public static ResourceLocation modLoc(String path) {
         return new ResourceLocation(MOD_ID,path);
     }
 

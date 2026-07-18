@@ -43,7 +43,7 @@ public class ChefScheduler {
         if (license.isEmpty()) {
             return null;
         }
-        ChefInfo chefInfo = maid.getData(ModTaskDataKeys.CHEF_INFO);
+        ChefInformation chefInfo = maid.getData(ModTaskDataKeys.CHEF_INFO);
         if (chefInfo == null) {
             return null;
         }
@@ -61,7 +61,7 @@ public class ChefScheduler {
         if (license.isEmpty()) {
             return null;
         }
-        ChefInfo chefInfo = maid.getData(ModTaskDataKeys.CHEF_INFO);
+        ChefInformation chefInfo = maid.getData(ModTaskDataKeys.CHEF_INFO);
         if (chefInfo == null) {
             return null;
         }
@@ -84,34 +84,19 @@ public class ChefScheduler {
         if (restaurantId.isEmpty()) {
             return null;
         }
-        CookingRequestBus bus = CookingRequestBus.get(level);
+        RequestBus<CookingRequest> bus = RequestBus.getInstance(level, CookingRequest.class);
         CookingRequest request = bus.getClaimed(restaurantId, maid);
         if (request == null) {
-            request = bus.claim(restaurantId, level, maid);
-        }
-        if (request != null && trySubmitRequest(level, maid)) {
-            request = null;
+            request = bus.claim(restaurantId, maid);
+            if (request != null) {
+                request.getRoot().verifyAndUpdateState(level, maid);
+                MaidRestaurant.LOGGER.debug("Claimed");
+                if (trySubmitRequest(level, maid)) {
+                    request = null;
+                }
+            }
         }
         return request;
-    }
-
-    /**
-     * 释放当前女仆占用的委托，并尝试从当前位置往后循环认领另一个未被占用的委托
-     * @param level 所在世界
-     * @param maid  女仆实体
-     * @return 新认领的委托
-     */
-    @Nullable
-    public static CookingRequest reclaimRequest(ServerLevel level, EntityMaid maid) {
-        ItemStack license = getChefLicense(maid);
-        if (license.isEmpty()) {
-            return null;
-        }
-        String restaurantId = ChefLicenseItem.getRestaurantId(license);
-        if (restaurantId.isEmpty()) {
-            return null;
-        }
-        return CookingRequestBus.get(level).reclaim(restaurantId, level, maid);
     }
 
     /**
@@ -128,7 +113,7 @@ public class ChefScheduler {
         if (restaurantId.isEmpty()) {
             return;
         }
-        CookingRequestBus.get(level).release(restaurantId, level, maid);
+        RequestBus.getInstance(level, CookingRequest.class).release(restaurantId, maid);
     }
 
     public static boolean trySubmitRequest(ServerLevel level, EntityMaid maid) {
@@ -140,7 +125,7 @@ public class ChefScheduler {
         if (restaurantId.isEmpty()) {
             return false;
         }
-        CookingRequestBus bus = CookingRequestBus.get(level);
+        RequestBus<CookingRequest> bus = RequestBus.getInstance(level, CookingRequest.class);
         CookingRequest request = bus.getClaimed(restaurantId, maid);
         if (request == null) {
             return false;

@@ -2,7 +2,7 @@ package com.mastermarisa.maid_restaurant.init;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.core.schedule.CookingRequest;
-import com.mastermarisa.maid_restaurant.core.schedule.CookingRequestBus;
+import com.mastermarisa.maid_restaurant.core.schedule.RequestBus;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.item.CookingGuideItem;
 import com.mojang.brigadier.CommandDispatcher;
@@ -34,7 +34,7 @@ public class CommandRegistry {
                                             if (player != null) {
                                                 ItemStack itemInHand = player.getMainHandItem();
                                                 if (itemInHand.is(ModItems.COOKING_GUIDE.get()) && itemInHand.hasTag()) {
-                                                    CookingRequestBus.get(level).add(id, new CookingRequest(RecipeNode.fromNBT(CookingGuideItem.getRecipeRoot(itemInHand))));
+                                                    RequestBus.getInstance(level, CookingRequest.class).enqueue(id, new CookingRequest(RecipeNode.fromNBT(CookingGuideItem.getRecipeRoot(itemInHand))));
                                                     player.sendSystemMessage(Component.literal("Successfully Sent!"));
                                                     return 1;
                                                 }
