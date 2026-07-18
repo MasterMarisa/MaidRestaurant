@@ -34,7 +34,7 @@ public class CommandRegistry {
                                             if (player != null) {
                                                 ItemStack itemInHand = player.getMainHandItem();
                                                 if (itemInHand.is(ModItems.COOKING_GUIDE.get()) && itemInHand.hasTag()) {
-                                                    RequestBus.getInstance(level, CookingRequest.class).enqueue(id, new CookingRequest(RecipeNode.fromNBT(CookingGuideItem.getRecipeRoot(itemInHand))));
+                                                    RequestBus.getInstance(level, CookingRequest.class).enqueue(id, new CookingRequest(RecipeNode.fromNBT(CookingGuideItem.getRecipeRoot(itemInHand)), 1));
                                                     player.sendSystemMessage(Component.literal("Successfully Sent!"));
                                                     return 1;
                                                 }

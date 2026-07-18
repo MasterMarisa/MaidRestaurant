@@ -3,7 +3,8 @@ package com.mastermarisa.maid_restaurant.maid.behavior;
 public enum TargetType {
     GATHER_MATERIAL(0),
     APPROACH_WORK_BLOCK(1),
-    EXECUTE_COOK_STEP(2);
+    EXECUTE_COOK_STEP(2),
+    STORE_DISH(3);
 
     TargetType(int id) {
         this.id = id;

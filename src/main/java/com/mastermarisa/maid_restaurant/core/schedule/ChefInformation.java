@@ -40,7 +40,8 @@ public class ChefInformation implements INBTSerializable<CompoundTag> {
         return storageZone;
     }
 
-    public @Nullable CombinedZoneWrapper getPrepZone() { return prepZone; }
+    @Nullable
+    public CombinedZoneWrapper getPrepZone() { return prepZone; }
 
     @Override
     public CompoundTag serializeNBT() {

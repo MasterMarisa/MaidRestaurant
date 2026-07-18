@@ -29,7 +29,7 @@ public class EntityJoinLevel {
                 String id = ChefLicenseItem.getRestaurantId(itemStack);
                 CookingRequest request = RequestBus.getInstance(level, CookingRequest.class).getClaimed(id, maid);
                 if (request != null) {
-                    request.getRoot().verifyAndUpdateState(level, maid);
+                    request.root.verifyAndUpdateState(level, maid);
                 }
             }
         }

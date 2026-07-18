@@ -1,7 +1,9 @@
 package com.mastermarisa.maid_restaurant.core.tree;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
+import com.mastermarisa.maid_restaurant.core.schedule.CookingRequest;
+import com.mastermarisa.maid_restaurant.core.schedule.RequestBus;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.items.IItemHandler;
@@ -96,9 +98,16 @@ public class ExecutionNode {
      */
     public void verifyAndUpdateState(ServerLevel level, EntityMaid maid) {
         IItemHandler handler = maid.getAvailableInv(false);
-        boolean containing = ItemUtils.contains(handler, recipeNode.getOutput(), recipeNode.getCount());
-        MaidRestaurant.LOGGER.debug("Ingredient: " + recipeNode.getOutput().getItems()[0].getDescriptionId());
-        MaidRestaurant.LOGGER.debug("Containing: " + ItemUtils.count(handler, recipeNode.getOutput()) + "/" + containing);
+        int count = recipeNode.getCount();
+        if (parent == null) {
+            RequestBus<CookingRequest> bus = RequestBus.getInstance(level, CookingRequest.class);
+            String restaurantId = ChefScheduler.getRestaurantId(maid);
+            if (restaurantId != null) {
+                CookingRequest request = bus.getClaimed(restaurantId, maid);
+                count = request != null ? request.count : count;
+            }
+        }
+        boolean containing = ItemUtils.contains(handler, recipeNode.getOutput(), count);
 
         if (isLeaf()) {
             state = containing ? NodeState.DONE : NodeState.NEED_MATERIALS;

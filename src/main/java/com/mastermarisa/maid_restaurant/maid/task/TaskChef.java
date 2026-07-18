@@ -9,6 +9,7 @@ import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.maid.behavior.chef.MaidApproachWorkBlockTask;
 import com.mastermarisa.maid_restaurant.maid.behavior.chef.MaidExecuteCookStepTask;
 import com.mastermarisa.maid_restaurant.maid.behavior.chef.MaidGatherMaterialTask;
+import com.mastermarisa.maid_restaurant.maid.behavior.chef.MaidStoreDishTask;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -51,7 +52,8 @@ public class TaskChef implements IMaidTask {
         return Lists.newArrayList(
                 Pair.of(5, new MaidGatherMaterialTask(60, 0.4F, 1.5D)),
                 Pair.of(5, new MaidApproachWorkBlockTask(60, 0.4F, 1.5D)),
-                Pair.of(5, new MaidExecuteCookStepTask())
+                Pair.of(5, new MaidExecuteCookStepTask()),
+                Pair.of(5, new MaidStoreDishTask(60, 0.4F, 1.5D))
         );
     }
 

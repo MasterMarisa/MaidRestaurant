@@ -86,6 +86,19 @@ public class ChefScheduler {
         return chefInfo.getPrepZone();
     }
 
+    @Nullable
+    public static String getRestaurantId(EntityMaid maid) {
+        ItemStack license = getChefLicense(maid);
+        if (license.isEmpty()) {
+            return null;
+        }
+        String restaurantId = ChefLicenseItem.getRestaurantId(license);
+        if (restaurantId.isEmpty()) {
+            return null;
+        }
+        return restaurantId;
+    }
+
     /**
      * 获取或认领当前女仆对应的委托
      * @param level 所在世界
@@ -94,12 +107,8 @@ public class ChefScheduler {
      */
     @Nullable
     public static CookingRequest getOrClaimRequest(ServerLevel level, EntityMaid maid) {
-        ItemStack license = getChefLicense(maid);
-        if (license.isEmpty()) {
-            return null;
-        }
-        String restaurantId = ChefLicenseItem.getRestaurantId(license);
-        if (restaurantId.isEmpty()) {
+        String restaurantId = getRestaurantId(maid);
+        if (restaurantId == null) {
             return null;
         }
         RequestBus<CookingRequest> bus = RequestBus.getInstance(level, CookingRequest.class);
@@ -107,14 +116,16 @@ public class ChefScheduler {
         if (request == null) {
             request = bus.claim(restaurantId, maid);
             if (request != null) {
-                request.getRoot().verifyAndUpdateState(level, maid);
-                if (trySubmitRequest(level, maid)) {
-                    request = null;
-                }
+                request.root.verifyAndUpdateState(level, maid);
+//                if (trySubmitRequest(level, maid)) {
+//                    request = null;
+//                }
             }
         }
         return request;
     }
+
+
 
     /**
      * 释放当前女仆占用的委托
@@ -122,24 +133,15 @@ public class ChefScheduler {
      * @param maid  女仆实体
      */
     public static void releaseRequest(ServerLevel level, EntityMaid maid) {
-        ItemStack license = getChefLicense(maid);
-        if (license.isEmpty()) {
-            return;
+        String restaurantId = getRestaurantId(maid);
+        if (restaurantId != null) {
+            RequestBus.getInstance(level, CookingRequest.class).release(restaurantId, maid);
         }
-        String restaurantId = ChefLicenseItem.getRestaurantId(license);
-        if (restaurantId.isEmpty()) {
-            return;
-        }
-        RequestBus.getInstance(level, CookingRequest.class).release(restaurantId, maid);
     }
 
     public static boolean trySubmitRequest(ServerLevel level, EntityMaid maid) {
-        ItemStack license = getChefLicense(maid);
-        if (license.isEmpty()) {
-            return false;
-        }
-        String restaurantId = ChefLicenseItem.getRestaurantId(license);
-        if (restaurantId.isEmpty()) {
+        String restaurantId = getRestaurantId(maid);
+        if (restaurantId == null) {
             return false;
         }
         RequestBus<CookingRequest> bus = RequestBus.getInstance(level, CookingRequest.class);
@@ -147,7 +149,7 @@ public class ChefScheduler {
         if (request == null) {
             return false;
         }
-        ExecutionNode root = request.getRoot();
+        ExecutionNode root = request.root;
         RecipeNode recipeNode = root.getRecipeNode();
         int count = ItemUtils.count(maid.getAvailableInv(false), recipeNode.getOutput());
         if (count >= recipeNode.getCount()) {
@@ -156,6 +158,15 @@ public class ChefScheduler {
             return true;
         }
         return false;
+    }
+
+    public static void submitRequest(ServerLevel level, EntityMaid maid) {
+        String restaurantId = getRestaurantId(maid);
+        if (restaurantId == null) {
+            return;
+        }
+        RequestBus<CookingRequest> bus = RequestBus.getInstance(level, CookingRequest.class);
+        bus.submit(restaurantId, maid);
     }
 
     /**
@@ -171,6 +182,6 @@ public class ChefScheduler {
         if (request == null) {
             return null;
         }
-        return request.getRoot().findNode(state);
+        return request.root.findNode(state);
     }
 }
