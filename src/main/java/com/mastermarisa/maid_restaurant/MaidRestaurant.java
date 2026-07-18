@@ -26,6 +26,6 @@ public class MaidRestaurant {
         ModItems.ITEMS.register(modEventBus);
         ModContainers.CONTAINER_TYPES.register(modEventBus);
 
-        KaleidoscopeCookeryCompat.register();
+        KaleidoscopeCookeryCompat.registerCapabilities();
     }
 }

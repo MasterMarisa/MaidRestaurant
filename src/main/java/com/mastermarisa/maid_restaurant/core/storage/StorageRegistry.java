@@ -11,7 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class StorageRegistry {
-    private static final Map<String, IMaidStorage> registry;
+    private static final Map<String, IMaidStorage> registry = new LinkedHashMap<>();
 
     public static void register(IMaidStorage storage) {
         registry.put(storage.getUID(), storage);
@@ -38,10 +38,5 @@ public class StorageRegistry {
             }
         }
         return null;
-    }
-
-    static {
-        registry = new LinkedHashMap<>();
-        register(new CommonStorage());
     }
 }

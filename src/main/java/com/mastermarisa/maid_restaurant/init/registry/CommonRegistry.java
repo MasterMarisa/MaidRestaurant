@@ -5,6 +5,8 @@ import com.mastermarisa.maid_restaurant.compat.kaleidoscope_cookery.Kaleidoscope
 import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.core.capability.CraftingTableCapability;
 import com.mastermarisa.maid_restaurant.core.schedule.RequestBus;
+import com.mastermarisa.maid_restaurant.core.storage.CommonStorage;
+import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -18,7 +20,8 @@ public class CommonRegistry {
     @SubscribeEvent
     public static void onCommonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(CommonRegistry::registerSerializers);
-        event.enqueueWork(CommonRegistry::registerCookCapabilities);
+        event.enqueueWork(CommonRegistry::registerCapabilities);
+        event.enqueueWork(CommonRegistry::registerStorages);
     }
 
     @SubscribeEvent
@@ -36,8 +39,13 @@ public class CommonRegistry {
         RequestBus.registerSerializers();
     }
 
-    private static void registerCookCapabilities() {
+    private static void registerCapabilities() {
         CapabilityRegistry.register(new CraftingTableCapability());
-        KaleidoscopeCookeryCompat.register();
+        KaleidoscopeCookeryCompat.registerCapabilities();
+    }
+
+    private static void registerStorages() {
+        StorageRegistry.register(new CommonStorage());
+        KaleidoscopeCookeryCompat.registerStorages();
     }
 }
