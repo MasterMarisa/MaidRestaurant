@@ -37,20 +37,24 @@ public class ChefLicenseBauble implements IMaidBauble {
         ItemStackHandler handler = ChefLicenseItem.getInventory(baubleItem);
         List<AbstractZone> workZones = new ArrayList<>();
         List<AbstractZone> storageZones = new ArrayList<>();
+        List<AbstractZone> prepZones = new ArrayList<>();
         for (int i = 0; i < handler.getSlots(); i++) {
             ItemStack itemStack = handler.getStackInSlot(i);
             if (itemStack.getItem() instanceof ZoneDefinitionItem) {
                 AbstractZone zone = ZoneDefinitionItem.getZone(itemStack);
-                if (i < 6) {
+                if (i < 4) {
                     workZones.add(zone);
-                } else {
+                } else if (i < 8) {
                     storageZones.add(zone);
+                } else {
+                    prepZones.add(zone);
                 }
             }
         }
         CombinedZoneWrapper workZoneWrapper = workZones.isEmpty() ? null : new CombinedZoneWrapper(workZones);
         CombinedZoneWrapper storageZoneWrapper = storageZones.isEmpty() ? null : new CombinedZoneWrapper(storageZones);
-        ChefInformation chefInfo = new ChefInformation(workZoneWrapper, storageZoneWrapper);
+        CombinedZoneWrapper prepZoneWrapper = prepZones.isEmpty() ? null : new CombinedZoneWrapper(prepZones);
+        ChefInformation chefInfo = new ChefInformation(workZoneWrapper, storageZoneWrapper, prepZoneWrapper);
         maid.setData(ModTaskDataKeys.CHEF_INFO, chefInfo);
     }
 

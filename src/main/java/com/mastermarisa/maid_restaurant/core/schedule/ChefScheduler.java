@@ -69,6 +69,24 @@ public class ChefScheduler {
     }
 
     /**
+     * 获取该女仆定义的备餐区
+     * @param maid 女仆实体
+     * @return 备餐区
+     */
+    @Nullable
+    public static AbstractZone getPrepZone(EntityMaid maid) {
+        ItemStack license = getChefLicense(maid);
+        if (license.isEmpty()) {
+            return null;
+        }
+        ChefInformation chefInfo = maid.getData(ModTaskDataKeys.CHEF_INFO);
+        if (chefInfo == null) {
+            return null;
+        }
+        return chefInfo.getPrepZone();
+    }
+
+    /**
      * 获取或认领当前女仆对应的委托
      * @param level 所在世界
      * @param maid  女仆实体
@@ -90,7 +108,6 @@ public class ChefScheduler {
             request = bus.claim(restaurantId, maid);
             if (request != null) {
                 request.getRoot().verifyAndUpdateState(level, maid);
-                MaidRestaurant.LOGGER.debug("Claimed");
                 if (trySubmitRequest(level, maid)) {
                     request = null;
                 }

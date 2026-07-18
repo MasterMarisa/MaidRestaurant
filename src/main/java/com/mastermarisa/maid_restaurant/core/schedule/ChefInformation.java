@@ -11,17 +11,23 @@ import org.jetbrains.annotations.Nullable;
 public class ChefInformation implements INBTSerializable<CompoundTag> {
     private static final String TAG_WORK_ZONE = "work_zone";
     private static final String TAG_STORAGE_ZONE = "storage_zone";
+    private static final String TAG_PREP_ZONE = "prep_zone";
 
     @Nullable
     private CombinedZoneWrapper workZone;
     @Nullable
     private CombinedZoneWrapper storageZone;
+    @Nullable
+    private CombinedZoneWrapper prepZone;
 
     public ChefInformation() {}
 
-    public ChefInformation(@Nullable CombinedZoneWrapper workZone, @Nullable CombinedZoneWrapper storageZone) {
+    public ChefInformation(@Nullable CombinedZoneWrapper workZone,
+                           @Nullable CombinedZoneWrapper storageZone,
+                           @Nullable CombinedZoneWrapper prepZone) {
         this.workZone = workZone;
         this.storageZone = storageZone;
+        this.prepZone = prepZone;
     }
 
     @Nullable
@@ -34,6 +40,8 @@ public class ChefInformation implements INBTSerializable<CompoundTag> {
         return storageZone;
     }
 
+    public @Nullable CombinedZoneWrapper getPrepZone() { return prepZone; }
+
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
@@ -42,6 +50,9 @@ public class ChefInformation implements INBTSerializable<CompoundTag> {
         }
         if (storageZone != null) {
             tag.put(TAG_STORAGE_ZONE, storageZone.serializeNBT());
+        }
+        if (prepZone != null) {
+            tag.put(TAG_PREP_ZONE, prepZone.serializeNBT());
         }
         return tag;
     }
@@ -53,6 +64,9 @@ public class ChefInformation implements INBTSerializable<CompoundTag> {
         }
         if (tag.contains(TAG_STORAGE_ZONE)) {
             storageZone = CombinedZoneWrapper.fromNBT(tag.getCompound(TAG_STORAGE_ZONE));
+        }
+        if (tag.contains(TAG_PREP_ZONE)) {
+            prepZone = CombinedZoneWrapper.fromNBT(tag.getCompound(TAG_PREP_ZONE));
         }
     }
 

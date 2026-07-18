@@ -19,6 +19,7 @@ public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContai
     private static final ResourceLocation backgroundImage = MaidRestaurant.modLoc("textures/gui/chef_license.png");
     private static final Component workZoneLabel = Component.literal("工作区").withStyle(ChatFormatting.BOLD);
     private static final Component storageZoneLabel = Component.literal("储存区").withStyle(ChatFormatting.BOLD);
+    private static final Component prepZoneLabel = Component.literal("备餐区").withStyle(ChatFormatting.BOLD);
 
     private EditBox chefIdField;
 
@@ -98,8 +99,10 @@ public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContai
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         int width = font.width(workZoneLabel);
-        graphics.drawString(font, workZoneLabel, 52 - width / 2, 42, 14737632, false);
+        graphics.drawString(font, workZoneLabel, 43 - width / 2, 42, 14737632, false);
         width = font.width(storageZoneLabel);
-        graphics.drawString(font, storageZoneLabel, 124 - width / 2, 42, 14737632, false);
+        graphics.drawString(font, storageZoneLabel, 88 - width / 2, 42, 14737632, false);
+        width = font.width(prepZoneLabel);
+        graphics.drawString(font, prepZoneLabel, 133 - width / 2, 42, 14737632, false);
     }
 }

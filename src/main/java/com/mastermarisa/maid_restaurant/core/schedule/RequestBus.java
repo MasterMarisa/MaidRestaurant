@@ -217,8 +217,6 @@ public class RequestBus<T extends INBTSerializable<CompoundTag>> extends SavedDa
         @Nullable
         private UUID owner;
 
-        public RequestEntry() {}
-
         public RequestEntry(T request) {
             this.request = request;
         }

@@ -29,15 +29,16 @@ public class ChefLicenseContainer extends AbstractContainerMenu {
 
         this.addSlot(new LicenseSlotHandler(inventory, 0, 26, 52, license));
         this.addSlot(new LicenseSlotHandler(inventory, 1, 44, 52, license));
-        this.addSlot(new LicenseSlotHandler(inventory, 2, 62, 52, license));
-        this.addSlot(new LicenseSlotHandler(inventory, 3, 26, 70, license));
-        this.addSlot(new LicenseSlotHandler(inventory, 4, 44, 70, license));
-        this.addSlot(new LicenseSlotHandler(inventory, 5, 62, 70, license));
+        this.addSlot(new LicenseSlotHandler(inventory, 2, 26, 70, license));
+        this.addSlot(new LicenseSlotHandler(inventory, 3, 44, 70, license));
 
-        this.addSlot(new LicenseSlotHandler(inventory, 6, 98, 52, license));
-        this.addSlot(new LicenseSlotHandler(inventory, 7, 116, 52, license));
-        this.addSlot(new LicenseSlotHandler(inventory, 8, 134, 52, license));
-        this.addSlot(new LicenseSlotHandler(inventory, 9, 98, 70, license));
+        this.addSlot(new LicenseSlotHandler(inventory, 4, 71, 52, license));
+        this.addSlot(new LicenseSlotHandler(inventory, 5, 89, 52, license));
+        this.addSlot(new LicenseSlotHandler(inventory, 6, 71, 70, license));
+        this.addSlot(new LicenseSlotHandler(inventory, 7, 89, 70, license));
+
+        this.addSlot(new LicenseSlotHandler(inventory, 8, 116, 52, license));
+        this.addSlot(new LicenseSlotHandler(inventory, 9, 134, 52, license));
         this.addSlot(new LicenseSlotHandler(inventory, 10, 116, 70, license));
         this.addSlot(new LicenseSlotHandler(inventory, 11, 134, 70, license));
 
