@@ -15,11 +15,13 @@ import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
 import com.mastermarisa.maid_restaurant.uitls.BehaviorUtils;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
+import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.phys.Vec3;
 
 public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
     public static final String UID = "ApproachWorkBlock";
@@ -57,7 +59,8 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
         return BehaviorUtils.isTarget(maid, TargetType.APPROACH_WORK_BLOCK) &&
                 maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).map(tracker ->
-                        tracker.currentBlockPosition().distSqr(maid.blockPosition()) > Math.pow(closeEnoughDist, 2.0D)
+                        MaidUtils.distSqrHorizontal(maid, tracker.currentBlockPosition()) > Math.pow(closeEnoughDist, 2.0D)
+                        && Math.abs(maid.getY() - tracker.currentBlockPosition().getY()) <= 4
                 ).orElse(false);
     }
 
@@ -73,12 +76,14 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
         maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(tracker -> {
             BlockPos pos = tracker.currentBlockPosition();
-            if (pos.distSqr(maid.blockPosition()) <= Math.pow(closeEnoughDist, 2.0D)) {
+            if (MaidUtils.distSqrHorizontal(maid, pos) <= Math.pow(closeEnoughDist, 2.0D)
+                    && Math.abs(maid.getY() - pos.getY()) <= 4) {
                 onReached(level, maid, pos);
             }
         });
         if (BehaviorUtils.isTarget(maid, TargetType.APPROACH_WORK_BLOCK)) BehaviorUtils.eraseTarget(maid);
         maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+        maid.setDeltaMovement(Vec3.ZERO);
     }
 
     private boolean searchWorkBlock(ServerLevel level, EntityMaid maid, ExecutionNode node) {
@@ -101,7 +106,7 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
         BlockPos workBlock = capability.searchWorkBlock(level, zone, maid);
         if (workBlock != null) {
             BehaviorUtils.setTarget(maid, new BlockPosTracker(workBlock), TargetType.APPROACH_WORK_BLOCK);
-            BehaviorUtils.setWalkAndLookTargetMemories(maid, workBlock, workBlock, movementSpeed, 0);
+            BehaviorUtils.setWalkAndLookTargetMemories(maid, workBlock, workBlock, movementSpeed, 1);
             return true;
         }
         return false;

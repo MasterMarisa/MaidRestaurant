@@ -16,7 +16,9 @@ import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
 import com.mastermarisa.maid_restaurant.uitls.BehaviorUtils;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
+import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
@@ -71,7 +73,8 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
         return BehaviorUtils.isTarget(maid, TargetType.GATHER_MATERIAL)
                 && maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).map(tracker ->
-                tracker.currentBlockPosition().distSqr(maid.blockPosition()) > Math.pow(closeEnoughDist, 2.0D)
+                MaidUtils.distSqrHorizontal(maid, tracker.currentBlockPosition()) > Math.pow(closeEnoughDist, 2.0D)
+                        && Math.abs(maid.getY() - tracker.currentBlockPosition().getY()) <= 4
         ).orElse(false);
     }
 
@@ -87,7 +90,8 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
         maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(tracker -> {
             BlockPos pos = tracker.currentBlockPosition();
-            if (pos.distSqr(maid.blockPosition()) <= Math.pow(closeEnoughDist, 2.0D)) {
+            if (MaidUtils.distSqrHorizontal(maid, pos) <= Math.pow(closeEnoughDist, 2.0D)
+                    && Math.abs(maid.getY() - pos.getY()) <= 4) {
                 acceptStorage(level, maid, pos);
             }
         });
@@ -126,6 +130,8 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
             BehaviorUtils.setWalkAndLookTargetMemories(maid, best, best, movementSpeed, 0);
             return true;
         }
+
+        MaidUtils.sendMessageToOwner(maid, Component.literal("主人,我缺少" + ingredient.getItems()[0].getDisplayName().getString() + "!"));
         return false;
     }
 
