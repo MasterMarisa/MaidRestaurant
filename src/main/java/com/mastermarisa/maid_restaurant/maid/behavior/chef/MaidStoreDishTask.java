@@ -2,6 +2,7 @@ package com.mastermarisa.maid_restaurant.maid.behavior.chef;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
+import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
 import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
 import com.mastermarisa.maid_restaurant.core.schedule.CookingRequest;
@@ -52,6 +53,11 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
             return false;
         }
         return searchTarget(level, maid, request);
+    }
+
+    @Override
+    protected void start(ServerLevel pLevel, EntityMaid pEntity, long pGameTime) {
+        MaidRestaurant.LOGGER.debug("MaidStoreDishTask - START");
     }
 
     @Override
@@ -159,6 +165,8 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         if (request.count <= 0) {
             ChefScheduler.submitRequest(level, maid);
             CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidGatherMaterialTask.UID, 5);
+        } else {
+            CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
         }
     }
 }

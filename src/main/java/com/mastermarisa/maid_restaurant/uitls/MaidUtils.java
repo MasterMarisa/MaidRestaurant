@@ -6,6 +6,9 @@ import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.OutgoingChatMessage;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.items.IItemHandler;
 
 public class MaidUtils {
     public static void sendMessageToOwner(EntityMaid maid, Component component) {
@@ -20,5 +23,17 @@ public class MaidUtils {
         double dx = maid.getX() - (pos.getX() + 0.5);
         double dz = maid.getZ() - (pos.getZ() + 0.5);
         return dx * dx + dz * dz;
+    }
+
+    public static void exchangeToHand(EntityMaid maid, InteractionHand hand, int index) {
+        IItemHandler maidInv = maid.getAvailableInv(false);
+        ItemStack remainder = maidInv.extractItem(index, 64, false);
+        ItemStack itemInHand = maid.getItemInHand(hand).copyAndClear();
+        if (!remainder.isEmpty()) {
+            maid.setItemInHand(hand, remainder);
+        }
+        if (!itemInHand.isEmpty()) {
+            maidInv.insertItem(index, itemInHand, false);
+        }
     }
 }

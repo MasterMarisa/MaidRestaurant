@@ -14,6 +14,7 @@ import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
+import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -107,8 +108,9 @@ public class ChoppingBoardCapability implements ICookCapability {
             if (index == -1) {
                 return CookResult.INTERRUPTED;
             }
+            MaidUtils.exchangeToHand(maid, InteractionHand.MAIN_HAND, index);
             if (be.getCurrentCutCount() < be.getMaxCutCount()) {
-                be.onCutItem(level, maid, maidInv.getStackInSlot(index));
+                be.onCutItem(level, maid, maid.getMainHandItem());
                 maid.swing(InteractionHand.MAIN_HAND);
                 return CookResult.PROGRESS;
             } else {

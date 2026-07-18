@@ -178,7 +178,11 @@ public class StockpotCapability implements ICookCapability {
                     takeLid(level, maid, pos.above(), be);
                 } else {
                     if (recipe.carrier().isEmpty()) {
-                        be.takeOutProduct(level, maid, ItemStack.EMPTY);
+                        FakePlayer fakePlayer = FakePlayerUtils.getPlayer(level);
+                        for (int i = 0; i < recipe.result().getCount(); i++) {
+                            be.takeOutProduct(level, fakePlayer, ItemStack.EMPTY);
+                        }
+                        ItemUtils.getAllFromInv(fakePlayer.getInventory(), maid);
                         maid.swing(InteractionHand.MAIN_HAND);
                         return CookResult.DONE;
                     }

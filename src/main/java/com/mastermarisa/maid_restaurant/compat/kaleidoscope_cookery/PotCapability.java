@@ -18,6 +18,7 @@ import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
 import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtils;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
+import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -136,6 +137,7 @@ public class PotCapability implements ICookCapability {
                     if (shovelIndex == -1) {
                         return CookResult.INTERRUPTED;
                     }
+                    MaidUtils.exchangeToHand(maid, InteractionHand.MAIN_HAND, shovelIndex);
 
                     for (var stack : stacks) {
                         List<ItemStack> inputs = ItemUtils.tryExtract(maidInv, stack.getCount(), stack.getIngredient(), true, false);
@@ -144,7 +146,7 @@ public class PotCapability implements ICookCapability {
                         }
                     }
 
-                    be.onShovelHit(level, maid, maidInv.getStackInSlot(shovelIndex));
+                    be.onShovelHit(level, maid, maid.getMainHandItem());
                     level.playSound(null, maid.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, (level.random.nextFloat() - level.random.nextFloat()) * 0.8F);
                     maid.swing(InteractionHand.MAIN_HAND);
                 }
@@ -154,8 +156,9 @@ public class PotCapability implements ICookCapability {
                 if (shovelIndex == -1) {
                     return CookResult.INTERRUPTED;
                 }
+                MaidUtils.exchangeToHand(maid, InteractionHand.MAIN_HAND, shovelIndex);
 
-                be.onShovelHit(level, maid, maidInv.getStackInSlot(shovelIndex));
+                be.onShovelHit(level, maid, maid.getMainHandItem());
                 level.playSound(null, maid.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, (level.random.nextFloat() - level.random.nextFloat()) * 0.8F);
                 maid.swing(InteractionHand.MAIN_HAND);
             }
