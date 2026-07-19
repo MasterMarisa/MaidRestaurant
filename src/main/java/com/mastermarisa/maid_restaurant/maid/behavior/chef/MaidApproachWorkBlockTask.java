@@ -6,22 +6,30 @@ import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
+import com.mastermarisa.maid_restaurant.core.schedule.WorkBlockCache;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.tree.NodeState;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
+import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
 import com.mastermarisa.maid_restaurant.uitls.BehaviorUtils;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
+import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.items.IItemHandler;
+
+import java.util.List;
 
 public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
     public static final String UID = "ApproachWorkBlock";
@@ -68,7 +76,7 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
     protected void tick(ServerLevel level, EntityMaid maid, long gameTime) {
         if (gameTime % 10 != 0) return;
         maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(tracker -> {
-            BehaviorUtils.setWalkAndLookTargetMemories(maid, tracker.currentBlockPosition(), tracker.currentBlockPosition(), movementSpeed, 0);
+            BehaviorUtils.setWalkAndLookTargetMemories(maid, tracker.currentBlockPosition().below(), tracker.currentBlockPosition(), movementSpeed, 0);
         });
     }
 
@@ -103,10 +111,23 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
             return false;
         }
 
-        BlockPos workBlock = capability.searchWorkBlock(level, zone, maid);
+        BlockPos workBlock = null;
+
+        WorkBlockCache cache = maid.getData(ModTaskDataKeys.WORK_BLOCK_CACHE);
+        if (cache != null && step.getCapabilityUID().equals(cache.getCapabilityUID())) {
+            if (capability.isValidWorkBlock(level, cache.getPos())
+                    && !BlockUsageUtils.isUsed(cache.getPos()) && zone.contains(cache.getPos())) {
+                workBlock = cache.getPos();
+            }
+        }
+
+        if (workBlock == null) {
+            workBlock = capability.searchWorkBlock(level, zone, maid);
+        }
+
         if (workBlock != null) {
             BehaviorUtils.setTarget(maid, new BlockPosTracker(workBlock), TargetType.APPROACH_WORK_BLOCK);
-            BehaviorUtils.setWalkAndLookTargetMemories(maid, workBlock, workBlock, movementSpeed, 1);
+            BehaviorUtils.setWalkAndLookTargetMemories(maid, workBlock.below(), workBlock, movementSpeed, 1);
             return true;
         }
         return false;
@@ -130,13 +151,21 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
         }
 
         // 验证前置需求
-        node.verifyAndUpdateState(level, maid);
-        if (node.getState() != NodeState.READY) {
+        IItemHandler maidInv = maid.getAvailableInv(false);
+        List<ItemStack> existedInputs = capability.getExistedInputs(level, pos, step);
+        Ingredient ingredient = node.getRecipeNode().getOutput();
+        int count = node.getRecipeNode().getCount();
+        if (ItemUtils.contains(maidInv, existedInputs, ingredient, count)) {
+            node.setState(NodeState.DONE);
+            if (node.getParent() != null) {
+                node.getParent().computeState();
+            }
             return;
         }
 
         node.setState(NodeState.EXECUTING);
         BlockUsageUtils.add(pos, maid.getUUID());
         BehaviorUtils.setTarget(maid, new BlockPosTracker(pos), TargetType.EXECUTE_COOK_STEP);
+        maid.setData(ModTaskDataKeys.WORK_BLOCK_CACHE, new WorkBlockCache(pos, step.getCapabilityUID()));
     }
 }

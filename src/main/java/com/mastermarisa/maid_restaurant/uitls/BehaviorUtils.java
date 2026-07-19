@@ -25,7 +25,7 @@ public class BehaviorUtils {
 
     public static void eraseTarget(LivingEntity entity){
         entity.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(p -> {
-            BlockUsageUtils.remove(p.currentBlockPosition(),entity.getUUID());
+            BlockUsageUtils.remove(p.currentBlockPosition(), entity.getUUID());
         });
         entity.getBrain().eraseMemory(ModEntities.TARGET_POS.get());
         entity.getBrain().eraseMemory(ModEntities.TARGET_TYPE.get());

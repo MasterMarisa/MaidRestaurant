@@ -1,5 +1,6 @@
 package com.mastermarisa.maid_restaurant.event;
 
+import com.github.tartaricacid.touhoulittlemaid.api.event.MaidTaskEnableEvent;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
@@ -7,14 +8,16 @@ import com.mastermarisa.maid_restaurant.core.schedule.CookingRequest;
 import com.mastermarisa.maid_restaurant.core.schedule.RequestBus;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import com.mastermarisa.maid_restaurant.maid.task.TaskChef;
+import com.mastermarisa.maid_restaurant.uitls.BehaviorUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = MaidRestaurant.MOD_ID)
-public class EntityJoinLevel {
+public class MaidTracker {
     @SubscribeEvent
     public static void onMaidJoinLevel(EntityJoinLevelEvent event) {
         if (event.getLevel().isClientSide() || !(event.getLevel() instanceof ServerLevel level)) {
@@ -33,5 +36,22 @@ public class EntityJoinLevel {
                 }
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onMaidLeave(EntityLeaveLevelEvent event) {
+        if (event.getLevel().isClientSide() || !(event.getLevel() instanceof ServerLevel level)) {
+            return;
+        }
+        if (!(event.getEntity() instanceof EntityMaid maid)) {
+            return;
+        }
+        BehaviorUtils.eraseTarget(maid);
+    }
+
+    @SubscribeEvent
+    public static void onMaidTaskEnable(MaidTaskEnableEvent event) {
+        EntityMaid maid = event.getEntityMaid();
+        BehaviorUtils.eraseTarget(maid);
     }
 }

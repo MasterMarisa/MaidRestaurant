@@ -117,15 +117,10 @@ public class ChefScheduler {
             request = bus.claim(restaurantId, maid);
             if (request != null) {
                 request.root.verifyAndUpdateState(level, maid);
-//                if (trySubmitRequest(level, maid)) {
-//                    request = null;
-//                }
             }
         }
         return request;
     }
-
-
 
     /**
      * 释放当前女仆占用的委托

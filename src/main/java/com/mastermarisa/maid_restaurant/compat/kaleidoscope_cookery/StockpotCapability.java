@@ -91,24 +91,24 @@ public class StockpotCapability implements ICookCapability {
     public @Nullable BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
         List<BlockPos> found = new ArrayList<>();
         for (BlockPos pos : zone) {
-            if (level.getBlockState(pos).is(ModBlocks.STOCKPOT.get()) && !BlockUsageUtils.isUsed(pos.below())) {
+            if (level.getBlockState(pos).is(ModBlocks.STOCKPOT.get()) && !BlockUsageUtils.isUsed(pos)) {
                 found.add(pos);
             }
         }
         if (found.isEmpty()) {
             return null;
         }
-        return found.stream().map(BlockPos::below).min(Comparator.comparingDouble(p -> p.distSqr(maid.blockPosition()))).orElse(null);
+        return found.stream().min(Comparator.comparingDouble(p -> p.distSqr(maid.blockPosition()))).orElse(null);
     }
 
     @Override
     public boolean isValidWorkBlock(ServerLevel level, BlockPos pos) {
-        return level.getBlockEntity(pos.above()) instanceof StockpotBlockEntity stockpot && stockpot.hasHeatSource(level);
+        return level.getBlockEntity(pos) instanceof StockpotBlockEntity be && be.hasHeatSource(level);
     }
 
     @Override
     public CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeStep step) {
-        if (!(level.getBlockEntity(pos.above()) instanceof StockpotBlockEntity be)) {
+        if (!(level.getBlockEntity(pos) instanceof StockpotBlockEntity be)) {
             return CookResult.INTERRUPTED;
         }
 
@@ -125,7 +125,7 @@ public class StockpotCapability implements ICookCapability {
         switch (be.getStatus()) {
             case 0 -> {
                 if (be.hasLid()) {
-                    takeLid(level, maid, pos.above(), be);
+                    takeLid(level, maid, pos, be);
                 } else {
                     Ingredient ingredient = getSoupBaseIngredient(recipe.soupBase());
                     if (recipe.soupBase().equals(ModSoupBases.WATER)) {
@@ -149,7 +149,7 @@ public class StockpotCapability implements ICookCapability {
             }
             case 1 -> {
                 if (be.hasLid()) {
-                    takeLid(level, maid, pos.above(), be);
+                    takeLid(level, maid, pos, be);
                 } else {
                     if (!be.isEmpty()) {
                         for (var item : be.getInputs()) {
@@ -161,7 +161,7 @@ public class StockpotCapability implements ICookCapability {
                     }
 
                     if (!recipe.soupBase().equals(be.getSoupBaseId())) {
-                        level.setBlockEntity(new StockpotBlockEntity(pos.above(), level.getBlockState(pos.above())));
+                        level.setBlockEntity(new StockpotBlockEntity(pos, level.getBlockState(pos)));
                         return CookResult.PROGRESS;
                     }
 
@@ -201,11 +201,11 @@ public class StockpotCapability implements ICookCapability {
             }
             case 3 -> {
                 if (be.hasLid()) {
-                    takeLid(level, maid, pos.above(), be);
+                    takeLid(level, maid, pos, be);
                 } else {
                     FakePlayer fakePlayer = FakePlayerUtils.getPlayer(level);
                     if (!ItemStack.isSameItem(recipe.result(), be.getResult())) {
-                        level.setBlockEntity(new StockpotBlockEntity(pos.above(), level.getBlockState(pos.above())));
+                        level.setBlockEntity(new StockpotBlockEntity(pos, level.getBlockState(pos)));
                         return CookResult.PROGRESS;
                     }
                     if (recipe.carrier().isEmpty()) {

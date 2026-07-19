@@ -74,24 +74,24 @@ public class ChoppingBoardCapability implements ICookCapability {
     public BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
         List<BlockPos> found = new ArrayList<>();
         for (BlockPos pos : zone) {
-            if (level.getBlockState(pos).is(ModBlocks.CHOPPING_BOARD.get()) && !BlockUsageUtils.isUsed(pos.below())) {
+            if (level.getBlockState(pos).is(ModBlocks.CHOPPING_BOARD.get()) && !BlockUsageUtils.isUsed(pos)) {
                 found.add(pos);
             }
         }
         if (found.isEmpty()) {
             return null;
         }
-        return found.stream().map(BlockPos::below).min(Comparator.comparingDouble(p -> p.distSqr(maid.blockPosition()))).orElse(null);
+        return found.stream().min(Comparator.comparingDouble(p -> p.distSqr(maid.blockPosition()))).orElse(null);
     }
 
     @Override
     public boolean isValidWorkBlock(ServerLevel level, BlockPos pos) {
-        return level.getBlockEntity(pos.above()) instanceof ChoppingBoardBlockEntity;
+        return level.getBlockEntity(pos) instanceof ChoppingBoardBlockEntity;
     }
 
     @Override
     public CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeStep step) {
-        if (!(level.getBlockEntity(pos.above()) instanceof ChoppingBoardBlockEntity be)) {
+        if (!(level.getBlockEntity(pos) instanceof ChoppingBoardBlockEntity be)) {
             return CookResult.INTERRUPTED;
         }
 
@@ -127,7 +127,7 @@ public class ChoppingBoardCapability implements ICookCapability {
             } else {
                 ItemUtils.getItemToMaid(maid, recipe.getResultItem(level.registryAccess()).copy());
                 callResetBoardData(be);
-                level.playSound(null, pos.above(), SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 2.0F + level.random.nextFloat() * 0.2F);
+                level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 2.0F + level.random.nextFloat() * 0.2F);
                 maid.swing(InteractionHand.MAIN_HAND);
                 return CookResult.DONE;
             }

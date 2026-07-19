@@ -71,6 +71,28 @@ public class ItemUtils {
         return count(handler, ingredient) >= count;
     }
 
+    public static boolean contains(IItemHandler handler, List<ItemStack> itemStacks, Ingredient ingredient, int count) {
+        int sum = 0;
+        for (int i = 0; i < handler.getSlots(); i++) {
+            ItemStack stack = handler.getStackInSlot(i);
+            if (ingredient.test(stack)) {
+                sum += stack.getCount();
+                if (sum >= count) {
+                    return true;
+                }
+            }
+        }
+        for (ItemStack stack : itemStacks) {
+            if (ingredient.test(stack)) {
+                sum += stack.getCount();
+                if (sum >= count) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public static List<ItemStack> tryExtract(IItemHandler handler, int count, Ingredient ingredient, boolean strict, boolean simulate) {
         List<Integer> slots = findStackSlots(handler, ingredient);
         List<ItemStack> stacks = new ArrayList<>();

@@ -3,18 +3,24 @@ package com.mastermarisa.maid_restaurant.maid.behavior.chef;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
+import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
+import com.mastermarisa.maid_restaurant.core.schedule.WorkBlockCache;
 import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.tree.NodeState;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
+import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
 import com.mastermarisa.maid_restaurant.uitls.BehaviorUtils;
+import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.core.BlockPos;
@@ -24,8 +30,11 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.items.IItemHandler;
+
+import java.util.List;
 
 public class MaidGatherMaterialTask extends MaidCheckRateTask {
     public static final String UID = "GatherMaterial";
@@ -51,9 +60,34 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         if (node == null) {
             return false;
         }
+
         IItemHandler maidInv = maid.getAvailableInv(false);
         RecipeNode recipeNode = node.getRecipeNode();
-        if (ItemUtils.contains(maidInv, recipeNode.getOutput(), recipeNode.getCount())) {
+
+        List<ItemStack> existedInputs = List.of();
+        WorkBlockCache cache = maid.getData(ModTaskDataKeys.WORK_BLOCK_CACHE);
+        MaidRestaurant.LOGGER.debug("Cache Existed: " + (cache != null));
+        if (cache != null && node.getParent() != null) {
+            RecipeStep step = node.getParent().getRecipeNode().getCombineStep();
+            if (step != null && step.getCapabilityUID().equals(cache.getCapabilityUID())) {
+                ICookCapability capability = CapabilityRegistry.get(cache.getCapabilityUID());
+                AbstractZone zone = ChefScheduler.getWorkZone(maid);
+                if (capability != null) {
+                    MaidRestaurant.LOGGER.debug("Capability Existed, is Valid: " + capability.isValidWorkBlock(level, cache.getPos()));
+                }
+                if (zone != null) {
+                    MaidRestaurant.LOGGER.debug("Zone Existed, Contains: " + zone.contains(cache.getPos()));
+                    MaidRestaurant.LOGGER.debug("Is Used: " + BlockUsageUtils.isUsed(cache.getPos()));
+                }
+                if (capability != null && capability.isValidWorkBlock(level, cache.getPos())
+                        && zone != null && !BlockUsageUtils.isUsed(cache.getPos()) && zone.contains(cache.getPos())) {
+                    existedInputs = capability.getExistedInputs(level, cache.getPos(), step);
+                }
+            }
+        }
+        MaidRestaurant.LOGGER.debug("Existed Inputs Is Empty: " + existedInputs.isEmpty());
+
+        if (ItemUtils.contains(maidInv, existedInputs, recipeNode.getOutput(), recipeNode.getCount())) {
             node.setState(NodeState.DONE);
             if (node.getParent() != null) {
                 node.getParent().computeState();

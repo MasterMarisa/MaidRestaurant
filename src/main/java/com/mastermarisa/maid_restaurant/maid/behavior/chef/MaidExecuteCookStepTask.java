@@ -50,7 +50,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
     }
 
     @Override
-    protected void start(ServerLevel pLevel, EntityMaid pEntity, long pGameTime) {
+    protected void start(ServerLevel level, EntityMaid maid, long gameTime) {
         MaidRestaurant.LOGGER.debug("MaidExecuteCookStepTask - START");
     }
 

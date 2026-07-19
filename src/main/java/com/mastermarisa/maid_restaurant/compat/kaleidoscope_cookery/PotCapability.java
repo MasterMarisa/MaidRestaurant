@@ -95,27 +95,27 @@ public class PotCapability implements ICookCapability {
     public BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
         List<BlockPos> found = new ArrayList<>();
         for (BlockPos pos : zone) {
-            if (level.getBlockState(pos).is(ModBlocks.POT.get()) && !BlockUsageUtils.isUsed(pos.below())) {
+            if (level.getBlockState(pos).is(ModBlocks.POT.get()) && !BlockUsageUtils.isUsed(pos)) {
                 found.add(pos);
             }
         }
         if (found.isEmpty()) {
             return null;
         }
-        return found.stream().map(BlockPos::below).min(Comparator.comparingDouble(p -> p.distSqr(maid.blockPosition()))).orElse(null);
+        return found.stream().min(Comparator.comparingDouble(p -> p.distSqr(maid.blockPosition()))).orElse(null);
     }
 
     @Override
     public boolean isValidWorkBlock(ServerLevel level, BlockPos pos) {
-        return level.getBlockEntity(pos.above()) instanceof PotBlockEntity pot && pot.hasHeatSource(level);
+        return level.getBlockEntity(pos) instanceof PotBlockEntity pot && pot.hasHeatSource(level);
     }
 
     @Override
     public CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeStep step) {
-        if (!(level.getBlockEntity(pos.above()) instanceof PotBlockEntity be)) {
+        if (!(level.getBlockEntity(pos) instanceof PotBlockEntity be)) {
             return CookResult.INTERRUPTED;
         }
-        BlockState state = level.getBlockState(pos.above());
+        BlockState state = level.getBlockState(pos);
 
         if (step.getRecipeId() == null) {
             return CookResult.INTERRUPTED;
