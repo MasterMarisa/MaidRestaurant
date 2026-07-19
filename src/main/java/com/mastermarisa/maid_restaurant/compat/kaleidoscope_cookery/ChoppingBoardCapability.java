@@ -52,6 +52,24 @@ public class ChoppingBoardCapability implements ICookCapability {
     public RecipeType<?> getRecipeType() { return ModRecipes.CHOPPING_BOARD_RECIPE; }
 
     @Override
+    public List<Ingredient> getRequiredIngredients(Recipe<?> recipe) {
+        List<Ingredient> ingredients = new ArrayList<>(ICookCapability.super.getRequiredIngredients(recipe));
+        ingredients.add(KITCHEN_KNIFE);
+        return ingredients;
+    }
+
+    @Override
+    public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeStep step) {
+        List<ItemStack> inputs = new ArrayList<>();
+        if (level.getBlockEntity(pos) instanceof ChoppingBoardBlockEntity be) {
+            if (!be.getCurrentCutStack().isEmpty()) {
+                inputs.add(be.getCurrentCutStack());
+            }
+        }
+        return inputs;
+    }
+
+    @Override
     @Nullable
     public BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
         List<BlockPos> found = new ArrayList<>();
@@ -69,13 +87,6 @@ public class ChoppingBoardCapability implements ICookCapability {
     @Override
     public boolean isValidWorkBlock(ServerLevel level, BlockPos pos) {
         return level.getBlockEntity(pos.above()) instanceof ChoppingBoardBlockEntity;
-    }
-
-    @Override
-    public List<Ingredient> getRequiredIngredients(Recipe<?> recipe) {
-        List<Ingredient> ingredients = new ArrayList<>(ICookCapability.super.getRequiredIngredients(recipe));
-        ingredients.add(KITCHEN_KNIFE);
-        return ingredients;
     }
 
     @Override

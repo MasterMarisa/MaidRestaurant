@@ -62,6 +62,32 @@ public class StockpotCapability implements ICookCapability {
     }
 
     @Override
+    public List<Ingredient> getRequiredIngredients(Recipe<?> recipe) {
+        List<Ingredient> ingredients = new ArrayList<>(ICookCapability.super.getRequiredIngredients(recipe));
+        StockpotRecipe stockpotRecipe = (StockpotRecipe) recipe;
+        ingredients.add(getSoupBaseIngredient(stockpotRecipe.soupBase()));
+        if (!stockpotRecipe.carrier().isEmpty()) {
+            for (int i = 0; i < stockpotRecipe.result().getCount(); i++) {
+                ingredients.add(stockpotRecipe.carrier());
+            }
+        }
+        ingredients.add(STOCKPOT_LID.get());
+        return ingredients;
+    }
+
+    @Override
+    public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeStep step) {
+        List<ItemStack> inputs = new ArrayList<>();
+        if (level.getBlockEntity(pos) instanceof StockpotBlockEntity be) {
+            inputs.addAll(be.getInputs().stream().filter(s -> !s.isEmpty()).toList());
+            if (SOUP_BASE_MAP.containsKey(be.getSoupBaseId())) {
+                inputs.add(SOUP_BASE_MAP.get(be.getSoupBaseId()).getItems()[0].copyWithCount(1));
+            }
+        }
+        return inputs;
+    }
+
+    @Override
     public @Nullable BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
         List<BlockPos> found = new ArrayList<>();
         for (BlockPos pos : zone) {
@@ -78,20 +104,6 @@ public class StockpotCapability implements ICookCapability {
     @Override
     public boolean isValidWorkBlock(ServerLevel level, BlockPos pos) {
         return level.getBlockEntity(pos.above()) instanceof StockpotBlockEntity stockpot && stockpot.hasHeatSource(level);
-    }
-
-    @Override
-    public List<Ingredient> getRequiredIngredients(Recipe<?> recipe) {
-        List<Ingredient> ingredients = new ArrayList<>(ICookCapability.super.getRequiredIngredients(recipe));
-        StockpotRecipe stockpotRecipe = (StockpotRecipe) recipe;
-        ingredients.add(getSoupBaseIngredient(stockpotRecipe.soupBase()));
-        if (!stockpotRecipe.carrier().isEmpty()) {
-            for (int i = 0; i < stockpotRecipe.result().getCount(); i++) {
-                ingredients.add(stockpotRecipe.carrier());
-            }
-        }
-        ingredients.add(STOCKPOT_LID.get());
-        return ingredients;
     }
 
     @Override

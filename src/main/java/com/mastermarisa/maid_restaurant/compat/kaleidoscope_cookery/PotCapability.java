@@ -65,6 +65,32 @@ public class PotCapability implements ICookCapability {
     }
 
     @Override
+    public List<Ingredient> getRequiredIngredients(Recipe<?> recipe) {
+        List<Ingredient> ingredients = new ArrayList<>(ICookCapability.super.getRequiredIngredients(recipe));
+        ingredients.add(OIL);
+        PotRecipe potRecipe = (PotRecipe) recipe;
+        if (!potRecipe.carrier().isEmpty()) {
+            for (int i = 0; i < potRecipe.result().getCount(); i++) {
+                ingredients.add(potRecipe.carrier());
+            }
+        }
+        ingredients.add(KITCHEN_SHOVEL);
+        return ingredients;
+    }
+
+    @Override
+    public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeStep step) {
+        List<ItemStack> inputs = new ArrayList<>();
+        if (level.getBlockEntity(pos) instanceof PotBlockEntity be) {
+            inputs.addAll(be.getInputs().stream().filter(s -> !s.isEmpty()).toList());
+            if (level.getBlockState(pos).getValue(PotBlock.HAS_OIL)) {
+                inputs.add(ModItems.OIL.get().getDefaultInstance());
+            }
+        }
+        return inputs;
+    }
+
+    @Override
     @Nullable
     public BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
         List<BlockPos> found = new ArrayList<>();
@@ -82,20 +108,6 @@ public class PotCapability implements ICookCapability {
     @Override
     public boolean isValidWorkBlock(ServerLevel level, BlockPos pos) {
         return level.getBlockEntity(pos.above()) instanceof PotBlockEntity pot && pot.hasHeatSource(level);
-    }
-
-    @Override
-    public List<Ingredient> getRequiredIngredients(Recipe<?> recipe) {
-        List<Ingredient> ingredients = new ArrayList<>(ICookCapability.super.getRequiredIngredients(recipe));
-        ingredients.add(OIL);
-        PotRecipe potRecipe = (PotRecipe) recipe;
-        if (!potRecipe.carrier().isEmpty()) {
-            for (int i = 0; i < potRecipe.result().getCount(); i++) {
-                ingredients.add(potRecipe.carrier());
-            }
-        }
-        ingredients.add(KITCHEN_SHOVEL);
-        return ingredients;
     }
 
     @Override

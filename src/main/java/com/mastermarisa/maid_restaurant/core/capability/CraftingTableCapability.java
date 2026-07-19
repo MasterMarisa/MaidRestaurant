@@ -44,6 +44,11 @@ public class CraftingTableCapability implements ICookCapability {
     public RecipeType<CraftingRecipe> getRecipeType() { return RecipeType.CRAFTING; }
 
     @Override
+    public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeStep step) {
+        return List.of();
+    }
+
+    @Override
     @Nullable
     public BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
         List<BlockPos> found = new ArrayList<>();

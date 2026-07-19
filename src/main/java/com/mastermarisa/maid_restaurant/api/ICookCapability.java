@@ -21,14 +21,16 @@ public interface ICookCapability {
 
     RecipeType<?> getRecipeType();
 
+    default List<Ingredient> getRequiredIngredients(Recipe<?> recipe) {
+        return recipe.getIngredients().stream().filter(i -> !i.isEmpty()).toList();
+    }
+
+    List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeStep step);
+
     @Nullable
     BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid);
 
     boolean isValidWorkBlock(ServerLevel level, BlockPos pos);
-
-    default List<Ingredient> getRequiredIngredients(Recipe<?> recipe) {
-        return recipe.getIngredients().stream().filter(i -> !i.isEmpty()).toList();
-    }
 
     CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeStep step);
 }
