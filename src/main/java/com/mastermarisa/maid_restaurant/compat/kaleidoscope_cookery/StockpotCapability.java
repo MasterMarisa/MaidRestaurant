@@ -139,6 +139,20 @@ public class StockpotCapability implements ICookCapability {
                 if (be.hasLid()) {
                     takeLid(level, maid, pos.above(), be);
                 } else {
+                    if (!be.isEmpty()) {
+                        for (var item : be.getInputs()) {
+                            if (!item.isEmpty()) {
+                                ItemUtils.getItemToMaid(maid, item.copyAndClear());
+                            }
+                        }
+                        be.refresh();
+                    }
+
+                    if (!recipe.soupBase().equals(be.getSoupBaseId())) {
+                        level.setBlockEntity(new StockpotBlockEntity(pos.above(), level.getBlockState(pos.above())));
+                        return CookResult.PROGRESS;
+                    }
+
                     List<IngredientStack> stacks = RecipeCacheBuilder.getIngredientStacks(recipe.getId());
                     stacks = stacks.stream().filter(s -> recipe.getIngredients().contains(s.getIngredient())).toList();
                     for (IngredientStack stack : stacks) {
@@ -177,8 +191,12 @@ public class StockpotCapability implements ICookCapability {
                 if (be.hasLid()) {
                     takeLid(level, maid, pos.above(), be);
                 } else {
+                    FakePlayer fakePlayer = FakePlayerUtils.getPlayer(level);
+                    if (!ItemStack.isSameItem(recipe.result(), be.getResult())) {
+                        level.setBlockEntity(new StockpotBlockEntity(pos.above(), level.getBlockState(pos.above())));
+                        return CookResult.PROGRESS;
+                    }
                     if (recipe.carrier().isEmpty()) {
-                        FakePlayer fakePlayer = FakePlayerUtils.getPlayer(level);
                         for (int i = 0; i < recipe.result().getCount(); i++) {
                             be.takeOutProduct(level, fakePlayer, ItemStack.EMPTY);
                         }
@@ -188,7 +206,6 @@ public class StockpotCapability implements ICookCapability {
                     }
                     List<ItemStack> carriers = ItemUtils.tryExtract(maidInv, recipe.result().getCount(), recipe.carrier(), true, false);
                     if (!carriers.isEmpty()) {
-                        FakePlayer fakePlayer = FakePlayerUtils.getPlayer(level);
                         for (var stack : carriers) {
                             for (int i = 0; i < stack.getCount(); i++) {
                                 be.takeOutProduct(level, fakePlayer, stack.copyWithCount(1));

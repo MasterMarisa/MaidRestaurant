@@ -124,6 +124,15 @@ public class PotCapability implements ICookCapability {
                         maid.swing(InteractionHand.MAIN_HAND);
                     }
                 } else {
+                    if (!be.isEmpty()) {
+                        for (var item : be.getInputs()) {
+                            if (!item.isEmpty()) {
+                                ItemUtils.getItemToMaid(maid, item.copyAndClear());
+                            }
+                        }
+                        be.refresh();
+                    }
+
                     List<IngredientStack> stacks = RecipeCacheBuilder.getIngredientStacks(recipe.getId());
                     stacks = stacks.stream().filter(s -> recipe.getIngredients().contains(s.getIngredient())).toList();
                     for (IngredientStack stack : stacks) {
@@ -164,6 +173,10 @@ public class PotCapability implements ICookCapability {
             }
             case 2 -> {
                 FakePlayer fakePlayer = FakePlayerUtils.getPlayer(level);
+                if (!ItemStack.isSameItem(be.getResult(), recipe.result())) {
+                    be.reset();
+                    return CookResult.PROGRESS;
+                }
                 if (be.hasCarrier()){
                     List<ItemStack> carriers = ItemUtils.tryExtract(maidInv, be.getResult().getCount(), recipe.carrier(),true, false);
                     if (!carriers.isEmpty()) {
