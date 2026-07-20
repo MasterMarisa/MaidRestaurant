@@ -75,7 +75,7 @@ public class CraftingTableCapability implements ICookCapability {
         if (remainder.isEmpty()) {
             ItemHandlerHelper.insertItemStacked(maidInv, result.copy(), false);
             maid.swing(InteractionHand.MAIN_HAND);
-            if (ItemUtils.contains(maidInv, node.getOutput(), node.getCount())) {
+            if (ItemUtils.contains(maidInv, node.getIngredient(), node.getCount())) {
                 return CookResult.DONE;
             } else {
                 return CookResult.PROGRESS;

@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
-import com.mastermarisa.maid_restaurant.core.schedule.CookingRequest;
 import com.mastermarisa.maid_restaurant.core.schedule.WorkBlockCache;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.tree.NodeState;
@@ -141,15 +140,9 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
         // 验证前置需求
         IItemHandler maidInv = maid.getAvailableInv(false);
         List<ItemStack> existedInputs = capability.getExistedInputs(level, pos, node.getRecipeNode());
-        Ingredient ingredient = node.getRecipeNode().getOutput();
+        Ingredient ingredient = node.getRecipeNode().getIngredient();
         int count = node.getRecipeNode().getCount();
-        // TODO 修改CookingRequest机制后移除
-        if (node.getParent() == null) {
-            CookingRequest request = ChefScheduler.getOrClaimRequest(level, maid);
-            if (request != null) {
-                count = request.count;
-            }
-        }
+
         if (ItemUtils.contains(maidInv, existedInputs, ingredient, count)) {
             node.setState(NodeState.DONE);
             if (node.getParent() != null) {

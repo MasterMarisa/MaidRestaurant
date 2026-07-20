@@ -185,7 +185,7 @@ public class PotCapability implements ICookCapability {
                         }
                         ItemUtils.getAllFromInv(fakePlayer.getInventory(), maid);
                         maid.swing(InteractionHand.MAIN_HAND);
-                        if (ItemUtils.contains(maidInv, node.getOutput(), node.getCount())) {
+                        if (ItemUtils.contains(maidInv, node.getIngredient(), node.getCount())) {
                             return CookResult.DONE;
                         } else {
                             return CookResult.PROGRESS;
@@ -198,7 +198,7 @@ public class PotCapability implements ICookCapability {
                     be.takeOutProduct(level, pig, ModItems.KITCHEN_SHOVEL.get().getDefaultInstance());
                     ItemUtils.getItemToMaid(maid, pig.getMainHandItem());
                     maid.swing(InteractionHand.MAIN_HAND);
-                    if (ItemUtils.contains(maidInv, node.getOutput(), node.getCount())) {
+                    if (ItemUtils.contains(maidInv, node.getIngredient(), node.getCount())) {
                         return CookResult.DONE;
                     } else {
                         return CookResult.PROGRESS;

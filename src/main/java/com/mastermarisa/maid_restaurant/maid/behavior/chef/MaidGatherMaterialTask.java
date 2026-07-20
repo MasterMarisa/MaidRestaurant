@@ -75,7 +75,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
             }
         }
 
-        if (ItemUtils.contains(maidInv, existedInputs, recipeNode.getOutput(), recipeNode.getCount())) {
+        if (ItemUtils.contains(maidInv, existedInputs, recipeNode.getIngredient(), recipeNode.getCount())) {
             node.setState(NodeState.DONE);
             if (node.getParent() != null) {
                 node.getParent().computeState();
@@ -127,10 +127,8 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
             return false;
         }
 
-        IItemHandler maidInv = maid.getAvailableInv(false);
         RecipeNode recipeNode = node.getRecipeNode();
-        Ingredient ingredient = recipeNode.getOutput();
-        int required = recipeNode.getCount() - ItemUtils.count(maidInv, ingredient);
+        Ingredient ingredient = recipeNode.getIngredient();
 
         BlockPos best = null;
         double bestDist = Double.MAX_VALUE;
@@ -138,7 +136,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
 
         for (BlockPos pos : zone) {
             IMaidStorage storage = StorageRegistry.tryGetAt(level, pos);
-            if (storage != null && storage.count(level, pos, ingredient) >= required) {
+            if (storage != null && storage.count(level, pos, ingredient) > 0) {
                 double dist = pos.distSqr(center);
                 if (dist < bestDist) {
                     bestDist = dist;
@@ -166,7 +164,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
 
         IItemHandler maidInv = maid.getAvailableInv(false);
         RecipeNode recipeNode = node.getRecipeNode();
-        Ingredient ingredient = recipeNode.getOutput();
+        Ingredient ingredient = recipeNode.getIngredient();
         int required = recipeNode.getCount() - ItemUtils.count(maidInv, ingredient);
 
         maid.swing(InteractionHand.OFF_HAND);
@@ -180,7 +178,6 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         }
 
         CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
-        //CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidApproachWorkBlockTask.UID, 5);
     }
 }
 

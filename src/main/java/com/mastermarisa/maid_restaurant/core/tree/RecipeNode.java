@@ -17,31 +17,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RecipeNode implements INBTSerializable<CompoundTag> {
-    private static final String TAG_OUTPUT = "output";
-    private static final String TAG_OUTPUT_COUNT = "output_count";
+    private static final String TAG_OUTPUT = "ingredient";
+    private static final String TAG_COUNT = "count";
     private static final String TAG_STEP = "step";
     private static final String TAG_CHILDREN = "children";
 
-    private Ingredient output;
+    private Ingredient ingredient;
     private int count;
     @Nullable
     private RecipeStep step;
     private List<RecipeNode> children;
 
     public RecipeNode() {
-        this.output = Ingredient.EMPTY;
+        this.ingredient = Ingredient.EMPTY;
         this.children = new ArrayList<>();
     }
 
-    public RecipeNode(Ingredient output, int count, @Nullable RecipeStep step) {
-        this.output = output;
+    public RecipeNode(Ingredient ingredient, int count, @Nullable RecipeStep step) {
+        this.ingredient = ingredient;
         this.count = count;
         this.step = step != null ? step.copy() : null;
         this.children = new ArrayList<>();
     }
 
-    public Ingredient getOutput() {
-        return output;
+    public Ingredient getIngredient() {
+        return ingredient;
     }
 
     public int getCount() {
@@ -73,15 +73,14 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         return null;
     }
 
-    public boolean isEmpty() { return output.isEmpty(); }
+    public boolean isEmpty() { return ingredient.isEmpty(); }
 
     public boolean isLeaf() {
         return children.isEmpty();
     }
 
-    public void setOutput(Ingredient output, int outputCount) {
-        this.output = output;
-        this.count = outputCount;
+    public void setIngredient(Ingredient ingredient) {
+        this.ingredient = ingredient;
     }
 
     public void setCount(int count) {
@@ -99,10 +98,10 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
-        if (!output.isEmpty()) {
-            tag.putString(TAG_OUTPUT, output.toJson().toString());
+        if (!ingredient.isEmpty()) {
+            tag.putString(TAG_OUTPUT, ingredient.toJson().toString());
         }
-        tag.putInt(TAG_OUTPUT_COUNT, count);
+        tag.putInt(TAG_COUNT, count);
 
         if (step != null) {
             tag.put(TAG_STEP, step.serializeNBT());
@@ -123,13 +122,13 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     public void deserializeNBT(CompoundTag tag) {
         if (tag.contains(TAG_OUTPUT)) {
             JsonElement jsonElement = GsonHelper.parse(tag.getString(TAG_OUTPUT));
-            output = Ingredient.fromJson(jsonElement);
+            ingredient = Ingredient.fromJson(jsonElement);
         } else {
-            output = Ingredient.EMPTY;
+            ingredient = Ingredient.EMPTY;
         }
 
-        if (tag.contains(TAG_OUTPUT_COUNT)) {
-            count = tag.getInt(TAG_OUTPUT_COUNT);
+        if (tag.contains(TAG_COUNT)) {
+            count = tag.getInt(TAG_COUNT);
         }
 
         if (tag.contains(TAG_STEP)) {

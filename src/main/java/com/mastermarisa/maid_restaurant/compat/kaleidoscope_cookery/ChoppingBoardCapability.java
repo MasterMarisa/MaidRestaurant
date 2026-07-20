@@ -124,7 +124,7 @@ public class ChoppingBoardCapability implements ICookCapability {
             callResetBoardData(be);
             level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 2.0F + level.random.nextFloat() * 0.2F);
             maid.swing(InteractionHand.MAIN_HAND);
-            if (ItemUtils.contains(maidInv, node.getOutput(), node.getCount())) {
+            if (ItemUtils.contains(maidInv, node.getIngredient(), node.getCount())) {
                 return CookResult.DONE;
             } else {
                 return CookResult.PROGRESS;

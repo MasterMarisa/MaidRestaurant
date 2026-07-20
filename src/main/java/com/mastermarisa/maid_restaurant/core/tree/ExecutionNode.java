@@ -4,11 +4,9 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
-import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
-import com.mastermarisa.maid_restaurant.core.schedule.CookingRequest;
-import com.mastermarisa.maid_restaurant.core.schedule.RequestBus;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
@@ -50,10 +48,11 @@ public class ExecutionNode {
             ICookCapability capability = parent.getCapability();
             Recipe<?> recipe = parent.getRecipe(level.getRecipeManager());
             if (recipe != null && capability != null) {
-                IngredientStack stack = RecipeCacheBuilder.findStack(recipe.getId(), node.getOutput());
+                IngredientStack stack = RecipeCacheBuilder.findStack(recipe.getId(), node.getIngredient());
                 if (stack != null) {
                     int count = capability.getIngredientCount(level, recipe, parent.getCount(), stack);
-                    node.setOutput(stack.getIngredient(), count);
+                    node.setIngredient(stack.getIngredient());
+                    node.setCount(count);
                 }
             }
         }
@@ -79,6 +78,10 @@ public class ExecutionNode {
     public List<ExecutionNode> getChildren() {
         return children;
     }
+
+    public int getCount() { return recipeNode.getCount(); }
+
+    public Ingredient getIngredient() { return recipeNode.getIngredient(); }
 
     @Nullable
     public Recipe<?> getRecipe(RecipeManager recipeManager) { return recipeNode.getRecipe(recipeManager); }
@@ -128,16 +131,7 @@ public class ExecutionNode {
      */
     public void verifyAndUpdateState(ServerLevel level, EntityMaid maid) {
         IItemHandler handler = maid.getAvailableInv(false);
-        int count = recipeNode.getCount();
-        if (parent == null) {
-            RequestBus<CookingRequest> bus = RequestBus.getInstance(level, CookingRequest.class);
-            String restaurantId = ChefScheduler.getRestaurantId(maid);
-            if (restaurantId != null) {
-                CookingRequest request = bus.getClaimed(restaurantId, maid);
-                count = request != null ? request.count : count;
-            }
-        }
-        boolean containing = ItemUtils.contains(handler, recipeNode.getOutput(), count);
+        boolean containing = ItemUtils.contains(handler, recipeNode.getIngredient(), recipeNode.getCount());
 
         if (isLeaf()) {
             state = containing ? NodeState.DONE : NodeState.NEED_MATERIALS;

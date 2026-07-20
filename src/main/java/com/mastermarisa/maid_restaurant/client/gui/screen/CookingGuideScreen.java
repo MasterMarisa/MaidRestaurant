@@ -148,7 +148,7 @@ public class CookingGuideScreen extends Screen {
                         Ingredient ingredient = null;
                         if (button.index != -1) {
                             NodeEntry entry = this.entries.get(button.index);
-                            ingredient = entry.node.getOutput();
+                            ingredient = entry.node.getIngredient();
                             this.selectedNode = entry.node;
                         }
                         if (minecraft.level != null) {
@@ -254,8 +254,9 @@ public class CookingGuideScreen extends Screen {
         List<IngredientStack> ingredients = RecipeCacheBuilder.getIngredientStacks(step.recipeId());
         for (var child : node.getChildren()) {
             for (var stack : ingredients) {
-                if (ItemUtils.equals(child.getOutput(), stack.getIngredient())) {
-                    child.setOutput(stack.getIngredient(), child.getCount());
+                if (ItemUtils.equals(child.getIngredient(), stack.getIngredient())) {
+                    child.setIngredient(stack.getIngredient());
+                    child.setCount(child.getCount());
                     break;
                 }
             }
@@ -270,7 +271,7 @@ public class CookingGuideScreen extends Screen {
      * @param parent 父节点
      */
     private void flattenTree(RecipeNode node, int depth, @Nullable RecipeNode parent) {
-        boolean canExpand = RecipeCacheBuilder.MATCHED_RECIPE_MAP.containsKey(node.getOutput());
+        boolean canExpand = RecipeCacheBuilder.MATCHED_RECIPE_MAP.containsKey(node.getIngredient());
         this.entries.add(NodeEntry.of(node, depth, parent, canExpand));
         for (var child : node.getChildren()) {
             flattenTree(child, depth + 1, node);
@@ -292,7 +293,8 @@ public class CookingGuideScreen extends Screen {
 
         level.getRecipeManager().byKey(recipeId).ifPresent(recipe -> {
             ItemStack result = recipe.getResultItem(level.registryAccess());
-            node.setOutput(Ingredient.of(result), result.getCount());
+            node.setIngredient(Ingredient.of(result));
+            node.setCount(result.getCount());
             node.setStep(new RecipeStep(capabilityUID, recipeId));
             buildChildren(node);
         });
@@ -334,7 +336,7 @@ public class CookingGuideScreen extends Screen {
         }
         long gameTime = minecraft.level == null ? 0 : minecraft.level.getGameTime();
         graphics.renderFakeItem(icon, x, y);
-        ClientUtils.renderIngredientStack(graphics, x + 18, y, new IngredientStack(node.getOutput(), node.getCount()), gameTime, 20);
+        ClientUtils.renderIngredientStack(graphics, x + 18, y, new IngredientStack(node.getIngredient(), node.getCount()), gameTime, 20);
         if (!entry.node.isLeaf()) {
             graphics.drawCenteredString(font, "-", x - 8, y + ROW_HEIGHT / 2 - 5, Color.WHITE.getRGB());
         }

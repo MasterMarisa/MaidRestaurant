@@ -23,7 +23,6 @@ import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.items.IItemHandler;
 
 import java.util.List;
@@ -52,7 +51,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         if (request == null || request.root.getState() != NodeState.DONE) {
             return false;
         }
-        return searchTarget(level, maid, request);
+        return searchTarget(level, maid, request.root);
     }
 
     @Override
@@ -90,10 +89,9 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
     }
 
-    private boolean searchTarget(ServerLevel level, EntityMaid maid, CookingRequest request) {
-        ExecutionNode node = request.root;
+    private boolean searchTarget(ServerLevel level, EntityMaid maid, ExecutionNode node) {
         IItemHandler maidInv = maid.getAvailableInv(false);
-        List<ItemStack> results = ItemUtils.tryExtract(maidInv, request.count, node.getRecipeNode().getOutput(), true, true);
+        List<ItemStack> results = ItemUtils.tryExtract(maidInv, node.getCount(), node.getIngredient(), true, true);
         if (results.isEmpty()) {
             node.verifyAndUpdateState(level, maid);
             return false;
@@ -139,9 +137,8 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         }
 
         ExecutionNode node = request.root;
-        Ingredient ingredient = node.getRecipeNode().getOutput();
         IItemHandler maidInv = maid.getAvailableInv(false);
-        List<ItemStack> results = ItemUtils.tryExtract(maidInv, request.count, ingredient, true, true);
+        List<ItemStack> results = ItemUtils.tryExtract(maidInv, node.getCount(), node.getIngredient(), true, true);
         if (results.isEmpty()) {
             node.verifyAndUpdateState(level, maid);
             return;
@@ -159,13 +156,13 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         if (inserted == 0) {
             return;
         }
-        ItemUtils.tryExtract(maidInv, inserted, ingredient, true, false);
+        ItemUtils.tryExtract(maidInv, inserted, node.getIngredient(), true, false);
 
-        request.count -= inserted;
-        if (request.count <= 0) {
+        if (node.getCount() - inserted <= 0) {
             ChefScheduler.submitRequest(level, maid);
             CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidGatherMaterialTask.UID, 5);
         } else {
+            request.root.applyOutputCount(level, node.getCount() - inserted);
             CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
         }
     }
