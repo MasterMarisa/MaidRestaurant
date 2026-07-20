@@ -10,7 +10,7 @@ import com.github.ysbbbbbb.kaleidoscopecookery.init.tag.TagMod;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.core.capability.CookResult;
-import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
+import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
@@ -31,7 +31,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 public class ChoppingBoardCapability implements ICookCapability {
     public static final String UID = "chopping_board";
@@ -59,7 +58,7 @@ public class ChoppingBoardCapability implements ICookCapability {
     }
 
     @Override
-    public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeStep step) {
+    public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeNode node) {
         List<ItemStack> inputs = new ArrayList<>();
         if (level.getBlockEntity(pos) instanceof ChoppingBoardBlockEntity be) {
             if (!be.getCurrentCutStack().isEmpty()) {
@@ -90,19 +89,15 @@ public class ChoppingBoardCapability implements ICookCapability {
     }
 
     @Override
-    public CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeStep step) {
+    public CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeNode node) {
         if (!(level.getBlockEntity(pos) instanceof ChoppingBoardBlockEntity be)) {
             return CookResult.INTERRUPTED;
         }
 
-        if (step.getRecipeId() == null) {
+        ChoppingBoardRecipe recipe = (ChoppingBoardRecipe) node.getRecipe(level.getRecipeManager());
+        if (recipe == null) {
             return CookResult.INTERRUPTED;
         }
-        Optional<? extends Recipe<?>> recipeOpt = level.getRecipeManager().byKey(step.getRecipeId());
-        if (recipeOpt.isEmpty()) {
-            return CookResult.INTERRUPTED;
-        }
-        ChoppingBoardRecipe recipe = (ChoppingBoardRecipe) recipeOpt.get();
         IItemHandler maidInv = maid.getAvailableInv(false);
 
         if (be.getCurrentCutStack().isEmpty()) {
@@ -114,28 +109,35 @@ public class ChoppingBoardCapability implements ICookCapability {
             }
             return CookResult.INTERRUPTED;
         }
-        if (recipe.getIngredient().test(be.getCurrentCutStack())) {
-            int index = ItemUtils.findStackSlot(maidInv, KITCHEN_KNIFE);
-            if (index == -1) {
-                return CookResult.INTERRUPTED;
-            }
-            MaidUtils.exchangeToHand(maid, InteractionHand.MAIN_HAND, index);
-            if (be.getCurrentCutCount() < be.getMaxCutCount()) {
-                be.onCutItem(level, maid, maid.getMainHandItem());
-                maid.swing(InteractionHand.MAIN_HAND);
-                return CookResult.PROGRESS;
-            } else {
-                ItemUtils.getItemToMaid(maid, recipe.getResultItem(level.registryAccess()).copy());
-                callResetBoardData(be);
-                level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 2.0F + level.random.nextFloat() * 0.2F);
-                maid.swing(InteractionHand.MAIN_HAND);
-                return CookResult.DONE;
-            }
-        } else {
+
+        if (!recipe.getIngredient().test(be.getCurrentCutStack())) {
+            ItemUtils.getItemToMaid(maid, be.getCurrentCutStack().copy());
             callResetBoardData(be);
             maid.swing(InteractionHand.MAIN_HAND);
+            return CookResult.PROGRESS;
         }
-        return CookResult.INTERRUPTED;
+
+        int index = ItemUtils.findStackSlot(maidInv, KITCHEN_KNIFE);
+        if (index == -1) {
+            return CookResult.INTERRUPTED;
+        }
+        MaidUtils.exchangeToHand(maid, InteractionHand.MAIN_HAND, index);
+
+        if (be.getCurrentCutCount() < be.getMaxCutCount()) {
+            be.onCutItem(level, maid, maid.getMainHandItem());
+            maid.swing(InteractionHand.MAIN_HAND);
+            return CookResult.PROGRESS;
+        } else {
+            ItemUtils.getItemToMaid(maid, recipe.getResultItem(level.registryAccess()).copy());
+            callResetBoardData(be);
+            level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 2.0F + level.random.nextFloat() * 0.2F);
+            maid.swing(InteractionHand.MAIN_HAND);
+            if (ItemUtils.contains(maidInv, node.getOutput(), node.getCount())) {
+                return CookResult.DONE;
+            } else {
+                return CookResult.PROGRESS;
+            }
+        }
     }
 
     private static void callResetBoardData(ChoppingBoardBlockEntity board) {

@@ -4,12 +4,10 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
-import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.core.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.tree.NodeState;
-import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
@@ -39,13 +37,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
             return false;
         }
 
-        RecipeStep step = node.getRecipeNode().getCombineStep();
-        if (step == null) {
-            return false;
-        }
-
-        String capabilityUID = step.getCapabilityUID();
-        ICookCapability capability = CapabilityRegistry.get(capabilityUID);
+        ICookCapability capability = node.getCapability();
         return capability != null && capability.isValidWorkBlock(level, pos);
     }
 
@@ -74,27 +66,18 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
             return;
         }
 
-        RecipeStep step = node.getRecipeNode().getCombineStep();
-        if (step == null) {
-            return;
-        }
-
-        String capabilityUID = step.getCapabilityUID();
-        ICookCapability capability = CapabilityRegistry.get(capabilityUID);
+        ICookCapability capability = node.getCapability();
         if (capability == null) {
             return;
         }
 
         BlockPos pos = maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).orElseThrow().currentBlockPosition();
-        CookResult result = capability.cookTick(level, maid, pos, step);
+        CookResult result = capability.cookTick(level, maid, pos, node.getRecipeNode());
         maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos.above()));
 
         if (result == CookResult.DONE) {
-            if (node.getParent() == null) {
-                //ChefScheduler.trySubmitRequest(level, maid);
-                node.verifyAndUpdateState(level, maid);
-            } else {
-                node.verifyAndUpdateState(level, maid);
+            node.verifyAndUpdateState(level, maid);
+            if (node.getParent() != null) {
                 node.getParent().computeState();
             }
             CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidStoreDishTask.UID, 5);

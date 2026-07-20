@@ -24,6 +24,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
@@ -42,7 +43,6 @@ public class CookingGuideScreen extends Screen {
     private static final Color COMMON = new Color(48, 48, 48);
     private static final Color HIGHLIGHT = new Color(64, 64, 64);
 
-    private final ItemStack itemStack;
     private final List<NodeEntry> entries;
     private final List<ButtonEntry> buttons;
     private final EditBox searchBox;
@@ -55,7 +55,6 @@ public class CookingGuideScreen extends Screen {
 
     public CookingGuideScreen(ItemStack itemStack) {
         super(Component.empty());
-        this.itemStack = itemStack;
         this.entries = new ArrayList<>();
         this.buttons = new ArrayList<>();
         this.searchBox = new EditBox(font, ClientUtils.getScreenCenterX() - 109, ClientUtils.getScreenCenterY() - 111, 90, 16, Component.empty());
@@ -139,7 +138,7 @@ public class CookingGuideScreen extends Screen {
                     if (button.button == 0) {
                         NodeEntry entry = this.entries.get(button.index);
                         entry.node.getChildren().clear();
-                        entry.node.setCombineStep(null);
+                        entry.node.setStep(null);
                         if (button.index == 0) {
                             this.root = new RecipeNode();
                         }
@@ -232,7 +231,7 @@ public class CookingGuideScreen extends Screen {
             if (this.selectedNode == null) {
                 this.root = fromRecipe(capability.getUID(), recipeId);
             } else {
-                this.selectedNode.setCombineStep(new RecipeStep(capability.getUID(), recipeId));
+                this.selectedNode.setStep(new RecipeStep(capability.getUID(), recipeId));
                 buildChildren(this.selectedNode);
             }
             save();
@@ -247,12 +246,12 @@ public class CookingGuideScreen extends Screen {
      * @param node 根节点
      */
     private void rebindIngredient(RecipeNode node) {
-        RecipeStep step = node.getCombineStep();
-        if (step == null || step.getRecipeId() == null) {
+        RecipeStep step = node.getStep();
+        if (step == null || step.recipeId() == null) {
             return;
         }
 
-        List<IngredientStack> ingredients = RecipeCacheBuilder.getIngredientStacks(step.getRecipeId());
+        List<IngredientStack> ingredients = RecipeCacheBuilder.getIngredientStacks(step.recipeId());
         for (var child : node.getChildren()) {
             for (var stack : ingredients) {
                 if (ItemUtils.equals(child.getOutput(), stack.getIngredient())) {
@@ -294,35 +293,45 @@ public class CookingGuideScreen extends Screen {
         level.getRecipeManager().byKey(recipeId).ifPresent(recipe -> {
             ItemStack result = recipe.getResultItem(level.registryAccess());
             node.setOutput(Ingredient.of(result), result.getCount());
-            node.setCombineStep(new RecipeStep(capabilityUID, recipeId));
+            node.setStep(new RecipeStep(capabilityUID, recipeId));
             buildChildren(node);
         });
         return node;
     }
 
     private void buildChildren(RecipeNode node) {
-        RecipeStep step = node.getCombineStep();
-        if (step == null || step.getRecipeId() == null) {
+        RecipeStep step = node.getStep();
+        if (step == null || step.recipeId() == null) {
             return;
         }
 
-        for (var stack : RecipeCacheBuilder.getIngredientStacks(step.getRecipeId())) {
+        Level level = minecraft.level;
+        if (level == null) {
+            return;
+        }
+
+        Recipe<?> recipe = node.getRecipe(level.getRecipeManager());
+        if (recipe == null) {
+            return;
+        }
+
+        ItemStack result = recipe.getResultItem(level.registryAccess());
+        int multiplier = (int) Math.ceil((double) node.getCount() / result.getCount());
+
+        for (var stack : RecipeCacheBuilder.getIngredientStacks(step.recipeId())) {
             RecipeNode child = new RecipeNode(stack.getIngredient(), stack.getCount(), null);
             node.addChild(child);
         }
     }
 
     private void renderNode(GuiGraphics graphics, int row, NodeEntry entry, int mouseX, int mouseY) {
-        int x = (int) (30 + entry.depth * INDENT_WIDTH);
-        int y = (int) (20 + row * ROW_HEIGHT);
+        int x = 30 + entry.depth * INDENT_WIDTH;
+        int y = 20 + row * ROW_HEIGHT;
         RecipeNode node = entry.node;
-        RecipeStep step = node.getCombineStep();
         ItemStack icon = Items.CHEST.getDefaultInstance();
-        if (step != null) {
-            ICookCapability capability = CapabilityRegistry.get(step.getCapabilityUID());
-            if (capability != null) {
-                icon = capability.getIcon();
-            }
+        ICookCapability capability = node.getCapability();
+        if (capability != null) {
+            icon = capability.getIcon();
         }
         long gameTime = minecraft.level == null ? 0 : minecraft.level.getGameTime();
         graphics.renderFakeItem(icon, x, y);

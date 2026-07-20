@@ -1,11 +1,14 @@
 package com.mastermarisa.maid_restaurant.core.tree;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
 import com.mastermarisa.maid_restaurant.core.schedule.CookingRequest;
 import com.mastermarisa.maid_restaurant.core.schedule.RequestBus;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
@@ -55,6 +58,12 @@ public class ExecutionNode {
     public List<ExecutionNode> getChildren() {
         return children;
     }
+
+    @Nullable
+    public Recipe<?> getRecipe(RecipeManager recipeManager) { return recipeNode.getRecipe(recipeManager); }
+
+    @Nullable
+    public ICookCapability getCapability() { return recipeNode.getCapability(); }
 
     public boolean isLeaf() {
         return children.isEmpty();

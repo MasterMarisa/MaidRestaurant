@@ -4,14 +4,13 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
-import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
+import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -25,7 +24,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 public class CraftingTableCapability implements ICookCapability {
     public static final String UID = "crafting_table";
@@ -44,7 +42,7 @@ public class CraftingTableCapability implements ICookCapability {
     public RecipeType<CraftingRecipe> getRecipeType() { return RecipeType.CRAFTING; }
 
     @Override
-    public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeStep step) {
+    public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeNode node) {
         return List.of();
     }
 
@@ -69,20 +67,13 @@ public class CraftingTableCapability implements ICookCapability {
     }
 
     @Override
-    public CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeStep step) {
-        ItemStack result;
-        List<IngredientStack> ingredients;
-
-        if (step.getRecipeId() == null) {
+    public CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeNode node) {
+        Recipe<?> recipe = node.getRecipe(level.getRecipeManager());
+        if (recipe == null) {
             return CookResult.INTERRUPTED;
         }
-        Optional<? extends Recipe<?>> recipeOpt = level.getRecipeManager().byKey(step.getRecipeId());
-        if (recipeOpt.isEmpty()) {
-            return CookResult.INTERRUPTED;
-        }
-        Recipe<?> recipe = recipeOpt.get();
-        result = recipe.getResultItem(level.registryAccess());
-        ingredients = RecipeCacheBuilder.getIngredientStacks(step.getRecipeId());
+        ItemStack result = recipe.getResultItem(level.registryAccess());
+        List<IngredientStack> ingredients = RecipeCacheBuilder.getIngredientStacks(recipe.getId());
 
         if (result.isEmpty()) {
             return CookResult.INTERRUPTED;
@@ -100,13 +91,17 @@ public class CraftingTableCapability implements ICookCapability {
             ItemUtils.tryExtract(maidInv, stack.getCount(), stack.getIngredient(), true, false);
         }
 
-        ItemStack remainder = ItemHandlerHelper.insertItemStacked(maidInv, result.copy(), false);
-        if (!remainder.isEmpty()) {
-            ItemEntity itemEntity = new ItemEntity(level, maid.getX(), maid.getY(), maid.getZ(), remainder);
-            level.addFreshEntity(itemEntity);
+        ItemStack remainder = ItemHandlerHelper.insertItem(maidInv, result.copy(), true);
+        if (remainder.isEmpty()) {
+            ItemHandlerHelper.insertItemStacked(maidInv, result.copy(), false);
+            maid.swing(InteractionHand.MAIN_HAND);
+            if (ItemUtils.contains(maidInv, node.getOutput(), node.getCount())) {
+                return CookResult.DONE;
+            } else {
+                return CookResult.PROGRESS;
+            }
         }
 
-        maid.swing(InteractionHand.MAIN_HAND);
-        return CookResult.DONE;
+        return CookResult.INTERRUPTED;
     }
 }

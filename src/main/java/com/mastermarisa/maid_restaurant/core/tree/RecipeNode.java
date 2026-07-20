@@ -1,11 +1,15 @@
 package com.mastermarisa.maid_restaurant.core.tree;
 
 import com.google.gson.JsonElement;
+import com.mastermarisa.maid_restaurant.api.ICookCapability;
+import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
@@ -21,20 +25,18 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     private Ingredient output;
     private int count;
     @Nullable
-    private RecipeStep combineStep;
+    private RecipeStep step;
     private List<RecipeNode> children;
 
     public RecipeNode() {
         this.output = Ingredient.EMPTY;
-        this.count = 1;
-        this.combineStep = null;
         this.children = new ArrayList<>();
     }
 
-    public RecipeNode(Ingredient output, int count, @Nullable RecipeStep combineStep) {
+    public RecipeNode(Ingredient output, int count, @Nullable RecipeStep step) {
         this.output = output;
         this.count = count;
-        this.combineStep = combineStep != null ? combineStep.copy() : null;
+        this.step = step != null ? step.copy() : null;
         this.children = new ArrayList<>();
     }
 
@@ -47,12 +49,28 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     }
 
     @Nullable
-    public RecipeStep getCombineStep() {
-        return combineStep;
+    public RecipeStep getStep() {
+        return step;
     }
 
     public List<RecipeNode> getChildren() {
         return children;
+    }
+
+    @Nullable
+    public Recipe<?> getRecipe(RecipeManager recipeManager) {
+        if (step != null) {
+            return recipeManager.byKey(step.recipeId()).orElse(null);
+        }
+        return null;
+    }
+
+    @Nullable
+    public ICookCapability getCapability() {
+        if (step != null) {
+            return CapabilityRegistry.get(step.capabilityID());
+        }
+        return null;
     }
 
     public boolean isEmpty() { return output.isEmpty(); }
@@ -61,33 +79,17 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         return children.isEmpty();
     }
 
-    public boolean hasCombineStep() {
-        return combineStep != null;
-    }
-
     public void setOutput(Ingredient output, int outputCount) {
         this.output = output;
         this.count = outputCount;
     }
 
-    public void setCombineStep(@Nullable RecipeStep step) {
-        this.combineStep = step != null ? step.copy() : null;
+    public void setStep(@Nullable RecipeStep step) {
+        this.step = step != null ? step.copy() : null;
     }
 
     public void addChild(RecipeNode child) {
         children.add(child);
-    }
-
-    public void setChildren(List<RecipeNode> children) {
-        this.children = new ArrayList<>(children);
-    }
-
-    public RecipeNode deepCopy() {
-        RecipeNode copy = new RecipeNode(output, count, combineStep);
-        for (RecipeNode child : children) {
-            copy.addChild(child.deepCopy());
-        }
-        return copy;
     }
 
     @Override
@@ -98,8 +100,8 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         }
         tag.putInt(TAG_OUTPUT_COUNT, count);
 
-        if (combineStep != null) {
-            tag.put(TAG_STEP, combineStep.serializeNBT());
+        if (step != null) {
+            tag.put(TAG_STEP, step.serializeNBT());
         }
 
         if (!children.isEmpty()) {
@@ -127,9 +129,9 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         }
 
         if (tag.contains(TAG_STEP)) {
-            combineStep = RecipeStep.fromNBT(tag.getCompound(TAG_STEP));
+            step = RecipeStep.fromNBT(tag.getCompound(TAG_STEP));
         } else {
-            combineStep = null;
+            step = null;
         }
 
         children = new ArrayList<>();

@@ -4,12 +4,11 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
-import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
+import com.mastermarisa.maid_restaurant.core.schedule.CookingRequest;
 import com.mastermarisa.maid_restaurant.core.schedule.WorkBlockCache;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.tree.NodeState;
-import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
@@ -66,17 +65,20 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
     @Override
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
         return BehaviorUtils.isTarget(maid, TargetType.APPROACH_WORK_BLOCK) &&
-                maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).map(tracker ->
-                        MaidUtils.distSqrHorizontal(maid, tracker.currentBlockPosition()) > Math.pow(closeEnoughDist, 2.0D)
-                        && Math.abs(maid.getY() - tracker.currentBlockPosition().getY()) <= 4
-                ).orElse(false);
+                maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).map(tracker -> {
+                    BlockPos pos = tracker.currentBlockPosition();
+                    double distHorizontal = MaidUtils.distSqrHorizontal(maid, pos);
+                    double distVertical = Math.abs(maid.getY() - pos.getY());
+                    return distHorizontal > Math.pow(closeEnoughDist, 2.0D) && distVertical <= 4;
+                }).orElse(false);
     }
 
     @Override
     protected void tick(ServerLevel level, EntityMaid maid, long gameTime) {
         if (gameTime % 10 != 0) return;
         maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(tracker -> {
-            BehaviorUtils.setWalkAndLookTargetMemories(maid, tracker.currentBlockPosition().below(), tracker.currentBlockPosition(), movementSpeed, 0);
+            BlockPos pos = tracker.currentBlockPosition();
+            BehaviorUtils.setWalkAndLookTargetMemories(maid, pos.below(), pos, movementSpeed, 0);
         });
     }
 
@@ -95,13 +97,7 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
     }
 
     private boolean searchWorkBlock(ServerLevel level, EntityMaid maid, ExecutionNode node) {
-        RecipeStep step = node.getRecipeNode().getCombineStep();
-        if (step == null) {
-            return false;
-        }
-
-        String capabilityUID = step.getCapabilityUID();
-        ICookCapability capability = CapabilityRegistry.get(capabilityUID);
+        ICookCapability capability = node.getCapability();
         if (capability == null) {
             return false;
         }
@@ -111,25 +107,23 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
             return false;
         }
 
-        BlockPos workBlock = null;
-
         WorkBlockCache cache = maid.getData(ModTaskDataKeys.WORK_BLOCK_CACHE);
-        if (cache != null && step.getCapabilityUID().equals(cache.getCapabilityUID())) {
-            if (capability.isValidWorkBlock(level, cache.getPos())
-                    && !BlockUsageUtils.isUsed(cache.getPos()) && zone.contains(cache.getPos())) {
-                workBlock = cache.getPos();
+        if (cache != null && capability.getUID().equals(cache.getCapabilityUID())) {
+            BlockPos cachedPos = cache.getPos();
+            if (capability.isValidWorkBlock(level, cachedPos) && !BlockUsageUtils.isUsed(cachedPos) && zone.contains(cachedPos)) {
+                BehaviorUtils.setTarget(maid, new BlockPosTracker(cachedPos), TargetType.APPROACH_WORK_BLOCK);
+                BehaviorUtils.setWalkAndLookTargetMemories(maid, cachedPos.below(), cachedPos, movementSpeed, 1);
+                return true;
             }
         }
 
-        if (workBlock == null) {
-            workBlock = capability.searchWorkBlock(level, zone, maid);
-        }
-
-        if (workBlock != null) {
-            BehaviorUtils.setTarget(maid, new BlockPosTracker(workBlock), TargetType.APPROACH_WORK_BLOCK);
-            BehaviorUtils.setWalkAndLookTargetMemories(maid, workBlock.below(), workBlock, movementSpeed, 1);
+        BlockPos workPos = capability.searchWorkBlock(level, zone, maid);
+        if (workPos != null) {
+            BehaviorUtils.setTarget(maid, new BlockPosTracker(workPos), TargetType.APPROACH_WORK_BLOCK);
+            BehaviorUtils.setWalkAndLookTargetMemories(maid, workPos.below(), workPos, movementSpeed, 1);
             return true;
         }
+
         return false;
     }
 
@@ -139,22 +133,23 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
             return;
         }
 
-        RecipeStep step = node.getRecipeNode().getCombineStep();
-        if (step == null) {
-            return;
-        }
-
-        String capabilityUID = step.getCapabilityUID();
-        ICookCapability capability = CapabilityRegistry.get(capabilityUID);
+        ICookCapability capability = node.getCapability();
         if (capability == null || !capability.isValidWorkBlock(level, pos)) {
             return;
         }
 
         // 验证前置需求
         IItemHandler maidInv = maid.getAvailableInv(false);
-        List<ItemStack> existedInputs = capability.getExistedInputs(level, pos, step);
+        List<ItemStack> existedInputs = capability.getExistedInputs(level, pos, node.getRecipeNode());
         Ingredient ingredient = node.getRecipeNode().getOutput();
         int count = node.getRecipeNode().getCount();
+        // TODO 修改CookingRequest机制后移除
+        if (node.getParent() == null) {
+            CookingRequest request = ChefScheduler.getOrClaimRequest(level, maid);
+            if (request != null) {
+                count = request.count;
+            }
+        }
         if (ItemUtils.contains(maidInv, existedInputs, ingredient, count)) {
             node.setState(NodeState.DONE);
             if (node.getParent() != null) {
@@ -166,6 +161,6 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
         node.setState(NodeState.EXECUTING);
         BlockUsageUtils.add(pos, maid.getUUID());
         BehaviorUtils.setTarget(maid, new BlockPosTracker(pos), TargetType.EXECUTE_COOK_STEP);
-        maid.setData(ModTaskDataKeys.WORK_BLOCK_CACHE, new WorkBlockCache(pos, step.getCapabilityUID()));
+        maid.setData(ModTaskDataKeys.WORK_BLOCK_CACHE, new WorkBlockCache(pos, capability.getUID()));
     }
 }

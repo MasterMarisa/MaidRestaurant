@@ -16,7 +16,7 @@ import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.core.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
-import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
+import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
 import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtils;
@@ -76,12 +76,22 @@ public class StockpotCapability implements ICookCapability {
     }
 
     @Override
-    public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeStep step) {
+    public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeNode node) {
         List<ItemStack> inputs = new ArrayList<>();
         if (level.getBlockEntity(pos) instanceof StockpotBlockEntity be) {
             inputs.addAll(be.getInputs().stream().filter(s -> !s.isEmpty()).toList());
             if (SOUP_BASE_MAP.containsKey(be.getSoupBaseId())) {
                 inputs.add(SOUP_BASE_MAP.get(be.getSoupBaseId()).getItems()[0].copyWithCount(1));
+            }
+            StockpotRecipe recipe = (StockpotRecipe) node.getRecipe(level.getRecipeManager());
+            if (recipe != null) {
+                Ingredient carrier = recipe.carrier();
+                if (!carrier.isEmpty() && be.getStatus() == 3) {
+                    int count = recipe.result().getCount() - be.getTakeoutCount();
+                    if (count != 0) {
+                        inputs.add(carrier.getItems()[0].copyWithCount(count));
+                    }
+                }
             }
         }
         return inputs;
@@ -107,19 +117,15 @@ public class StockpotCapability implements ICookCapability {
     }
 
     @Override
-    public CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeStep step) {
+    public CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeNode node) {
         if (!(level.getBlockEntity(pos) instanceof StockpotBlockEntity be)) {
             return CookResult.INTERRUPTED;
         }
 
-        if (step.getRecipeId() == null) {
+        StockpotRecipe recipe = (StockpotRecipe) node.getRecipe(level.getRecipeManager());
+        if (recipe == null) {
             return CookResult.INTERRUPTED;
         }
-        Optional<? extends Recipe<?>> recipeOpt = level.getRecipeManager().byKey(step.getRecipeId());
-        if (recipeOpt.isEmpty()) {
-            return CookResult.INTERRUPTED;
-        }
-        StockpotRecipe recipe = (StockpotRecipe) recipeOpt.get();
         IItemHandler maidInv = maid.getAvailableInv(false);
 
         switch (be.getStatus()) {
@@ -214,7 +220,11 @@ public class StockpotCapability implements ICookCapability {
                         }
                         ItemUtils.getAllFromInv(fakePlayer.getInventory(), maid);
                         maid.swing(InteractionHand.MAIN_HAND);
-                        return CookResult.DONE;
+                        if (ItemUtils.contains(maidInv, node.getOutput(), node.getCount())) {
+                            return CookResult.DONE;
+                        } else {
+                            return CookResult.PROGRESS;
+                        }
                     }
                     List<ItemStack> carriers = ItemUtils.tryExtract(maidInv, recipe.result().getCount(), recipe.carrier(), true, false);
                     if (!carriers.isEmpty()) {
@@ -225,7 +235,11 @@ public class StockpotCapability implements ICookCapability {
                         }
                         ItemUtils.getAllFromInv(fakePlayer.getInventory(), maid);
                         maid.swing(InteractionHand.MAIN_HAND);
-                        return CookResult.DONE;
+                        if (ItemUtils.contains(maidInv, node.getOutput(), node.getCount())) {
+                            return CookResult.DONE;
+                        } else {
+                            return CookResult.PROGRESS;
+                        }
                     }
                     return CookResult.INTERRUPTED;
                 }

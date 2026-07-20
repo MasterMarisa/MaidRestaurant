@@ -110,6 +110,11 @@ public class RequestBus<T extends INBTSerializable<CompoundTag>> extends SavedDa
         return null;
     }
 
+    public void clear(String restaurantId) {
+        getEntries(restaurantId).clear();
+        setDirty();
+    }
+
     /**
      * 校验委托合法性
      */

@@ -13,7 +13,7 @@ import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.core.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
-import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
+import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
 import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtils;
@@ -38,7 +38,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 public class PotCapability implements ICookCapability {
     public static final String UID = "pot";
@@ -79,7 +78,7 @@ public class PotCapability implements ICookCapability {
     }
 
     @Override
-    public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeStep step) {
+    public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeNode node) {
         List<ItemStack> inputs = new ArrayList<>();
         if (level.getBlockEntity(pos) instanceof PotBlockEntity be) {
             inputs.addAll(be.getInputs().stream().filter(s -> !s.isEmpty()).toList());
@@ -111,20 +110,16 @@ public class PotCapability implements ICookCapability {
     }
 
     @Override
-    public CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeStep step) {
+    public CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeNode node) {
         if (!(level.getBlockEntity(pos) instanceof PotBlockEntity be)) {
             return CookResult.INTERRUPTED;
         }
         BlockState state = level.getBlockState(pos);
 
-        if (step.getRecipeId() == null) {
+        PotRecipe recipe = (PotRecipe) node.getRecipe(level.getRecipeManager());
+        if (recipe == null) {
             return CookResult.INTERRUPTED;
         }
-        Optional<? extends Recipe<?>> recipeOpt = level.getRecipeManager().byKey(step.getRecipeId());
-        if (recipeOpt.isEmpty()) {
-            return CookResult.INTERRUPTED;
-        }
-        PotRecipe recipe = (PotRecipe) recipeOpt.get();
         IItemHandler maidInv = maid.getAvailableInv(false);
 
         switch (be.getStatus()) {
@@ -197,7 +192,11 @@ public class PotCapability implements ICookCapability {
                         }
                         ItemUtils.getAllFromInv(fakePlayer.getInventory(), maid);
                         maid.swing(InteractionHand.MAIN_HAND);
-                        return CookResult.DONE;
+                        if (ItemUtils.contains(maidInv, node.getOutput(), node.getCount())) {
+                            return CookResult.DONE;
+                        } else {
+                            return CookResult.PROGRESS;
+                        }
                     } else {
                         return CookResult.INTERRUPTED;
                     }
@@ -206,7 +205,11 @@ public class PotCapability implements ICookCapability {
                     be.takeOutProduct(level, pig, ModItems.KITCHEN_SHOVEL.get().getDefaultInstance());
                     ItemUtils.getItemToMaid(maid, pig.getMainHandItem());
                     maid.swing(InteractionHand.MAIN_HAND);
-                    return CookResult.DONE;
+                    if (ItemUtils.contains(maidInv, node.getOutput(), node.getCount())) {
+                        return CookResult.DONE;
+                    } else {
+                        return CookResult.PROGRESS;
+                    }
                 }
             }
             case 3 -> {

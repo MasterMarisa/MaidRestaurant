@@ -1,9 +1,10 @@
-package com.mastermarisa.maid_restaurant.init;
+package com.mastermarisa.maid_restaurant.init.registry;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.core.schedule.CookingRequest;
 import com.mastermarisa.maid_restaurant.core.schedule.RequestBus;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.CookingGuideItem;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -54,6 +55,14 @@ public class CommandRegistry {
                                 )
                         )
                 )
+                .then(Commands.literal("clear_request")
+                        .then(Commands.argument("restaurant_id", StringArgumentType.string())
+                                .executes(context -> {
+                                    ServerLevel level = context.getSource().getLevel();
+                                    String id = StringArgumentType.getString(context, "restaurant_id");
+                                    RequestBus.getInstance(level, CookingRequest.class).clear(id);
+                                    return 1;
+                                })))
         );
     }
 
