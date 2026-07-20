@@ -2,6 +2,7 @@ package com.mastermarisa.maid_restaurant.core.recipe;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
+import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -9,6 +10,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import org.apache.commons.compress.utils.Lists;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +74,16 @@ public class RecipeCacheBuilder {
 
     public static List<IngredientStack> getIngredientStacks(ResourceLocation resourceLocation) {
         return INGREDIENT_STACK_MAP.getOrDefault(resourceLocation, List.of());
+    }
+
+    @Nullable
+    public static IngredientStack findStack(ResourceLocation recipeId, Ingredient ingredient) {
+        for (var stack : getIngredientStacks(recipeId)) {
+            if (ItemUtils.equals(stack.getIngredient(), ingredient)) {
+                return stack;
+            }
+        }
+        return null;
     }
 
     static  {

@@ -2,6 +2,8 @@ package com.mastermarisa.maid_restaurant.core.tree;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
+import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
+import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
 import com.mastermarisa.maid_restaurant.core.schedule.CookingRequest;
 import com.mastermarisa.maid_restaurant.core.schedule.RequestBus;
@@ -9,6 +11,7 @@ import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
@@ -40,6 +43,24 @@ public class ExecutionNode {
             node.children.add(buildTree(childRecipe, node));
         }
         return node;
+    }
+
+    private static void recalculateSubtree(Level level, RecipeNode node, @Nullable RecipeNode parent) {
+        if (parent != null) {
+            ICookCapability capability = parent.getCapability();
+            Recipe<?> recipe = parent.getRecipe(level.getRecipeManager());
+            if (recipe != null && capability != null) {
+                IngredientStack stack = RecipeCacheBuilder.findStack(recipe.getId(), node.getOutput());
+                if (stack != null) {
+                    int count = capability.getIngredientCount(level, recipe, parent.getCount(), stack);
+                    node.setCount(count);
+                }
+            }
+        }
+
+        for (var child : node.getChildren()) {
+            recalculateSubtree(level, child, node);
+        }
     }
 
     public RecipeNode getRecipeNode() {
@@ -163,5 +184,10 @@ public class ExecutionNode {
             }
         }
         return null;
+    }
+
+    public void applyOutputCount(Level level, int count) {
+        recipeNode.setCount(count);
+        recalculateSubtree(level, this.getRecipeNode(), null);
     }
 }

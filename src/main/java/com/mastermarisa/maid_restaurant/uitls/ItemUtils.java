@@ -123,6 +123,10 @@ public class ItemUtils {
     }
 
     public static boolean equals(Ingredient a, Ingredient b) {
+        if (a == b) {
+            return true;
+        }
+
         if (a.isEmpty() || b.isEmpty()) {
             return a.isEmpty() && b.isEmpty();
         }

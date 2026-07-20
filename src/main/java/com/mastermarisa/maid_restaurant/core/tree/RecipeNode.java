@@ -84,6 +84,10 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         this.count = outputCount;
     }
 
+    public void setCount(int count) {
+        this.count = count;
+    }
+
     public void setStep(@Nullable RecipeStep step) {
         this.step = step != null ? step.copy() : null;
     }

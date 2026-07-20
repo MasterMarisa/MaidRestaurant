@@ -31,6 +31,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -73,6 +74,22 @@ public class StockpotCapability implements ICookCapability {
         }
         ingredients.add(STOCKPOT_LID.get());
         return ingredients;
+    }
+
+    @Override
+    public int getIngredientCount(Level level, Recipe<?> recipe, int output, IngredientStack stack) {
+        ResourceLocation soupBaseId = ((StockpotRecipe) recipe).soupBase();
+        if (soupBaseId.equals(ModSoupBases.WATER)) {
+            if (ItemUtils.equals(stack.getIngredient(), SOUP_BASE_MAP.get(soupBaseId))) {
+                ItemStack result = recipe.getResultItem(level.registryAccess());
+                int multiplier = (int) Math.ceil((double) output / result.getCount());
+                return multiplier >= 2 ? 2 : 1;
+            }
+        }
+        if (ItemUtils.equals(stack.getIngredient(), STOCKPOT_LID.get())) {
+            return 1;
+        }
+        return ICookCapability.super.getIngredientCount(level, recipe, output, stack);
     }
 
     @Override

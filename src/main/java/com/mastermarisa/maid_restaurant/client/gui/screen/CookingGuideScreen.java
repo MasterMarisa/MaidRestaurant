@@ -311,15 +311,14 @@ public class CookingGuideScreen extends Screen {
         }
 
         Recipe<?> recipe = node.getRecipe(level.getRecipeManager());
-        if (recipe == null) {
+        ICookCapability capability = node.getCapability();
+        if (recipe == null || capability == null) {
             return;
         }
 
-        ItemStack result = recipe.getResultItem(level.registryAccess());
-        int multiplier = (int) Math.ceil((double) node.getCount() / result.getCount());
-
         for (var stack : RecipeCacheBuilder.getIngredientStacks(step.recipeId())) {
-            RecipeNode child = new RecipeNode(stack.getIngredient(), stack.getCount(), null);
+            int count = capability.getIngredientCount(level, recipe, node.getCount(), stack);
+            RecipeNode child = new RecipeNode(stack.getIngredient(), count, null);
             node.addChild(child);
         }
     }

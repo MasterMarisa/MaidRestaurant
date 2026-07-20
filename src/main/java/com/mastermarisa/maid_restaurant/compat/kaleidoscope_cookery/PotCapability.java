@@ -30,6 +30,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.items.IItemHandler;
@@ -75,6 +76,14 @@ public class PotCapability implements ICookCapability {
         }
         ingredients.add(KITCHEN_SHOVEL);
         return ingredients;
+    }
+
+    @Override
+    public int getIngredientCount(Level level, Recipe<?> recipe, int output, IngredientStack stack) {
+        if (ItemUtils.equals(stack.getIngredient(), KITCHEN_SHOVEL)) {
+            return 1;
+        }
+        return ICookCapability.super.getIngredientCount(level, recipe, output, stack);
     }
 
     @Override

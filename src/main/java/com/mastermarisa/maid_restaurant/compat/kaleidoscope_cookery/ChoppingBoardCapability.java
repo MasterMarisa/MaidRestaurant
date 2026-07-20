@@ -10,6 +10,7 @@ import com.github.ysbbbbbb.kaleidoscopecookery.init.tag.TagMod;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.core.capability.CookResult;
+import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
@@ -24,6 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
@@ -55,6 +57,14 @@ public class ChoppingBoardCapability implements ICookCapability {
         List<Ingredient> ingredients = new ArrayList<>(ICookCapability.super.getRequiredIngredients(recipe));
         ingredients.add(KITCHEN_KNIFE);
         return ingredients;
+    }
+
+    @Override
+    public int getIngredientCount(Level level, Recipe<?> recipe, int output, IngredientStack stack) {
+        if (ItemUtils.equals(stack.getIngredient(), KITCHEN_KNIFE)) {
+            return 1;
+        }
+        return ICookCapability.super.getIngredientCount(level, recipe, output, stack);
     }
 
     @Override
