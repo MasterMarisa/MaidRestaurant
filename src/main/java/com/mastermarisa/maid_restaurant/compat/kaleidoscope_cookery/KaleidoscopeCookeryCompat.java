@@ -10,6 +10,7 @@ public class KaleidoscopeCookeryCompat {
             ChoppingBoardCapability.register();
             PotCapability.register();
             StockpotCapability.register();
+            SteamerCapability.register();
         }
     }
 

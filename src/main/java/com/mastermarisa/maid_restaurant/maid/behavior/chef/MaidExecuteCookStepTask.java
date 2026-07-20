@@ -22,7 +22,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 
 public class MaidExecuteCookStepTask extends MaidTickRateTask {
     public MaidExecuteCookStepTask() {
-        super(ImmutableMap.of(ModEntities.TARGET_POS.get(), MemoryStatus.VALUE_PRESENT), 10);
+        super(ImmutableMap.of(ModEntities.TARGET_POS.get(), MemoryStatus.VALUE_PRESENT));
     }
 
     @Override
@@ -100,4 +100,16 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
 
     @Override
     protected boolean timedOut(long gameTime) { return false; }
+
+    @Override
+    protected int getInterval(ServerLevel level, EntityMaid maid) {
+        ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.EXECUTING);
+        if (node != null) {
+            ICookCapability capability = node.getCapability();
+            if (capability != null) {
+                return capability.getTickInterval();
+            }
+        }
+        return 0;
+    }
 }

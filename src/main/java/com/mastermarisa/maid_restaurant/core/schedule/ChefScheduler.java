@@ -3,15 +3,12 @@ package com.mastermarisa.maid_restaurant.core.schedule;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
-import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.tree.NodeState;
-import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
-import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 
@@ -132,27 +129,6 @@ public class ChefScheduler {
         if (restaurantId != null) {
             RequestBus.getInstance(level, CookingRequest.class).release(restaurantId, maid);
         }
-    }
-
-    public static boolean trySubmitRequest(ServerLevel level, EntityMaid maid) {
-        String restaurantId = getRestaurantId(maid);
-        if (restaurantId == null) {
-            return false;
-        }
-        RequestBus<CookingRequest> bus = RequestBus.getInstance(level, CookingRequest.class);
-        CookingRequest request = bus.getClaimed(restaurantId, maid);
-        if (request == null) {
-            return false;
-        }
-        ExecutionNode root = request.root;
-        RecipeNode recipeNode = root.getRecipeNode();
-        int count = ItemUtils.count(maid.getAvailableInv(false), recipeNode.getOutput());
-        if (count >= recipeNode.getCount()) {
-            bus.submit(restaurantId, maid);
-            MaidRestaurant.LOGGER.debug("[MaidRestaurant-DEBUG] Context Submitted.");
-            return true;
-        }
-        return false;
     }
 
     public static void submitRequest(ServerLevel level, EntityMaid maid) {

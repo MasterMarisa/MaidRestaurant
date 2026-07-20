@@ -9,17 +9,14 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import java.util.Map;
 
 public abstract class MaidTickRateTask extends Behavior<EntityMaid> {
-    protected final int maxInterval;
     protected int ticksRemain;
 
-    public MaidTickRateTask(Map<MemoryModuleType<?>, MemoryStatus> entryCondition, int maxInterval, int duration){
+    public MaidTickRateTask(Map<MemoryModuleType<?>, MemoryStatus> entryCondition, int duration){
         super(entryCondition,duration);
-        this.maxInterval = maxInterval;
     }
 
-    public MaidTickRateTask(Map<MemoryModuleType<?>, MemoryStatus> entryCondition, int maxInterval){
+    public MaidTickRateTask(Map<MemoryModuleType<?>, MemoryStatus> entryCondition){
         super(entryCondition);
-        this.maxInterval = maxInterval;
     }
 
     protected boolean shouldTick(ServerLevel level, EntityMaid maid, long gameTime){
@@ -27,11 +24,11 @@ public abstract class MaidTickRateTask extends Behavior<EntityMaid> {
             ticksRemain--;
             return false;
         }
-        int halfInterval = maxInterval / 2;
-        int offset = maxInterval % 2 == 0 ? 1 : 2;
-        ticksRemain = halfInterval + maid.getRandom().nextInt(halfInterval + offset);
+        ticksRemain = getInterval(level, maid);
         return true;
     }
+
+    protected abstract int getInterval(ServerLevel level, EntityMaid maid);
 
     public void setTicksRemain(int ticksRemain) { this.ticksRemain = ticksRemain; }
 }

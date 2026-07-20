@@ -53,7 +53,7 @@ public class ExecutionNode {
                 IngredientStack stack = RecipeCacheBuilder.findStack(recipe.getId(), node.getOutput());
                 if (stack != null) {
                     int count = capability.getIngredientCount(level, recipe, parent.getCount(), stack);
-                    node.setCount(count);
+                    node.setOutput(stack.getIngredient(), count);
                 }
             }
         }

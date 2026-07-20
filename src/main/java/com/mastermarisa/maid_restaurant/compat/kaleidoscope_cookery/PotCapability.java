@@ -4,7 +4,6 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.ysbbbbbb.kaleidoscopecookery.block.kitchen.PotBlock;
 import com.github.ysbbbbbb.kaleidoscopecookery.blockentity.kitchen.PotBlockEntity;
 import com.github.ysbbbbbb.kaleidoscopecookery.crafting.recipe.PotRecipe;
-import com.github.ysbbbbbb.kaleidoscopecookery.init.ModBlocks;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModItems;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModRecipes;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.tag.TagMod;
@@ -14,8 +13,6 @@ import com.mastermarisa.maid_restaurant.core.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
-import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
-import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
 import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtils;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
@@ -35,9 +32,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.items.IItemHandler;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class PotCapability implements ICookCapability {
@@ -99,21 +94,6 @@ public class PotCapability implements ICookCapability {
     }
 
     @Override
-    @Nullable
-    public BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
-        List<BlockPos> found = new ArrayList<>();
-        for (BlockPos pos : zone) {
-            if (level.getBlockState(pos).is(ModBlocks.POT.get()) && !BlockUsageUtils.isUsed(pos)) {
-                found.add(pos);
-            }
-        }
-        if (found.isEmpty()) {
-            return null;
-        }
-        return found.stream().min(Comparator.comparingDouble(p -> p.distSqr(maid.blockPosition()))).orElse(null);
-    }
-
-    @Override
     public boolean isValidWorkBlock(ServerLevel level, BlockPos pos) {
         return level.getBlockEntity(pos) instanceof PotBlockEntity pot && pot.hasHeatSource(level);
     }
@@ -162,7 +142,9 @@ public class PotCapability implements ICookCapability {
                     if (shovelIndex == -1) {
                         return CookResult.INTERRUPTED;
                     }
-                    MaidUtils.exchangeToHand(maid, InteractionHand.MAIN_HAND, shovelIndex);
+                    if (!KITCHEN_SHOVEL.test(maid.getMainHandItem())) {
+                        MaidUtils.exchangeToHand(maid, InteractionHand.MAIN_HAND, shovelIndex);
+                    }
 
                     for (var stack : stacks) {
                         List<ItemStack> inputs = ItemUtils.tryExtract(maidInv, stack.getCount(), stack.getIngredient(), true, false);
@@ -181,7 +163,9 @@ public class PotCapability implements ICookCapability {
                 if (shovelIndex == -1) {
                     return CookResult.INTERRUPTED;
                 }
-                MaidUtils.exchangeToHand(maid, InteractionHand.MAIN_HAND, shovelIndex);
+                if (!KITCHEN_SHOVEL.test(maid.getMainHandItem())) {
+                    MaidUtils.exchangeToHand(maid, InteractionHand.MAIN_HAND, shovelIndex);
+                }
 
                 be.onShovelHit(level, maid, maid.getMainHandItem());
                 level.playSound(null, maid.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, (level.random.nextFloat() - level.random.nextFloat()) * 0.8F);
@@ -228,5 +212,10 @@ public class PotCapability implements ICookCapability {
             }
         }
         return CookResult.PROGRESS;
+    }
+
+    @Override
+    public int getTickInterval() {
+        return 20;
     }
 }

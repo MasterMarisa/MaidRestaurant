@@ -3,7 +3,6 @@ package com.mastermarisa.maid_restaurant.compat.kaleidoscope_cookery;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.ysbbbbbb.kaleidoscopecookery.blockentity.kitchen.ChoppingBoardBlockEntity;
 import com.github.ysbbbbbb.kaleidoscopecookery.crafting.recipe.ChoppingBoardRecipe;
-import com.github.ysbbbbbb.kaleidoscopecookery.init.ModBlocks;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModItems;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModRecipes;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.tag.TagMod;
@@ -12,8 +11,6 @@ import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.core.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
-import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
-import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.core.BlockPos;
@@ -28,10 +25,8 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.items.IItemHandler;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class ChoppingBoardCapability implements ICookCapability {
@@ -79,21 +74,6 @@ public class ChoppingBoardCapability implements ICookCapability {
     }
 
     @Override
-    @Nullable
-    public BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
-        List<BlockPos> found = new ArrayList<>();
-        for (BlockPos pos : zone) {
-            if (level.getBlockState(pos).is(ModBlocks.CHOPPING_BOARD.get()) && !BlockUsageUtils.isUsed(pos)) {
-                found.add(pos);
-            }
-        }
-        if (found.isEmpty()) {
-            return null;
-        }
-        return found.stream().min(Comparator.comparingDouble(p -> p.distSqr(maid.blockPosition()))).orElse(null);
-    }
-
-    @Override
     public boolean isValidWorkBlock(ServerLevel level, BlockPos pos) {
         return level.getBlockEntity(pos) instanceof ChoppingBoardBlockEntity;
     }
@@ -131,7 +111,9 @@ public class ChoppingBoardCapability implements ICookCapability {
         if (index == -1) {
             return CookResult.INTERRUPTED;
         }
-        MaidUtils.exchangeToHand(maid, InteractionHand.MAIN_HAND, index);
+        if (!KITCHEN_KNIFE.test(maid.getMainHandItem())) {
+            MaidUtils.exchangeToHand(maid, InteractionHand.MAIN_HAND, index);
+        }
 
         if (be.getCurrentCutCount() < be.getMaxCutCount()) {
             be.onCutItem(level, maid, maid.getMainHandItem());
@@ -148,6 +130,11 @@ public class ChoppingBoardCapability implements ICookCapability {
                 return CookResult.PROGRESS;
             }
         }
+    }
+
+    @Override
+    public int getTickInterval() {
+        return 5;
     }
 
     private static void callResetBoardData(ChoppingBoardBlockEntity board) {

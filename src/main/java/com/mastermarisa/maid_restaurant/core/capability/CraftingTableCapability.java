@@ -5,8 +5,6 @@ import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
-import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
-import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -20,9 +18,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class CraftingTableCapability implements ICookCapability {
@@ -44,21 +39,6 @@ public class CraftingTableCapability implements ICookCapability {
     @Override
     public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeNode node) {
         return List.of();
-    }
-
-    @Override
-    @Nullable
-    public BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
-        List<BlockPos> found = new ArrayList<>();
-        for (BlockPos pos : zone) {
-            if (level.getBlockState(pos).is(Blocks.CRAFTING_TABLE) && !BlockUsageUtils.isUsed(pos)) {
-                found.add(pos);
-            }
-        }
-        if (found.isEmpty()) {
-            return null;
-        }
-        return found.stream().min(Comparator.comparingDouble(p -> p.distSqr(maid.blockPosition()))).orElse(null);
     }
 
     @Override
@@ -103,5 +83,10 @@ public class CraftingTableCapability implements ICookCapability {
         }
 
         return CookResult.INTERRUPTED;
+    }
+
+    @Override
+    public int getTickInterval() {
+        return 1;
     }
 }

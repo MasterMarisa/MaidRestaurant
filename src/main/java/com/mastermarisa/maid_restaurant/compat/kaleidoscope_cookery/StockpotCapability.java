@@ -6,7 +6,6 @@ import com.github.ysbbbbbb.kaleidoscopecookery.block.kitchen.StockpotBlock;
 import com.github.ysbbbbbb.kaleidoscopecookery.blockentity.kitchen.StockpotBlockEntity;
 import com.github.ysbbbbbb.kaleidoscopecookery.crafting.recipe.StockpotRecipe;
 import com.github.ysbbbbbb.kaleidoscopecookery.crafting.soupbase.SoupBaseManager;
-import com.github.ysbbbbbb.kaleidoscopecookery.init.ModBlocks;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModItems;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModRecipes;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModSoupBases;
@@ -17,8 +16,6 @@ import com.mastermarisa.maid_restaurant.core.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
-import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
-import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
 import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtils;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.core.BlockPos;
@@ -35,9 +32,11 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class StockpotCapability implements ICookCapability {
@@ -112,20 +111,6 @@ public class StockpotCapability implements ICookCapability {
             }
         }
         return inputs;
-    }
-
-    @Override
-    public @Nullable BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
-        List<BlockPos> found = new ArrayList<>();
-        for (BlockPos pos : zone) {
-            if (level.getBlockState(pos).is(ModBlocks.STOCKPOT.get()) && !BlockUsageUtils.isUsed(pos)) {
-                found.add(pos);
-            }
-        }
-        if (found.isEmpty()) {
-            return null;
-        }
-        return found.stream().min(Comparator.comparingDouble(p -> p.distSqr(maid.blockPosition()))).orElse(null);
     }
 
     @Override
@@ -263,6 +248,11 @@ public class StockpotCapability implements ICookCapability {
             }
         }
         return CookResult.PROGRESS;
+    }
+
+    @Override
+    public int getTickInterval() {
+        return 20;
     }
 
     private void takeLid(ServerLevel level, EntityMaid maid, BlockPos pos, StockpotBlockEntity pot) {

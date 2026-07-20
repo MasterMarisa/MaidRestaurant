@@ -5,6 +5,7 @@ import com.mastermarisa.maid_restaurant.core.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
+import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -14,6 +15,8 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public interface ICookCapability {
@@ -36,9 +39,22 @@ public interface ICookCapability {
     List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeNode node);
 
     @Nullable
-    BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid);
+    default BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
+        List<BlockPos> found = new ArrayList<>();
+        for (BlockPos pos : zone) {
+            if (isValidWorkBlock(level, pos) && !BlockUsageUtils.isUsed(pos)) {
+                found.add(pos);
+            }
+        }
+        if (found.isEmpty()) {
+            return null;
+        }
+        return found.stream().min(Comparator.comparingDouble(p -> p.distSqr(maid.blockPosition()))).orElse(null);
+    }
 
     boolean isValidWorkBlock(ServerLevel level, BlockPos pos);
 
     CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeNode node);
+
+    int getTickInterval();
 }
