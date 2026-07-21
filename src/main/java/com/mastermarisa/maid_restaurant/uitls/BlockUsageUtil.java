@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class BlockUsageUtils {
+public class BlockUsageUtil {
     private static final ConcurrentHashMap<Long, PooledStringHashSet> map;
 
     public static void add(BlockPos pos, UUID uuid){

@@ -13,11 +13,9 @@ import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
-import com.mastermarisa.maid_restaurant.uitls.BehaviorUtils;
-import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
-import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
-import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
+import com.mastermarisa.maid_restaurant.uitls.*;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -63,7 +61,7 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
 
     @Override
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
-        return BehaviorUtils.isTarget(maid, TargetType.APPROACH_WORK_BLOCK) &&
+        return BehaviorUtil.isTarget(maid, TargetType.APPROACH_WORK_BLOCK) &&
                 maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).map(tracker -> {
                     BlockPos pos = tracker.currentBlockPosition();
                     double distHorizontal = MaidUtils.distSqrHorizontal(maid, pos);
@@ -77,7 +75,7 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
         if (gameTime % 10 != 0) return;
         maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(tracker -> {
             BlockPos pos = tracker.currentBlockPosition();
-            BehaviorUtils.setWalkAndLookTargetMemories(maid, pos.below(), pos, movementSpeed, 0);
+            BehaviorUtil.setWalkAndLookTargetMemories(maid, pos.below(), pos, movementSpeed, 0);
         });
     }
 
@@ -90,7 +88,9 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
                 onReached(level, maid, pos);
             }
         });
-        if (BehaviorUtils.isTarget(maid, TargetType.APPROACH_WORK_BLOCK)) BehaviorUtils.eraseTarget(maid);
+        if (BehaviorUtil.isTarget(maid, TargetType.APPROACH_WORK_BLOCK)) {
+            BehaviorUtil.eraseTarget(maid);
+        }
         maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
         maid.setDeltaMovement(Vec3.ZERO);
     }
@@ -109,24 +109,31 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
         WorkBlockCache cache = maid.getData(ModTaskDataKeys.WORK_BLOCK_CACHE);
         if (cache != null && capability.getUID().equals(cache.getCapabilityUID())) {
             BlockPos cachedPos = cache.getPos();
-            if (capability.isValidWorkBlock(level, cachedPos) && !BlockUsageUtils.isUsed(cachedPos) && zone.contains(cachedPos)) {
-                BehaviorUtils.setTarget(maid, new BlockPosTracker(cachedPos), TargetType.APPROACH_WORK_BLOCK);
-                BehaviorUtils.setWalkAndLookTargetMemories(maid, cachedPos.below(), cachedPos, movementSpeed, 1);
+            if (capability.isValidWorkBlock(level, cachedPos) && !BlockUsageUtil.isUsed(cachedPos) && zone.contains(cachedPos)) {
+                ChatBubbleUtil.removeChatBubble(maid);
+                BehaviorUtil.setTarget(maid, new BlockPosTracker(cachedPos), TargetType.APPROACH_WORK_BLOCK);
+                BehaviorUtil.setWalkAndLookTargetMemories(maid, cachedPos.below(), cachedPos, movementSpeed, 1);
                 return true;
             }
         }
 
         BlockPos workPos = capability.searchWorkBlock(level, zone, maid);
         if (workPos != null) {
-            BehaviorUtils.setTarget(maid, new BlockPosTracker(workPos), TargetType.APPROACH_WORK_BLOCK);
-            BehaviorUtils.setWalkAndLookTargetMemories(maid, workPos.below(), workPos, movementSpeed, 1);
+            ChatBubbleUtil.removeChatBubble(maid);
+            BehaviorUtil.setTarget(maid, new BlockPosTracker(workPos), TargetType.APPROACH_WORK_BLOCK);
+            BehaviorUtil.setWalkAndLookTargetMemories(maid, workPos.below(), workPos, movementSpeed, 1);
             return true;
         }
+        ChatBubbleUtil.setTextChatBubble(maid, Component.literal("主人,我找不到空闲的" + capability.getIcon().getDisplayName().getString() + "方块!"));
 
         return false;
     }
 
     private void onReached(ServerLevel level, EntityMaid maid, BlockPos pos) {
+        if (BlockUsageUtil.isUsed(pos)) {
+            return;
+        }
+
         ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.READY);
         if (node == null) {
             return;
@@ -152,8 +159,8 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
         }
 
         node.setState(NodeState.EXECUTING);
-        BlockUsageUtils.add(pos, maid.getUUID());
-        BehaviorUtils.setTarget(maid, new BlockPosTracker(pos), TargetType.EXECUTE_COOK_STEP);
+        BehaviorUtil.setTarget(maid, new BlockPosTracker(pos), TargetType.EXECUTE_COOK_STEP);
+        BlockUsageUtil.add(pos, maid.getUUID());
         maid.setData(ModTaskDataKeys.WORK_BLOCK_CACHE, new WorkBlockCache(pos, capability.getUID()));
     }
 }

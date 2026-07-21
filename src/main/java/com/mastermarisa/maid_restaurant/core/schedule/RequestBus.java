@@ -178,7 +178,7 @@ public class RequestBus<T extends INBTSerializable<CompoundTag>> extends SavedDa
                 String restaurantId = entryTag.getString("restaurant_id");
                 List<RequestEntry<T>> entryList = new LinkedList<>();
                 for (var request : entryTag.getList("entry_list", Tag.TAG_COMPOUND)) {
-                    entryList.add(new RequestEntry<>(deserializeRequest((CompoundTag) request)));
+                    entryList.add(RequestEntry.fromNBT((CompoundTag) request));
                 }
                 bus.requestPool.put(restaurantId, entryList);
             }
@@ -222,6 +222,8 @@ public class RequestBus<T extends INBTSerializable<CompoundTag>> extends SavedDa
         @Nullable
         private UUID owner;
 
+        public RequestEntry() {}
+
         public RequestEntry(T request) {
             this.request = request;
         }
@@ -237,7 +239,7 @@ public class RequestBus<T extends INBTSerializable<CompoundTag>> extends SavedDa
         @Override
         public CompoundTag serializeNBT() {
             CompoundTag tag = new CompoundTag();
-            tag.put("request", request.serializeNBT());
+            tag.put("request", REGISTRY.serialize(request));
             if (owner != null) {
                 tag.putUUID("owner", owner);
             }
@@ -252,6 +254,12 @@ public class RequestBus<T extends INBTSerializable<CompoundTag>> extends SavedDa
             if (tag.contains("owner")) {
                 this.owner = tag.getUUID("owner");
             }
+        }
+
+        public static <T extends INBTSerializable<CompoundTag>> RequestEntry<T> fromNBT(CompoundTag tag) {
+            RequestEntry<T> entry = new RequestEntry<>();
+            entry.deserializeNBT(tag);
+            return entry;
         }
     }
 

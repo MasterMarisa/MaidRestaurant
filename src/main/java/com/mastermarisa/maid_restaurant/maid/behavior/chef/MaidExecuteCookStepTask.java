@@ -12,8 +12,8 @@ import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidTickRateTask;
-import com.mastermarisa.maid_restaurant.uitls.BehaviorUtils;
-import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
+import com.mastermarisa.maid_restaurant.uitls.BehaviorUtil;
+import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
@@ -33,7 +33,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
         }
 
         BlockPos pos = maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).orElseThrow().currentBlockPosition();
-        if (BlockUsageUtils.isUsed(pos) && !BlockUsageUtils.isUsing(pos, maid.getUUID())) {
+        if (BlockUsageUtil.isUsed(pos) && !BlockUsageUtil.isUsing(pos, maid.getUUID())) {
             return false;
         }
 
@@ -51,7 +51,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
         if (ticksRemain > 0){
             return true;
         } else {
-            return BehaviorUtils.isTarget(maid, TargetType.EXECUTE_COOK_STEP) && checkExtraStartConditions(level, maid);
+            return BehaviorUtil.isTarget(maid, TargetType.EXECUTE_COOK_STEP) && checkExtraStartConditions(level, maid);
         }
     }
 
@@ -91,10 +91,10 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
         maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(tracker -> {
-            BlockUsageUtils.remove(tracker.currentBlockPosition(), maid.getUUID());
+            BlockUsageUtil.remove(tracker.currentBlockPosition(), maid.getUUID());
         });
-        if (BehaviorUtils.isTarget(maid, TargetType.EXECUTE_COOK_STEP)) {
-            BehaviorUtils.eraseTarget(maid);
+        if (BehaviorUtil.isTarget(maid, TargetType.EXECUTE_COOK_STEP)) {
+            BehaviorUtil.eraseTarget(maid);
         }
     }
 

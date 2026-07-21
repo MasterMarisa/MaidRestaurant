@@ -16,7 +16,7 @@ import com.mastermarisa.maid_restaurant.core.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
-import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtils;
+import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtil;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -139,7 +139,7 @@ public class StockpotCapability implements ICookCapability {
                     if (recipe.soupBase().equals(ModSoupBases.WATER)) {
                         int count = ItemUtils.count(maidInv, getSoupBaseIngredient(recipe.soupBase()));
                         if (count >= 2) {
-                            FakePlayer fakePlayer = FakePlayerUtils.getPlayer(level);
+                            FakePlayer fakePlayer = FakePlayerUtil.getPlayer(level);
                             be.addSoupBase(level,fakePlayer, Items.WATER_BUCKET.getDefaultInstance());
                             fakePlayer.getInventory().clearContent();
                             maid.swing(InteractionHand.MAIN_HAND);
@@ -211,7 +211,7 @@ public class StockpotCapability implements ICookCapability {
                 if (be.hasLid()) {
                     takeLid(level, maid, pos, be);
                 } else {
-                    FakePlayer fakePlayer = FakePlayerUtils.getPlayer(level);
+                    FakePlayer fakePlayer = FakePlayerUtil.getPlayer(level);
                     if (!ItemStack.isSameItem(recipe.result(), be.getResult())) {
                         level.setBlockEntity(new StockpotBlockEntity(pos, level.getBlockState(pos)));
                         return CookResult.PROGRESS;

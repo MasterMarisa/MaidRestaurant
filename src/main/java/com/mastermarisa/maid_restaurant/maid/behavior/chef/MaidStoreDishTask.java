@@ -14,7 +14,7 @@ import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
-import com.mastermarisa.maid_restaurant.uitls.BehaviorUtils;
+import com.mastermarisa.maid_restaurant.uitls.BehaviorUtil;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.core.BlockPos;
@@ -61,7 +61,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
 
     @Override
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
-        return BehaviorUtils.isTarget(maid, TargetType.STORE_DISH)
+        return BehaviorUtil.isTarget(maid, TargetType.STORE_DISH)
                 && maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).map(tracker ->
                 MaidUtils.distSqrHorizontal(maid, tracker.currentBlockPosition()) > Math.pow(closeEnoughDist, 2.0D)
                         && Math.abs(maid.getY() - tracker.currentBlockPosition().getY()) <= 4
@@ -72,7 +72,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
     protected void tick(ServerLevel level, EntityMaid maid, long gameTime) {
         if (gameTime % 10 != 0) return;
         maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(tracker -> {
-            BehaviorUtils.setWalkAndLookTargetMemories(maid, tracker.currentBlockPosition(), tracker.currentBlockPosition(), movementSpeed, 0);
+            BehaviorUtil.setWalkAndLookTargetMemories(maid, tracker.currentBlockPosition(), tracker.currentBlockPosition(), movementSpeed, 0);
         });
     }
 
@@ -85,7 +85,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
                 storeDish(level, maid, pos);
             }
         });
-        if (BehaviorUtils.isTarget(maid, TargetType.STORE_DISH)) BehaviorUtils.eraseTarget(maid);
+        if (BehaviorUtil.isTarget(maid, TargetType.STORE_DISH)) BehaviorUtil.eraseTarget(maid);
         maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
     }
 
@@ -122,8 +122,8 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         }
 
         if (best != null) {
-            BehaviorUtils.setTarget(maid, new BlockPosTracker(best), TargetType.STORE_DISH);
-            BehaviorUtils.setWalkAndLookTargetMemories(maid, best, best, movementSpeed, 0);
+            BehaviorUtil.setTarget(maid, new BlockPosTracker(best), TargetType.STORE_DISH);
+            BehaviorUtil.setWalkAndLookTargetMemories(maid, best, best, movementSpeed, 0);
             return true;
         }
 

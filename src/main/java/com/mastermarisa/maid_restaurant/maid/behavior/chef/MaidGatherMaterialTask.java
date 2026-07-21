@@ -17,10 +17,7 @@ import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
-import com.mastermarisa.maid_restaurant.uitls.BehaviorUtils;
-import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
-import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
-import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
+import com.mastermarisa.maid_restaurant.uitls.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -32,6 +29,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.items.IItemHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MaidGatherMaterialTask extends MaidCheckRateTask {
@@ -60,22 +58,9 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         }
 
         IItemHandler maidInv = maid.getAvailableInv(false);
-        RecipeNode recipeNode = node.getRecipeNode();
-        List<ItemStack> existedInputs = List.of();
-        WorkBlockCache cache = maid.getData(ModTaskDataKeys.WORK_BLOCK_CACHE);
-        if (cache != null && node.getParent() != null) {
-            RecipeNode parent = node.getParent().getRecipeNode();
-            ICookCapability capability = parent.getCapability();
-            if (capability != null && capability.getUID().equals(cache.getCapabilityUID())) {
-                AbstractZone zone = ChefScheduler.getWorkZone(maid);
-                if (capability.isValidWorkBlock(level, cache.getPos()) && zone != null
-                        && !BlockUsageUtils.isUsed(cache.getPos()) && zone.contains(cache.getPos())) {
-                    existedInputs = capability.getExistedInputs(level, cache.getPos(), parent);
-                }
-            }
-        }
+        List<ItemStack> existedInputs = getExistedInputs(level, maid, node);
 
-        if (ItemUtils.contains(maidInv, existedInputs, recipeNode.getIngredient(), recipeNode.getCount())) {
+        if (ItemUtils.contains(maidInv, existedInputs, node.getIngredient(), node.getCount())) {
             node.setState(NodeState.DONE);
             if (node.getParent() != null) {
                 node.getParent().computeState();
@@ -93,7 +78,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
 
     @Override
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
-        return BehaviorUtils.isTarget(maid, TargetType.GATHER_MATERIAL)
+        return BehaviorUtil.isTarget(maid, TargetType.GATHER_MATERIAL)
                 && maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).map(tracker ->
                 MaidUtils.distSqrHorizontal(maid, tracker.currentBlockPosition()) > Math.pow(closeEnoughDist, 2.0D)
                         && Math.abs(maid.getY() - tracker.currentBlockPosition().getY()) <= 4
@@ -104,7 +89,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
     protected void tick(ServerLevel level, EntityMaid maid, long gameTime) {
         if (gameTime % 10 != 0) return;
         maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(tracker -> {
-            BehaviorUtils.setWalkAndLookTargetMemories(maid, tracker.currentBlockPosition(), tracker.currentBlockPosition(), movementSpeed, 0);
+            BehaviorUtil.setWalkAndLookTargetMemories(maid, tracker.currentBlockPosition(), tracker.currentBlockPosition(), movementSpeed, 0);
         });
     }
 
@@ -117,7 +102,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
                 acceptStorage(level, maid, pos);
             }
         });
-        if (BehaviorUtils.isTarget(maid, TargetType.GATHER_MATERIAL)) BehaviorUtils.eraseTarget(maid);
+        if (BehaviorUtil.isTarget(maid, TargetType.GATHER_MATERIAL)) BehaviorUtil.eraseTarget(maid);
         maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
     }
 
@@ -146,12 +131,13 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         }
 
         if (best != null) {
-            BehaviorUtils.setTarget(maid, new BlockPosTracker(best), TargetType.GATHER_MATERIAL);
-            BehaviorUtils.setWalkAndLookTargetMemories(maid, best, best, movementSpeed, 0);
+            ChatBubbleUtil.removeChatBubble(maid);
+            BehaviorUtil.setTarget(maid, new BlockPosTracker(best), TargetType.GATHER_MATERIAL);
+            BehaviorUtil.setWalkAndLookTargetMemories(maid, best, best, movementSpeed, 0);
             return true;
         }
 
-        MaidUtils.sendMessageToOwner(maid, Component.literal("主人,我缺少" + ingredient.getItems()[0].getDisplayName().getString() + "!"));
+        ChatBubbleUtil.setTextChatBubble(maid, Component.literal("主人,我缺少" + ingredient.getItems()[0].getDisplayName().getString() + "!"));
         return false;
     }
 
@@ -178,6 +164,31 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         }
 
         CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
+    }
+
+    private List<ItemStack> getExistedInputs(ServerLevel level, EntityMaid maid, ExecutionNode node) {
+        List<ItemStack> inputs = new ArrayList<>();
+
+        WorkBlockCache cache = maid.getData(ModTaskDataKeys.WORK_BLOCK_CACHE);
+        ExecutionNode parent = node.getParent();
+        if (cache == null || parent == null || BlockUsageUtil.isUsed(cache.getPos())) {
+            return inputs;
+        }
+
+        ICookCapability capability = parent.getCapability();
+        if (capability == null || !capability.getUID().equals(cache.getCapabilityUID())) {
+            return inputs;
+        }
+
+        AbstractZone zone = ChefScheduler.getWorkZone(maid);
+        if (zone == null || !zone.contains(cache.getPos())) {
+            return inputs;
+        }
+
+        if (capability.isValidWorkBlock(level, cache.getPos()) && zone.contains(cache.getPos())) {
+            return capability.getExistedInputs(level, cache.getPos(), parent.getRecipeNode());
+        }
+        return inputs;
     }
 }
 

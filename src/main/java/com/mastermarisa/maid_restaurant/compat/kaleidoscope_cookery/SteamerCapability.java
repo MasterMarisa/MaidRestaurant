@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.ysbbbbbb.kaleidoscopecookery.block.kitchen.SteamerBlock;
 import com.github.ysbbbbbb.kaleidoscopecookery.blockentity.kitchen.SteamerBlockEntity;
 import com.github.ysbbbbbb.kaleidoscopecookery.crafting.recipe.SteamerRecipe;
+import com.github.ysbbbbbb.kaleidoscopecookery.init.ModBlocks;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModItems;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModRecipes;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
@@ -17,6 +18,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
@@ -82,6 +84,15 @@ public class SteamerCapability implements ICookCapability {
         if (steamers.isEmpty()) {
             return CookResult.INTERRUPTED;
         }
+
+        BlockPos top = steamers.get(steamers.size() - 1).getBlockPos();
+        BlockState state = level.getBlockState(top);
+        BlockState above = level.getBlockState(top.above());
+        if (!state.getValue(SteamerBlock.HAS_LID) && !above.is(ModBlocks.STEAMER.get())) {
+            level.setBlockAndUpdate(top, state.setValue(SteamerBlock.HAS_LID, true));
+            maid.swing(InteractionHand.MAIN_HAND);
+        }
+
 
         IItemHandler maidInv = maid.getAvailableInv(false);
         SteamerRecipe recipe = (SteamerRecipe) node.getRecipe(level.getRecipeManager());

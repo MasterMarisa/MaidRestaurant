@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 import java.awt.*;
 
 @OnlyIn(Dist.CLIENT)
-public class ClientUtils {
+public class ClientUtil {
     @Nullable
     public static ClientLevel getLevel() {
         return Minecraft.getInstance().level;

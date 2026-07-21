@@ -13,7 +13,7 @@ import com.mastermarisa.maid_restaurant.core.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
-import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtils;
+import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtil;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.core.BlockPos;
@@ -172,7 +172,7 @@ public class PotCapability implements ICookCapability {
                 maid.swing(InteractionHand.MAIN_HAND);
             }
             case 2 -> {
-                FakePlayer fakePlayer = FakePlayerUtils.getPlayer(level);
+                FakePlayer fakePlayer = FakePlayerUtil.getPlayer(level);
                 if (!ItemStack.isSameItem(be.getResult(), recipe.result())) {
                     be.reset();
                     return CookResult.PROGRESS;

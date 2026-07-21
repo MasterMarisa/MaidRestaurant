@@ -10,7 +10,7 @@ import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
 import com.mastermarisa.maid_restaurant.item.CookingGuideItem;
 import com.mastermarisa.maid_restaurant.network.NetworkHandler;
 import com.mastermarisa.maid_restaurant.network.message.SaveRecipeTreeMessage;
-import com.mastermarisa.maid_restaurant.uitls.ClientUtils;
+import com.mastermarisa.maid_restaurant.uitls.ClientUtil;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -57,7 +57,7 @@ public class CookingGuideScreen extends Screen {
         super(Component.empty());
         this.entries = new ArrayList<>();
         this.buttons = new ArrayList<>();
-        this.searchBox = new EditBox(font, ClientUtils.getScreenCenterX() - 109, ClientUtils.getScreenCenterY() - 111, 90, 16, Component.empty());
+        this.searchBox = new EditBox(font, ClientUtil.getScreenCenterX() - 109, ClientUtil.getScreenCenterY() - 111, 90, 16, Component.empty());
         this.searchBox.setMaxLength(50);
         this.searchBox.setEditable(true);
         CompoundTag tag = CookingGuideItem.getRecipeRoot(itemStack);
@@ -190,10 +190,10 @@ public class CookingGuideScreen extends Screen {
         String text = this.searchBox.getValue();
         super.resize(minecraft, width, height);
         this.searchBox.setValue(text);
-        this.searchBox.setX(ClientUtils.getScreenCenterX() - 109);
-        this.searchBox.setY(ClientUtils.getScreenCenterY() - 111);
+        this.searchBox.setX(ClientUtil.getScreenCenterX() - 109);
+        this.searchBox.setY(ClientUtil.getScreenCenterY() - 111);
         if (this.selectOverlay != null) {
-            this.selectOverlay.setCenter(ClientUtils.getScreenCenterX(), ClientUtils.getScreenCenterY());
+            this.selectOverlay.setCenter(ClientUtil.getScreenCenterX(), ClientUtil.getScreenCenterY());
             this.selectOverlay.resize();
         }
     }
@@ -217,8 +217,8 @@ public class CookingGuideScreen extends Screen {
         if (this.selectOverlay != null) {
             return;
         }
-        Rectangle frame = new Rectangle(ClientUtils.getScreenCenterX() - 110,
-                ClientUtils.getScreenCenterY() - 91, 220, 182);
+        Rectangle frame = new Rectangle(ClientUtil.getScreenCenterX() - 110,
+                ClientUtil.getScreenCenterY() - 91, 220, 182);
         this.selectOverlay = new RecipeSelectOverlay(frame, level, output, this::onRecipeSelected);
         this.selectOverlay.open();
         this.addRenderableWidget(this.searchBox);
@@ -336,7 +336,7 @@ public class CookingGuideScreen extends Screen {
         }
         long gameTime = minecraft.level == null ? 0 : minecraft.level.getGameTime();
         graphics.renderFakeItem(icon, x, y);
-        ClientUtils.renderIngredientStack(graphics, x + 18, y, new IngredientStack(node.getIngredient(), node.getCount()), gameTime, 20);
+        ClientUtil.renderIngredientStack(graphics, x + 18, y, new IngredientStack(node.getIngredient(), node.getCount()), gameTime, 20);
         if (!entry.node.isLeaf()) {
             graphics.drawCenteredString(font, "-", x - 8, y + ROW_HEIGHT / 2 - 5, Color.WHITE.getRGB());
         }

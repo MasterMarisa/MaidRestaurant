@@ -5,7 +5,7 @@ import com.mastermarisa.maid_restaurant.core.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
-import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtils;
+import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -42,7 +42,7 @@ public interface ICookCapability {
     default BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
         List<BlockPos> found = new ArrayList<>();
         for (BlockPos pos : zone) {
-            if (isValidWorkBlock(level, pos) && !BlockUsageUtils.isUsed(pos)) {
+            if (isValidWorkBlock(level, pos) && !BlockUsageUtil.isUsed(pos)) {
                 found.add(pos);
             }
         }

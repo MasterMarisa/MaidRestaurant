@@ -4,7 +4,7 @@ import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
-import com.mastermarisa.maid_restaurant.uitls.ClientUtils;
+import com.mastermarisa.maid_restaurant.uitls.ClientUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -262,7 +262,7 @@ public class RecipeSelectOverlay extends UIElement {
                 for (int i = 0; i < ingredients.size(); i++) {
                     int x = getMinX() + i * 22 + 42;
                     int y = getMinY() + 2;
-                    ClientUtils.renderIngredientStack(graphics, x, y, ingredients.get(i), mc.level.getGameTime(), 20);
+                    ClientUtil.renderIngredientStack(graphics, x, y, ingredients.get(i), mc.level.getGameTime(), 20);
                 }
             }
         }

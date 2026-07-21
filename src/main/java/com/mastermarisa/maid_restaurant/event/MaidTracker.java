@@ -6,9 +6,10 @@ import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
 import com.mastermarisa.maid_restaurant.core.schedule.CookingRequest;
 import com.mastermarisa.maid_restaurant.core.schedule.RequestBus;
+import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import com.mastermarisa.maid_restaurant.maid.task.TaskChef;
-import com.mastermarisa.maid_restaurant.uitls.BehaviorUtils;
+import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtil;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
@@ -46,12 +47,16 @@ public class MaidTracker {
         if (!(event.getEntity() instanceof EntityMaid maid)) {
             return;
         }
-        BehaviorUtils.eraseTarget(maid);
+        maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(p -> {
+            BlockUsageUtil.remove(p.currentBlockPosition(), maid.getUUID());
+        });
     }
 
     @SubscribeEvent
     public static void onMaidTaskEnable(MaidTaskEnableEvent event) {
         EntityMaid maid = event.getEntityMaid();
-        BehaviorUtils.eraseTarget(maid);
+        maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(p -> {
+            BlockUsageUtil.remove(p.currentBlockPosition(), maid.getUUID());
+        });
     }
 }

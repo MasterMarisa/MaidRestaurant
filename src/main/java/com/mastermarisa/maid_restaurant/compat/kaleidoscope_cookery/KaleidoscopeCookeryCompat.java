@@ -17,6 +17,7 @@ public class KaleidoscopeCookeryCompat {
     public static void registerStorages() {
         if (LOADED) {
             TableStorage.register();
+            FruitBasketStorage.register();
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.mastermarisa.maid_restaurant.core.storage;
 
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
-import com.mastermarisa.maid_restaurant.init.tag.TagMod;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
@@ -9,7 +8,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -60,12 +58,9 @@ public class CommonStorage implements IMaidStorage {
 
     @Nullable
     private IItemHandler getItemHandler(Level level, BlockPos pos) {
-        BlockState state = level.getBlockState(pos);
-        if (state.is(TagMod.STORAGE_BLOCK)) {
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity != null) {
-                return blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElse(null);
-            }
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity != null) {
+            return blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElse(null);
         }
         return null;
     }

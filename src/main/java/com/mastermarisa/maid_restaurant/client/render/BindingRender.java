@@ -1,7 +1,7 @@
 package com.mastermarisa.maid_restaurant.client.render;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.uitls.ClientUtils;
+import com.mastermarisa.maid_restaurant.uitls.ClientUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -37,7 +37,7 @@ public class BindingRender {
             VertexConsumer consumer = bufferSource.getBuffer(RenderType.entitySolid(EMPTY_TEXTURE));
             Vec3 position = event.getCamera().getPosition().reverse();
 
-            BlockPos targetedBlock = ClientUtils.getTargetedBlock();
+            BlockPos targetedBlock = ClientUtil.getTargetedBlock();
             if (targetedBlock != null) {
                 targetedBlockCache = targetedBlock;
             }
