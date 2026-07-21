@@ -1,6 +1,6 @@
 package com.mastermarisa.maid_restaurant.item;
 
-import com.mastermarisa.maid_restaurant.core.zone.PointsetZone;
+import com.mastermarisa.maid_restaurant.data.zone.PointsetZone;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;

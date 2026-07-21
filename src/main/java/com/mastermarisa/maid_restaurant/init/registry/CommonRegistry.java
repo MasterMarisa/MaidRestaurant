@@ -1,15 +1,15 @@
 package com.mastermarisa.maid_restaurant.init.registry;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.compat.create.CreateCompat;
-import com.mastermarisa.maid_restaurant.compat.kaleidoscope_cookery.KaleidoscopeCookeryCompat;
-import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
-import com.mastermarisa.maid_restaurant.core.capability.CraftingTableCapability;
-import com.mastermarisa.maid_restaurant.core.schedule.RequestBus;
-import com.mastermarisa.maid_restaurant.core.storage.CommonStorage;
-import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
-import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
+import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
+import com.mastermarisa.maid_restaurant.capability.CraftingTableCapability;
+import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModItems;
+import com.mastermarisa.maid_restaurant.integration.create.CreateCompat;
+import com.mastermarisa.maid_restaurant.integration.kaleidoscope_cookery.KaleidoscopeCookeryCompat;
+import com.mastermarisa.maid_restaurant.schedule.RequestBus;
+import com.mastermarisa.maid_restaurant.storage.CommonStorage;
+import com.mastermarisa.maid_restaurant.storage.StorageRegistry;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

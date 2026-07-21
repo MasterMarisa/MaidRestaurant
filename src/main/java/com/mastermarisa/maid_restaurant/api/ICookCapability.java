@@ -1,10 +1,10 @@
 package com.mastermarisa.maid_restaurant.api;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.mastermarisa.maid_restaurant.core.capability.CookResult;
-import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
-import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
-import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
+import com.mastermarisa.maid_restaurant.capability.CookResult;
+import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
+import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
+import com.mastermarisa.maid_restaurant.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;

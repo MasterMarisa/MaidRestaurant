@@ -4,19 +4,19 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
-import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
-import com.mastermarisa.maid_restaurant.core.schedule.WorkBlockCache;
-import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
-import com.mastermarisa.maid_restaurant.core.tree.NodeState;
-import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
+import com.mastermarisa.maid_restaurant.data.task_data.WorkBlockCache;
+import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
+import com.mastermarisa.maid_restaurant.schedule.ChefScheduler;
+import com.mastermarisa.maid_restaurant.tree.ExecutionNode;
+import com.mastermarisa.maid_restaurant.tree.NodeState;
 import com.mastermarisa.maid_restaurant.uitls.BehaviorUtil;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtil;
 import com.mastermarisa.maid_restaurant.uitls.ChatBubbleUtil;
-import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
+import com.mastermarisa.maid_restaurant.uitls.PosUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -29,12 +29,12 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
     public static final String UID = "ApproachWorkBlock";
 
     private final float movementSpeed;
-    private final double closeEnoughDist;
+    private final double closeEnoughDistSqr;
 
     public MaidApproachWorkBlockTask(int maxInterval, float movementSpeed, double closeEnoughDist) {
         super(ImmutableMap.of(ModEntities.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT), maxInterval, 60);
         this.movementSpeed = movementSpeed;
-        this.closeEnoughDist = closeEnoughDist;
+        this.closeEnoughDistSqr = closeEnoughDist * closeEnoughDist;
     }
 
     @Override
@@ -59,12 +59,12 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
 
     @Override
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
-        return BehaviorUtil.isTarget(maid, TargetType.APPROACH_WORK_BLOCK) &&
-                maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).map(tracker -> {
+        return BehaviorUtil.isTarget(maid, TargetType.APPROACH_WORK_BLOCK)
+                && maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).map(tracker -> {
                     BlockPos pos = tracker.currentBlockPosition();
-                    double distHorizontal = MaidUtils.distSqrHorizontal(maid, pos);
+                    double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
                     double distVertical = Math.abs(maid.getY() - pos.getY());
-                    return distHorizontal > Math.pow(closeEnoughDist, 2.0D) && distVertical <= 4;
+                    return distHorizontal > closeEnoughDistSqr || distVertical > 4;
                 }).orElse(false);
     }
 
@@ -81,8 +81,9 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
         maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(tracker -> {
             BlockPos pos = tracker.currentBlockPosition();
-            if (MaidUtils.distSqrHorizontal(maid, pos) <= Math.pow(closeEnoughDist, 2.0D)
-                    && Math.abs(maid.getY() - pos.getY()) <= 4) {
+            double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
+            double distVertical = Math.abs(maid.getY() - pos.getY());
+            if (distHorizontal <= closeEnoughDistSqr && distVertical <= 4) {
                 onReached(level, maid, pos);
             }
         });

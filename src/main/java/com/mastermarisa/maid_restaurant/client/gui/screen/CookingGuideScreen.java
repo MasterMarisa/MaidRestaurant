@@ -1,17 +1,17 @@
 package com.mastermarisa.maid_restaurant.client.gui.screen;
 
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
+import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.client.gui.widget.RecipeSelectOverlay;
-import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
-import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
-import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
-import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
-import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
 import com.mastermarisa.maid_restaurant.item.CookingGuideItem;
 import com.mastermarisa.maid_restaurant.network.NetworkHandler;
 import com.mastermarisa.maid_restaurant.network.message.SaveRecipeTreeMessage;
-import com.mastermarisa.maid_restaurant.uitls.ClientUtil;
-import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
+import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
+import com.mastermarisa.maid_restaurant.recipe.RecipeCacheBuilder;
+import com.mastermarisa.maid_restaurant.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.tree.RecipeStep;
+import com.mastermarisa.maid_restaurant.uitls.IngredientUtil;
+import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -57,7 +57,7 @@ public class CookingGuideScreen extends Screen {
         super(Component.empty());
         this.entries = new ArrayList<>();
         this.buttons = new ArrayList<>();
-        this.searchBox = new EditBox(font, ClientUtil.getScreenCenterX() - 109, ClientUtil.getScreenCenterY() - 111, 90, 16, Component.empty());
+        this.searchBox = new EditBox(font, getScreenCenterX() - 109, getScreenCenterY() - 111, 90, 16, Component.empty());
         this.searchBox.setMaxLength(50);
         this.searchBox.setEditable(true);
         CompoundTag tag = CookingGuideItem.getRecipeRoot(itemStack);
@@ -190,10 +190,10 @@ public class CookingGuideScreen extends Screen {
         String text = this.searchBox.getValue();
         super.resize(minecraft, width, height);
         this.searchBox.setValue(text);
-        this.searchBox.setX(ClientUtil.getScreenCenterX() - 109);
-        this.searchBox.setY(ClientUtil.getScreenCenterY() - 111);
+        this.searchBox.setX(getScreenCenterX() - 109);
+        this.searchBox.setY(getScreenCenterY() - 111);
         if (this.selectOverlay != null) {
-            this.selectOverlay.setCenter(ClientUtil.getScreenCenterX(), ClientUtil.getScreenCenterY());
+            this.selectOverlay.setCenter(getScreenCenterX(), getScreenCenterY());
             this.selectOverlay.resize();
         }
     }
@@ -217,8 +217,8 @@ public class CookingGuideScreen extends Screen {
         if (this.selectOverlay != null) {
             return;
         }
-        Rectangle frame = new Rectangle(ClientUtil.getScreenCenterX() - 110,
-                ClientUtil.getScreenCenterY() - 91, 220, 182);
+        Rectangle frame = new Rectangle(getScreenCenterX() - 110,
+                getScreenCenterY() - 91, 220, 182);
         this.selectOverlay = new RecipeSelectOverlay(frame, level, output, this::onRecipeSelected);
         this.selectOverlay.open();
         this.addRenderableWidget(this.searchBox);
@@ -254,7 +254,7 @@ public class CookingGuideScreen extends Screen {
         List<IngredientStack> ingredients = RecipeCacheBuilder.getIngredientStacks(step.recipeId());
         for (var child : node.getChildren()) {
             for (var stack : ingredients) {
-                if (ItemUtils.equals(child.getIngredient(), stack.getIngredient())) {
+                if (IngredientUtil.equals(child.getIngredient(), stack.getIngredient())) {
                     child.setIngredient(stack.getIngredient());
                     child.setCount(child.getCount());
                     break;
@@ -336,13 +336,21 @@ public class CookingGuideScreen extends Screen {
         }
         long gameTime = minecraft.level == null ? 0 : minecraft.level.getGameTime();
         graphics.renderFakeItem(icon, x, y);
-        ClientUtil.renderIngredientStack(graphics, x + 18, y, new IngredientStack(node.getIngredient(), node.getCount()), gameTime, 20);
+        RenderUtil.renderIngredientStack(graphics, x + 18, y, new IngredientStack(node.getIngredient(), node.getCount()), gameTime, 20);
         if (!entry.node.isLeaf()) {
             graphics.drawCenteredString(font, "-", x - 8, y + ROW_HEIGHT / 2 - 5, Color.WHITE.getRGB());
         }
         if (entry.canExpand && entry.node.isLeaf()) {
             graphics.drawCenteredString(font, "+", x + 43, y + ROW_HEIGHT / 2 - 5, Color.WHITE.getRGB());
         }
+    }
+
+    public static int getScreenCenterX(){
+        return minecraft.getWindow().getGuiScaledWidth() / 2;
+    }
+
+    public static int getScreenCenterY(){
+        return minecraft.getWindow().getGuiScaledHeight() / 2;
     }
 
     public record NodeEntry(RecipeNode node, int depth, @Nullable RecipeNode parent, boolean canExpand) {

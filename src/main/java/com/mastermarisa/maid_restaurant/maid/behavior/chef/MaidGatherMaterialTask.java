@@ -4,20 +4,17 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
-import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
-import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
-import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
-import com.mastermarisa.maid_restaurant.core.tree.NodeState;
-import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
-import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
+import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
-import com.mastermarisa.maid_restaurant.uitls.BehaviorUtil;
-import com.mastermarisa.maid_restaurant.uitls.ChatBubbleUtil;
-import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
-import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
+import com.mastermarisa.maid_restaurant.schedule.ChefScheduler;
+import com.mastermarisa.maid_restaurant.storage.StorageRegistry;
+import com.mastermarisa.maid_restaurant.tree.ExecutionNode;
+import com.mastermarisa.maid_restaurant.tree.NodeState;
+import com.mastermarisa.maid_restaurant.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.uitls.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -35,12 +32,12 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
     public static final String UID = "GatherMaterial";
 
     private final float movementSpeed;
-    private final double closeEnoughDist;
+    private final double closeEnoughDistSqr;
 
     public MaidGatherMaterialTask(int maxInterval, float movementSpeed, double closeEnoughDist) {
         super(ImmutableMap.of(ModEntities.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT), maxInterval, 60);
         this.movementSpeed = movementSpeed;
-        this.closeEnoughDist = closeEnoughDist;
+        this.closeEnoughDistSqr = closeEnoughDist * closeEnoughDist;
     }
 
     @Override
@@ -59,7 +56,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         IItemHandler maidInv = maid.getAvailableInv(false);
         List<ItemStack> existedInputs = MaidUtils.getExistedInputs(level, maid, node.getParent());
 
-        if (ItemUtils.contains(maidInv, existedInputs, node.getIngredient(), node.getCount())) {
+        if (InvUtil.contains(maidInv, existedInputs, node.getIngredient(), node.getCount())) {
             node.setState(NodeState.DONE);
             if (node.getParent() != null) {
                 node.getParent().computeState();
@@ -78,10 +75,12 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
     @Override
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
         return BehaviorUtil.isTarget(maid, TargetType.GATHER_MATERIAL)
-                && maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).map(tracker ->
-                MaidUtils.distSqrHorizontal(maid, tracker.currentBlockPosition()) > Math.pow(closeEnoughDist, 2.0D)
-                        && Math.abs(maid.getY() - tracker.currentBlockPosition().getY()) <= 4
-        ).orElse(false);
+                && maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).map(tracker -> {
+                    BlockPos pos = tracker.currentBlockPosition();
+                    double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
+                    double distVertical = Math.abs(maid.getY() - pos.getY());
+                    return distHorizontal > closeEnoughDistSqr || distVertical > 4;
+                }).orElse(false);
     }
 
     @Override
@@ -96,8 +95,9 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
         maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(tracker -> {
             BlockPos pos = tracker.currentBlockPosition();
-            if (MaidUtils.distSqrHorizontal(maid, pos) <= Math.pow(closeEnoughDist, 2.0D)
-                    && Math.abs(maid.getY() - pos.getY()) <= 4) {
+            double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
+            double distVertical = Math.abs(maid.getY() - pos.getY());
+            if (distHorizontal <= closeEnoughDistSqr && distVertical <= 4) {
                 acceptStorage(level, maid, pos);
             }
         });
@@ -150,10 +150,10 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         IItemHandler maidInv = maid.getAvailableInv(false);
         RecipeNode recipeNode = node.getRecipeNode();
         Ingredient ingredient = recipeNode.getIngredient();
-        int required = recipeNode.getCount() - ItemUtils.count(maidInv, ingredient);
+        int required = recipeNode.getCount() - InvUtil.count(maidInv, ingredient);
 
         maid.swing(InteractionHand.OFF_HAND);
-        if (ItemUtils.tryTake(level, pos, storage, maidInv, ingredient, required)) {
+        if (InvUtil.tryTake(level, pos, storage, maidInv, ingredient, required)) {
             node.setState(NodeState.DONE);
         }
 

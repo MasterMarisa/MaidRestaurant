@@ -1,10 +1,10 @@
 package com.mastermarisa.maid_restaurant.client.gui.widget;
 
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
-import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
-import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
-import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
-import com.mastermarisa.maid_restaurant.uitls.ClientUtil;
+import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
+import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
+import com.mastermarisa.maid_restaurant.recipe.RecipeCacheBuilder;
+import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -60,7 +60,9 @@ public class RecipeSelectOverlay extends UIElement {
         } else {
             for (var capability : CapabilityRegistry.getAll()) {
                 RecipeType<?> type = capability.getRecipeType();
-                this.recipeMap.put(type, RecipeCacheBuilder.getAllRecipesFor(level.getRecipeManager(), type));
+                List<Recipe<?>> recipes = RecipeCacheBuilder.getAllRecipesFor(level.getRecipeManager(), type);
+                recipes = recipes.stream().filter(r -> !r.getResultItem(level.registryAccess()).isEmpty()).toList();
+                this.recipeMap.put(type, recipes);
             }
         }
         this.recipeTypes = CapabilityRegistry.getRegisteredTypes().stream().filter(this.recipeMap::containsKey).toList();
@@ -262,7 +264,7 @@ public class RecipeSelectOverlay extends UIElement {
                 for (int i = 0; i < ingredients.size(); i++) {
                     int x = getMinX() + i * 22 + 42;
                     int y = getMinY() + 2;
-                    ClientUtil.renderIngredientStack(graphics, x, y, ingredients.get(i), mc.level.getGameTime(), 20);
+                    RenderUtil.renderIngredientStack(graphics, x, y, ingredients.get(i), mc.level.getGameTime(), 20);
                 }
             }
         }

@@ -1,6 +1,6 @@
 package com.mastermarisa.maid_restaurant.item;
 
-import com.mastermarisa.maid_restaurant.core.zone.CuboidZone;
+import com.mastermarisa.maid_restaurant.data.zone.CuboidZone;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;

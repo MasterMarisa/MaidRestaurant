@@ -1,6 +1,6 @@
 package com.mastermarisa.maid_restaurant.item;
 
-import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
+import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;

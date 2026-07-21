@@ -2,12 +2,11 @@ package com.mastermarisa.maid_restaurant.uitls;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
-import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
-import com.mastermarisa.maid_restaurant.core.schedule.WorkBlockCache;
-import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
-import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
+import com.mastermarisa.maid_restaurant.data.task_data.WorkBlockCache;
+import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
-import net.minecraft.core.BlockPos;
+import com.mastermarisa.maid_restaurant.schedule.ChefScheduler;
+import com.mastermarisa.maid_restaurant.tree.ExecutionNode;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.OutgoingChatMessage;
@@ -27,12 +26,6 @@ public class MaidUtils {
             OutgoingChatMessage message = new OutgoingChatMessage.Disguised(component);
             player.sendChatMessage(message, true, bound);
         }
-    }
-
-    public static double distSqrHorizontal(EntityMaid maid, BlockPos pos) {
-        double dx = maid.getX() - (pos.getX() + 0.5);
-        double dz = maid.getZ() - (pos.getZ() + 0.5);
-        return dx * dx + dz * dz;
     }
 
     public static void exchangeToHand(EntityMaid maid, InteractionHand hand, int index) {

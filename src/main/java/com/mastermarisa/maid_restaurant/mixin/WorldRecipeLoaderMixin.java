@@ -1,6 +1,6 @@
 package com.mastermarisa.maid_restaurant.mixin;
 
-import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
+import com.mastermarisa.maid_restaurant.recipe.RecipeCacheBuilder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.world.item.crafting.RecipeManager;

@@ -4,19 +4,19 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
-import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
-import com.mastermarisa.maid_restaurant.core.schedule.CookingRequest;
-import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
-import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
-import com.mastermarisa.maid_restaurant.core.tree.NodeState;
-import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
+import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
+import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
+import com.mastermarisa.maid_restaurant.schedule.ChefScheduler;
+import com.mastermarisa.maid_restaurant.storage.StorageRegistry;
+import com.mastermarisa.maid_restaurant.tree.ExecutionNode;
+import com.mastermarisa.maid_restaurant.tree.NodeState;
 import com.mastermarisa.maid_restaurant.uitls.BehaviorUtil;
-import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
-import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
+import com.mastermarisa.maid_restaurant.uitls.InvUtil;
+import com.mastermarisa.maid_restaurant.uitls.PosUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
@@ -31,12 +31,12 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
     public static final String UID = "StoreDish";
 
     private final float movementSpeed;
-    private final double closeEnoughDist;
+    private final double closeEnoughDistSqr;
 
     public MaidStoreDishTask(int maxInterval, float movementSpeed, double closeEnoughDist) {
         super(ImmutableMap.of(ModEntities.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT), maxInterval, 60);
         this.movementSpeed = movementSpeed;
-        this.closeEnoughDist = closeEnoughDist;
+        this.closeEnoughDistSqr = closeEnoughDist * closeEnoughDist;
     }
 
     @Override
@@ -62,10 +62,12 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
     @Override
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
         return BehaviorUtil.isTarget(maid, TargetType.STORE_DISH)
-                && maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).map(tracker ->
-                MaidUtils.distSqrHorizontal(maid, tracker.currentBlockPosition()) > Math.pow(closeEnoughDist, 2.0D)
-                        && Math.abs(maid.getY() - tracker.currentBlockPosition().getY()) <= 4
-        ).orElse(false);
+                && maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).map(tracker -> {
+                    BlockPos pos = tracker.currentBlockPosition();
+                    double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
+                    double distVertical = Math.abs(maid.getY() - pos.getY());
+                    return distHorizontal > closeEnoughDistSqr || distVertical > 4;
+                }).orElse(false);
     }
 
     @Override
@@ -80,8 +82,9 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
         maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(tracker -> {
             BlockPos pos = tracker.currentBlockPosition();
-            if (MaidUtils.distSqrHorizontal(maid, pos) <= Math.pow(closeEnoughDist, 2.0D)
-                    && Math.abs(maid.getY() - pos.getY()) <= 4) {
+            double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
+            double distVertical = Math.abs(maid.getY() - pos.getY());
+            if (distHorizontal <= closeEnoughDistSqr && distVertical <= 4) {
                 storeDish(level, maid, pos);
             }
         });
@@ -91,7 +94,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
 
     private boolean searchTarget(ServerLevel level, EntityMaid maid, ExecutionNode node) {
         IItemHandler maidInv = maid.getAvailableInv(false);
-        List<ItemStack> results = ItemUtils.tryExtract(maidInv, node.getCount(), node.getIngredient(), true, true);
+        List<ItemStack> results = InvUtil.tryExtract(maidInv, node.getCount(), node.getIngredient(), true, true);
         if (results.isEmpty()) {
             node.verifyAndUpdateState(level, maid);
             return false;
@@ -138,7 +141,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
 
         ExecutionNode node = request.root;
         IItemHandler maidInv = maid.getAvailableInv(false);
-        List<ItemStack> results = ItemUtils.tryExtract(maidInv, node.getCount(), node.getIngredient(), true, true);
+        List<ItemStack> results = InvUtil.tryExtract(maidInv, node.getCount(), node.getIngredient(), true, true);
         if (results.isEmpty()) {
             node.verifyAndUpdateState(level, maid);
             return;
@@ -156,7 +159,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         if (inserted == 0) {
             return;
         }
-        ItemUtils.tryExtract(maidInv, inserted, node.getIngredient(), true, false);
+        InvUtil.tryExtract(maidInv, inserted, node.getIngredient(), true, false);
 
         if (node.getCount() - inserted <= 0) {
             ChefScheduler.submitRequest(level, maid);

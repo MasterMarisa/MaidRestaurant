@@ -1,10 +1,10 @@
 package com.mastermarisa.maid_restaurant.client.render;
 
-import com.mastermarisa.maid_restaurant.core.zone.CuboidZone;
+import com.mastermarisa.maid_restaurant.data.zone.CuboidZone;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.CuboidZoneDefinitionItem;
 import com.mastermarisa.maid_restaurant.item.ZoneDefinitionItem;
-import com.mastermarisa.maid_restaurant.uitls.RenderUtils;
+import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -56,7 +56,7 @@ public class CuboidZoneRenderer {
                     Math.max(vector1.y, vector2.y) + 0.5,
                     Math.max(vector1.z, vector2.z) + 0.5
             );
-            RenderUtils.renderThickAABB(
+            RenderUtil.renderThickAABB(
                     poseStack,
                     consumer,
                     aabb.move(cameraOffset),
@@ -69,7 +69,7 @@ public class CuboidZoneRenderer {
         CuboidZone zone = (CuboidZone) ZoneDefinitionItem.getZone(definition);
         if (zone != null) {
             AABB aabb = fromTo(zone.getMin(), zone.getMax());
-            RenderUtils.renderThickAABB(
+            RenderUtil.renderThickAABB(
                     poseStack,
                     consumer,
                     aabb.move(cameraOffset),
@@ -89,7 +89,7 @@ public class CuboidZoneRenderer {
                     selector.y + 0.5,
                     selector.z + 0.5
             );
-            RenderUtils.renderThickAABB(
+            RenderUtil.renderThickAABB(
                     poseStack,
                     consumer,
                     aabb.move(cameraOffset),

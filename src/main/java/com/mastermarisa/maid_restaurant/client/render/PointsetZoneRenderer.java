@@ -1,9 +1,9 @@
 package com.mastermarisa.maid_restaurant.client.render;
 
-import com.mastermarisa.maid_restaurant.core.zone.PointsetZone;
+import com.mastermarisa.maid_restaurant.data.zone.PointsetZone;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.ZoneDefinitionItem;
-import com.mastermarisa.maid_restaurant.uitls.RenderUtils;
+import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -39,7 +39,7 @@ public class PointsetZoneRenderer {
         PointsetZone zone = (PointsetZone) ZoneDefinitionItem.getZone(definition);
         if (zone != null) {
             for (BlockPos pos : zone) {
-                RenderUtils.renderThickAABB(
+                RenderUtil.renderThickAABB(
                         poseStack,
                         consumer,
                         new AABB(pos).move(cameraOffset),
@@ -59,7 +59,7 @@ public class PointsetZoneRenderer {
                     selector.y + 0.5,
                     selector.z + 0.5
             );
-            RenderUtils.renderThickAABB(
+            RenderUtil.renderThickAABB(
                     poseStack,
                     consumer,
                     aabb.move(cameraOffset),

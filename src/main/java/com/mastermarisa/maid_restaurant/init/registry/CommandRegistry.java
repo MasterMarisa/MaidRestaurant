@@ -1,11 +1,11 @@
 package com.mastermarisa.maid_restaurant.init.registry;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.core.schedule.CookingRequest;
-import com.mastermarisa.maid_restaurant.core.schedule.RequestBus;
-import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.CookingGuideItem;
+import com.mastermarisa.maid_restaurant.schedule.RequestBus;
+import com.mastermarisa.maid_restaurant.tree.RecipeNode;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
