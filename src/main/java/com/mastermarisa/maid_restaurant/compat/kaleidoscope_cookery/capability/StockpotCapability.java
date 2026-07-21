@@ -1,4 +1,4 @@
-package com.mastermarisa.maid_restaurant.compat.kaleidoscope_cookery;
+package com.mastermarisa.maid_restaurant.compat.kaleidoscope_cookery.capability;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.ysbbbbbb.kaleidoscopecookery.api.recipe.soupbase.ISoupBase;
@@ -98,6 +98,9 @@ public class StockpotCapability implements ICookCapability {
             inputs.addAll(be.getInputs().stream().filter(s -> !s.isEmpty()).toList());
             if (SOUP_BASE_MAP.containsKey(be.getSoupBaseId())) {
                 inputs.add(SOUP_BASE_MAP.get(be.getSoupBaseId()).getItems()[0].copyWithCount(1));
+            }
+            if (level.getBlockState(pos).getValue(StockpotBlock.HAS_LID)) {
+                inputs.add(ModItems.STOCKPOT_LID.get().getDefaultInstance());
             }
             StockpotRecipe recipe = (StockpotRecipe) node.getRecipe(level.getRecipeManager());
             if (recipe != null) {

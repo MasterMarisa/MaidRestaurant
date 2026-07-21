@@ -16,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class CommonStorage implements IMaidStorage {
-    public static final String UID = "CommonStorage";
+    public static final String UID = "common_storage";
 
     @Override
     public String getUID() { return UID; }

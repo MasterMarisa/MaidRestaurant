@@ -124,6 +124,7 @@ repositories {
             includeGroup "dev.engine-room.flywheel"
         }
     }
+    maven { url = "https://maven.ithundxr.dev/mirror" } // Registrate
 }
 
 dependencies {
@@ -145,9 +146,10 @@ dependencies {
     // Jade
     implementation fg.deobf("maven.modrinth:jade:11.13.1+forge")
 
-    // Ponder
+    // Create
     implementation fg.deobf("net.createmod.ponder:Ponder-Forge-1.20.1:1.0.80")
-    runtimeOnly fg.deobf("maven.modrinth:create:1.20.1-6.0.6")
+    implementation fg.deobf("maven.modrinth:create:1.20.1-6.0.6")
+    compileOnly fg.deobf("com.tterrag.registrate:Registrate:MC1.20-1.3.11")
 
     // Patchouli
     implementation "curse.maven:patchouli-306770:6842247";

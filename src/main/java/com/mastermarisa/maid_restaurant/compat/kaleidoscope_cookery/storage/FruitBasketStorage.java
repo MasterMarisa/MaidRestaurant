@@ -1,4 +1,4 @@
-package com.mastermarisa.maid_restaurant.compat.kaleidoscope_cookery;
+package com.mastermarisa.maid_restaurant.compat.kaleidoscope_cookery.storage;
 
 import com.github.ysbbbbbb.kaleidoscopecookery.blockentity.decoration.FruitBasketBlockEntity;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModItems;
@@ -14,7 +14,7 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import java.util.List;
 
 public class FruitBasketStorage implements IMaidStorage {
-    public static final String UID = "FruitBasketStorage";
+    public static final String UID = "fruit_basket_storage";
 
     public static void register() {
         StorageRegistry.register(new FruitBasketStorage());

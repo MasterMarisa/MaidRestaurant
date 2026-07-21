@@ -5,7 +5,9 @@ import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
+import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -131,7 +133,8 @@ public class ExecutionNode {
      */
     public void verifyAndUpdateState(ServerLevel level, EntityMaid maid) {
         IItemHandler handler = maid.getAvailableInv(false);
-        boolean containing = ItemUtils.contains(handler, recipeNode.getIngredient(), recipeNode.getCount());
+        List<ItemStack> existedInputs = MaidUtils.getExistedInputs(level, maid, parent);
+        boolean containing = ItemUtils.contains(handler, existedInputs, recipeNode.getIngredient(), recipeNode.getCount());
 
         if (isLeaf()) {
             state = containing ? NodeState.DONE : NodeState.NEED_MATERIALS;

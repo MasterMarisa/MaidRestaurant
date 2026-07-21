@@ -1,4 +1,4 @@
-package com.mastermarisa.maid_restaurant.compat.kaleidoscope_cookery;
+package com.mastermarisa.maid_restaurant.compat.kaleidoscope_cookery.storage;
 
 import com.github.ysbbbbbb.kaleidoscopecookery.blockentity.decoration.TableBlockEntity;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModItems;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TableStorage implements IMaidStorage {
-    public static final String UID = "TableStorage";
+    public static final String UID = "table_storage";
 
     public static void register() {
         StorageRegistry.register(new TableStorage());

@@ -1,6 +1,7 @@
 package com.mastermarisa.maid_restaurant.init.registry;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.compat.create.CreateCompat;
 import com.mastermarisa.maid_restaurant.compat.kaleidoscope_cookery.KaleidoscopeCookeryCompat;
 import com.mastermarisa.maid_restaurant.core.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.core.capability.CraftingTableCapability;
@@ -47,5 +48,6 @@ public class CommonRegistry {
     private static void registerStorages() {
         StorageRegistry.register(new CommonStorage());
         KaleidoscopeCookeryCompat.registerStorages();
+        CreateCompat.registerStorages();
     }
 }

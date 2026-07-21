@@ -5,16 +5,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class StorageRegistry {
     private static final Map<String, IMaidStorage> registry = new LinkedHashMap<>();
+    private static final List<IMaidStorage> ordered = new ArrayList<>();
 
     public static void register(IMaidStorage storage) {
         registry.put(storage.getUID(), storage);
+        ordered.add(storage);
+        ordered.sort(Comparator.comparingInt(IMaidStorage::getPriority));
     }
 
     @Nullable
@@ -23,7 +23,7 @@ public class StorageRegistry {
     }
 
     public static Collection<IMaidStorage> getAll() {
-        return Collections.unmodifiableCollection(registry.values());
+        return Collections.unmodifiableCollection(ordered);
     }
 
     public static void clear() {

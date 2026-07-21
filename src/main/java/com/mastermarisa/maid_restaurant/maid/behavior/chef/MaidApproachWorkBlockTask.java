@@ -13,19 +13,17 @@ import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
-import com.mastermarisa.maid_restaurant.uitls.*;
+import com.mastermarisa.maid_restaurant.uitls.BehaviorUtil;
+import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtil;
+import com.mastermarisa.maid_restaurant.uitls.ChatBubbleUtil;
+import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.items.IItemHandler;
-
-import java.util.List;
 
 public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
     public static final String UID = "ApproachWorkBlock";
@@ -144,17 +142,8 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
             return;
         }
 
-        // 验证前置需求
-        IItemHandler maidInv = maid.getAvailableInv(false);
-        List<ItemStack> existedInputs = capability.getExistedInputs(level, pos, node.getRecipeNode());
-        Ingredient ingredient = node.getRecipeNode().getIngredient();
-        int count = node.getRecipeNode().getCount();
-
-        if (ItemUtils.contains(maidInv, existedInputs, ingredient, count)) {
-            node.setState(NodeState.DONE);
-            if (node.getParent() != null) {
-                node.getParent().computeState();
-            }
+        node.verifyAndUpdateState(level, maid);
+        if (node.getState() != NodeState.READY) {
             return;
         }
 

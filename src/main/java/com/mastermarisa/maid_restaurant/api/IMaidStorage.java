@@ -12,6 +12,8 @@ public interface IMaidStorage {
 
     ItemStack getIcon();
 
+    default int getPriority() { return 5; }
+
     boolean isValid(Level level, BlockPos pos);
 
     List<ItemStack> extract(Level level, BlockPos pos, Ingredient ingredient, int amount, boolean simulate);

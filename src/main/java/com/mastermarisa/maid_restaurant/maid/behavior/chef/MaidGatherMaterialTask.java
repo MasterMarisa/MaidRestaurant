@@ -3,21 +3,21 @@ package com.mastermarisa.maid_restaurant.maid.behavior.chef;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
 import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
-import com.mastermarisa.maid_restaurant.core.schedule.WorkBlockCache;
 import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.tree.NodeState;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.core.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
-import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
-import com.mastermarisa.maid_restaurant.uitls.*;
+import com.mastermarisa.maid_restaurant.uitls.BehaviorUtil;
+import com.mastermarisa.maid_restaurant.uitls.ChatBubbleUtil;
+import com.mastermarisa.maid_restaurant.uitls.ItemUtils;
+import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -29,7 +29,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.items.IItemHandler;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MaidGatherMaterialTask extends MaidCheckRateTask {
@@ -58,7 +57,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         }
 
         IItemHandler maidInv = maid.getAvailableInv(false);
-        List<ItemStack> existedInputs = getExistedInputs(level, maid, node);
+        List<ItemStack> existedInputs = MaidUtils.getExistedInputs(level, maid, node.getParent());
 
         if (ItemUtils.contains(maidInv, existedInputs, node.getIngredient(), node.getCount())) {
             node.setState(NodeState.DONE);
@@ -164,31 +163,6 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         }
 
         CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
-    }
-
-    private List<ItemStack> getExistedInputs(ServerLevel level, EntityMaid maid, ExecutionNode node) {
-        List<ItemStack> inputs = new ArrayList<>();
-
-        WorkBlockCache cache = maid.getData(ModTaskDataKeys.WORK_BLOCK_CACHE);
-        ExecutionNode parent = node.getParent();
-        if (cache == null || parent == null || BlockUsageUtil.isUsed(cache.getPos())) {
-            return inputs;
-        }
-
-        ICookCapability capability = parent.getCapability();
-        if (capability == null || !capability.getUID().equals(cache.getCapabilityUID())) {
-            return inputs;
-        }
-
-        AbstractZone zone = ChefScheduler.getWorkZone(maid);
-        if (zone == null || !zone.contains(cache.getPos())) {
-            return inputs;
-        }
-
-        if (capability.isValidWorkBlock(level, cache.getPos()) && zone.contains(cache.getPos())) {
-            return capability.getExistedInputs(level, cache.getPos(), parent.getRecipeNode());
-        }
-        return inputs;
     }
 }
 

@@ -1,4 +1,4 @@
-package com.mastermarisa.maid_restaurant.compat.kaleidoscope_cookery;
+package com.mastermarisa.maid_restaurant.compat.kaleidoscope_cookery.capability;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.ysbbbbbb.kaleidoscopecookery.block.kitchen.SteamerBlock;
