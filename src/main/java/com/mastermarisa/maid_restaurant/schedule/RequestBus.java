@@ -3,6 +3,7 @@ package com.mastermarisa.maid_restaurant.schedule;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
+import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import com.mastermarisa.maid_restaurant.maid.task.TaskChef;
 import com.mastermarisa.maid_restaurant.uitls.SerializerRegistry;
@@ -163,6 +164,7 @@ public class RequestBus<T extends INBTSerializable<CompoundTag>> extends SavedDa
 
     public static void registerSerializers() {
         REGISTRY.register(COOKING_REQUEST, CookingRequest.class, CookingRequest::fromNBT);
+        REGISTRY.register(SERVE_REQUEST, ServeRequest.class, ServeRequest::fromNBT);
     }
 
     @SuppressWarnings("unchecked")

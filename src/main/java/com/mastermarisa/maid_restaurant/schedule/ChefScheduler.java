@@ -5,6 +5,7 @@ import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHand
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
+import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
 import com.mastermarisa.maid_restaurant.data.task_data.ChefInformation;
 import com.mastermarisa.maid_restaurant.data.task_data.WorkBlockCache;
 import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
@@ -143,7 +144,10 @@ public class ChefScheduler {
             return;
         }
         RequestBus<CookingRequest> bus = RequestBus.getInstance(level, CookingRequest.class);
-        bus.submit(restaurantId, maid);
+        CookingRequest request = bus.submit(restaurantId, maid);
+        if (request != null && request.boundRequest != null) {
+            RequestBus.getInstance(level, ServeRequest.class).enqueue(restaurantId, request.boundRequest);
+        }
     }
 
     /**

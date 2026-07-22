@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
 import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
+import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
 import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
@@ -172,7 +173,14 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         if (inserted == 0) {
             return;
         }
+
         InvUtil.tryExtract(maidInv, inserted, node.getIngredient(), true, false);
+        ServeRequest serveRequest = request.boundRequest;
+        if (serveRequest != null) {
+            if (!serveRequest.pickupPoints.contains(pos)) {
+                serveRequest.pickupPoints.add(pos);
+            }
+        }
 
         if (node.getCount() - inserted <= 0) {
             ChefScheduler.submitRequest(level, maid);
