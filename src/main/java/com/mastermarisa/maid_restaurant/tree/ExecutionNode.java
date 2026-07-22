@@ -2,8 +2,6 @@ package com.mastermarisa.maid_restaurant.tree;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
-import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
-import com.mastermarisa.maid_restaurant.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.schedule.ChefScheduler;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.server.level.ServerLevel;
@@ -12,7 +10,6 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -45,51 +42,32 @@ public class ExecutionNode {
         return node;
     }
 
-    private static void recalculateSubtree(Level level, RecipeNode node, @Nullable RecipeNode parent) {
-        if (parent != null) {
-            ICookCapability capability = parent.getCapability();
-            Recipe<?> recipe = parent.getRecipe(level.getRecipeManager());
-            if (recipe != null && capability != null) {
-                IngredientStack stack = RecipeCacheBuilder.findStack(recipe.getId(), node.getIngredient());
-                if (stack != null) {
-                    int count = capability.getIngredientCount(level, recipe, parent.getCount(), stack);
-                    node.setIngredient(stack.getIngredient());
-                    node.setCount(count);
-                }
-            }
-        }
-
-        for (var child : node.getChildren()) {
-            recalculateSubtree(level, child, node);
-        }
-    }
-
     public RecipeNode getRecipeNode() {
-        return recipeNode;
+        return this.recipeNode;
     }
 
     public NodeState getState() {
-        return state;
+        return this.state;
     }
 
     @Nullable
     public ExecutionNode getParent() {
-        return parent;
+        return this.parent;
     }
 
     public List<ExecutionNode> getChildren() {
-        return children;
+        return this.children;
     }
 
-    public int getCount() { return recipeNode.getCount(); }
+    public int getCount() { return this.recipeNode.getCount(); }
 
-    public Ingredient getIngredient() { return recipeNode.getIngredient(); }
-
-    @Nullable
-    public Recipe<?> getRecipe(RecipeManager recipeManager) { return recipeNode.getRecipe(recipeManager); }
+    public Ingredient getIngredient() { return this.recipeNode.getIngredient(); }
 
     @Nullable
-    public ICookCapability getCapability() { return recipeNode.getCapability(); }
+    public Recipe<?> getRecipe(RecipeManager recipeManager) { return this.recipeNode.getRecipe(recipeManager); }
+
+    @Nullable
+    public ICookCapability getCapability() { return this.recipeNode.getCapability(); }
 
     public boolean isLeaf() {
         return children.isEmpty();
@@ -97,6 +75,12 @@ public class ExecutionNode {
 
     public void setState(NodeState state) {
         this.state = state;
+    }
+
+    public void applyCount(Level level, int count) { this.recipeNode.applyCount(level, count); }
+
+    public int calculateRequiredCount(ServerLevel level, EntityMaid maid) {
+        return this.recipeNode.calculateCount(level, maid);
     }
 
     /**
@@ -132,9 +116,20 @@ public class ExecutionNode {
      * @param maid 女仆实体
      */
     public void verifyAndUpdateState(ServerLevel level, EntityMaid maid) {
-        IItemHandler handler = maid.getAvailableInv(false);
-        List<ItemStack> existedInputs = ChefScheduler.getExistedInputs(level, maid, parent);
-        boolean containing = InvUtil.contains(handler, existedInputs, recipeNode.getIngredient(), recipeNode.getCount());
+        int required = parent != null ? parent.calculateRequiredCount(level, maid) : 0;
+        verifyAndUpdateState(level, maid, required, null);
+    }
+
+    private void verifyAndUpdateState(ServerLevel level, EntityMaid maid, int parentCount,
+                                      @Nullable List<ItemStack> existedInputs) {
+        int required = RecipeNode.calculateCountByParent(level, maid, recipeNode, parentCount);
+        boolean containing = required <= 0;
+        if (!containing) {
+            if (existedInputs == null) {
+                existedInputs = ChefScheduler.getExistedInputs(level, maid, parent);
+            }
+            containing = InvUtil.contains(existedInputs, getIngredient(), required);
+        }
 
         if (isLeaf()) {
             state = containing ? NodeState.DONE : NodeState.NEED_MATERIALS;
@@ -146,7 +141,7 @@ public class ExecutionNode {
             // 否则临时设为 WAITING,等待子树更新状态后重新推导
             state = NodeState.WAITING;
             for (ExecutionNode child : children) {
-                child.verifyAndUpdateState(level, maid);
+                child.verifyAndUpdateState(level, maid, required, existedInputs);
             }
             computeState();
         }
@@ -181,15 +176,5 @@ public class ExecutionNode {
             }
         }
         return null;
-    }
-
-    /**
-     * 设置节点需求的输出物品数,并据此推导更新子树的配方倍率
-     * @param level 所在Level
-     * @param count 新的输出物品数
-     */
-    public void applyCount(Level level, int count) {
-        recipeNode.setCount(count);
-        recalculateSubtree(level, this.getRecipeNode(), null);
     }
 }

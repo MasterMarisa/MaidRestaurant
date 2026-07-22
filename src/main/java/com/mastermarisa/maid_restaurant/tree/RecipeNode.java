@@ -1,16 +1,23 @@
 package com.mastermarisa.maid_restaurant.tree;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.gson.JsonElement;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
+import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
+import com.mastermarisa.maid_restaurant.recipe.RecipeCacheBuilder;
+import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -26,7 +33,11 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     private int count;
     @Nullable
     private RecipeStep step;
+    @Nullable
+    private RecipeNode parent;
     private List<RecipeNode> children;
+    @Nullable
+    private IngredientStack cachedStack;
 
     public RecipeNode() {
         this.ingredient = Ingredient.EMPTY;
@@ -53,6 +64,9 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         return step;
     }
 
+    @Nullable
+    public RecipeNode getParent() { return parent; }
+
     public List<RecipeNode> getChildren() {
         return children;
     }
@@ -71,6 +85,17 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
             return CapabilityRegistry.get(step.capabilityID());
         }
         return null;
+    }
+
+    @Nullable
+    public IngredientStack getCachedStack() {
+        if (this.parent != null && this.cachedStack == null) {
+            RecipeStep step = parent.getStep();
+            if (step != null) {
+                this.cachedStack = RecipeCacheBuilder.findStack(step.recipeId(), getIngredient());
+            }
+        }
+        return this.cachedStack;
     }
 
     public boolean isEmpty() { return ingredient.isEmpty(); }
@@ -93,6 +118,85 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
 
     public void addChild(RecipeNode child) {
         children.add(child);
+        child.parent = this;
+    }
+
+    /**
+     * 设置节点需求的输出物品数,并据此推导更新子树的配方倍率
+     * @param level 所在Level
+     * @param count 新的输出物品数
+     */
+    public void applyCount(Level level, int count) {
+        this.count = count;
+        recalculateSubtree(level, this, null);
+    }
+
+    private static void recalculateSubtree(Level level, RecipeNode node, @Nullable RecipeNode parent) {
+        if (parent != null) {
+            ICookCapability capability = parent.getCapability();
+            Recipe<?> recipe = parent.getRecipe(level.getRecipeManager());
+            if (recipe != null && capability != null) {
+                IngredientStack stack = node.getCachedStack();
+                if (stack != null) {
+                    int count = capability.getIngredientCount(level, recipe, parent.getCount(), stack);
+                    node.setCount(count);
+                }
+            }
+        }
+
+        for (var child : node.getChildren()) {
+            recalculateSubtree(level, child, node);
+        }
+    }
+
+    /**
+     * 根据上层节点的状态计算该节点缺少的材料数量,注意其中已计入女仆背包中的对应物品数
+     * @param level 所在Level
+     * @param maid 女仆
+     * @return 需从外界(容器、合成)获取的材料数量
+     */
+    public int calculateCount(ServerLevel level, EntityMaid maid) {
+        List<RecipeNode> nodes = new ArrayList<>();
+        RecipeNode tmp = this;
+        while (tmp != null) {
+            nodes.add(tmp);
+            tmp = tmp.parent;
+        }
+
+        int required = calculateCountByParent(level, maid, nodes.get(nodes.size() - 1), 0);
+        for (int i = nodes.size() - 2; i >= 0 && required > 0; i--) {
+            required = calculateCountByParent(level, maid, nodes.get(i), required);
+        }
+
+        return required;
+    }
+
+    public static int calculateCountByParent(ServerLevel level, EntityMaid maid, RecipeNode node, int parentCount) {
+        if (node.getParent() == null) {
+            int count = InvUtil.count(maid.getAvailableInv(false), node.getIngredient());
+            return Math.max(0, node.getCount() - count);
+        }
+
+        if (parentCount <= 0) {
+            return 0;
+        }
+
+        RecipeNode parent = node.getParent();
+        Recipe<?> recipe = parent.getRecipe(level.getRecipeManager());
+        if (recipe == null) {
+            return 0;
+        }
+
+        ICookCapability capability = parent.getCapability();
+        IngredientStack stack = node.getCachedStack();
+        if (capability == null || stack == null) {
+            return 0;
+        }
+
+        IItemHandler maidInv = maid.getAvailableInv(false);
+        int required = capability.getIngredientCount(level, recipe, parentCount, stack);
+        int count = InvUtil.count(maidInv, node.getIngredient());
+        return Math.max(0, required - count);
     }
 
     @Override
@@ -143,7 +247,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
             for (int i = 0; i < childrenTag.size(); i++) {
                 RecipeNode child = new RecipeNode();
                 child.deserializeNBT(childrenTag.getCompound(i));
-                children.add(child);
+                addChild(child);
             }
         }
     }

@@ -101,8 +101,8 @@ public class SteamerCapability implements ICookCapability {
         }
 
         int input = 0;
-        int output = node.getCount() - InvUtil.count(maidInv, Ingredient.of(recipe.getResult()));
-        if (output <= 0) {
+        int required = node.calculateCount(level, maid);
+        if (required <= 0) {
             return CookResult.DONE;
         }
 
@@ -116,10 +116,10 @@ public class SteamerCapability implements ICookCapability {
 
                 if (ItemStack.isSameItem(recipe.getResult(), stack)) {
                     if (ItemHandlerHelper.insertItem(maidInv, stack, true).isEmpty()) {
-                        output--;
+                        required--;
                         InvUtil.getItemToMaid(maid, removeItem(be, i));
                         maid.swing(InteractionHand.MAIN_HAND);
-                        if (output <= 0) {
+                        if (required <= 0) {
                             return CookResult.DONE;
                         }
                     }
@@ -132,11 +132,11 @@ public class SteamerCapability implements ICookCapability {
             }
         }
 
-        if (input >= output) {
+        if (input >= required) {
             return CookResult.PROGRESS;
         }
 
-        List<ItemStack> inputs = InvUtil.tryExtract(maidInv, output - input, recipe.getIngredient(), true, false);
+        List<ItemStack> inputs = InvUtil.tryExtract(maidInv, required - input, recipe.getIngredient(), true, false);
         if (inputs.isEmpty()) {
             return CookResult.INTERRUPTED;
         }

@@ -226,7 +226,7 @@ public class StockpotCapability implements ICookCapability {
                         }
                         InvUtil.getAllFromInv(fakePlayer.getInventory(), maid);
                         maid.swing(InteractionHand.MAIN_HAND);
-                        if (InvUtil.contains(maidInv, node.getIngredient(), node.getCount())) {
+                        if (node.calculateCount(level, maid) <= 0) {
                             return CookResult.DONE;
                         } else {
                             return CookResult.PROGRESS;
@@ -241,7 +241,7 @@ public class StockpotCapability implements ICookCapability {
                         }
                         InvUtil.getAllFromInv(fakePlayer.getInventory(), maid);
                         maid.swing(InteractionHand.MAIN_HAND);
-                        if (InvUtil.contains(maidInv, node.getIngredient(), node.getCount())) {
+                        if (node.calculateCount(level, maid) <= 0) {
                             return CookResult.DONE;
                         } else {
                             return CookResult.PROGRESS;

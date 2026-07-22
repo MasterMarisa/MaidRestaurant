@@ -65,6 +65,19 @@ public class InvUtil {
         return count(handler, ingredient) >= count;
     }
 
+    public static boolean contains(List<ItemStack> items, Ingredient ingredient, int count) {
+        int sum = 0;
+        for (ItemStack stack : items) {
+            if (ingredient.test(stack)) {
+                sum += stack.getCount();
+                if (sum > count) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public static boolean contains(IItemHandler handler, List<ItemStack> itemStacks, Ingredient ingredient, int count) {
         int sum = 0;
         for (int i = 0; i < handler.getSlots(); i++) {

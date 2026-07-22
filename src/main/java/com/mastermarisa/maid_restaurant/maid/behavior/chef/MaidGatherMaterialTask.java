@@ -59,10 +59,18 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
             return false;
         }
 
-        IItemHandler maidInv = maid.getAvailableInv(false);
-        List<ItemStack> existedInputs = ChefScheduler.getExistedInputs(level, maid, node.getParent());
+        int count = node.calculateRequiredCount(level, maid);
+        if (count == 0) {
+            node.setState(NodeState.DONE);
+            if (node.getParent() != null) {
+                node.getParent().computeState();
+            }
+            CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 1);
+            return false;
+        }
 
-        if (InvUtil.contains(maidInv, existedInputs, node.getIngredient(), node.getCount())) {
+        List<ItemStack> existedInputs = ChefScheduler.getExistedInputs(level, maid, node.getParent());
+        if (InvUtil.contains(existedInputs, node.getIngredient(), count)) {
             node.setState(NodeState.DONE);
             if (node.getParent() != null) {
                 node.getParent().computeState();
@@ -159,13 +167,17 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
 
     private void acceptStorage(ServerLevel level, EntityMaid maid, BlockPos pos) {
         ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.NEED_MATERIALS);
-        if (node == null || !node.isLeaf()) return;
+        if (node == null || !node.isLeaf()) {
+            return;
+        }
 
         IMaidStorage storage = StorageRegistry.tryGetAt(level, pos);
-        if (storage == null) return;
+        if (storage == null) {
+            return;
+        }
 
         IItemHandler maidInv = maid.getAvailableInv(false);
-        int required = node.getCount() - InvUtil.count(maidInv, node.getIngredient());
+        int required = node.calculateRequiredCount(level, maid);
 
         maid.swing(InteractionHand.OFF_HAND);
         if (InvUtil.tryTake(level, pos, storage, maidInv, node.getIngredient(), required)) {
