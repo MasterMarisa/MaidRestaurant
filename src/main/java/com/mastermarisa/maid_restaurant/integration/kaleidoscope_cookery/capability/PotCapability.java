@@ -16,7 +16,6 @@ import com.mastermarisa.maid_restaurant.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtil;
 import com.mastermarisa.maid_restaurant.uitls.IngredientUtil;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
-import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -139,12 +138,12 @@ public class PotCapability implements ICookCapability {
                         }
                     }
 
-                    int shovelIndex = InvUtil.findStackSlot(maidInv, KITCHEN_SHOVEL);
+                    int shovelIndex = InvUtil.findSlot(maidInv, KITCHEN_SHOVEL);
                     if (shovelIndex == -1) {
                         return CookResult.INTERRUPTED;
                     }
                     if (!KITCHEN_SHOVEL.test(maid.getMainHandItem())) {
-                        MaidUtils.exchangeToHand(maid, InteractionHand.MAIN_HAND, shovelIndex);
+                        InvUtil.exchangeToHand(maid, InteractionHand.MAIN_HAND, shovelIndex);
                     }
 
                     for (var stack : stacks) {
@@ -160,12 +159,12 @@ public class PotCapability implements ICookCapability {
                 }
             }
             case 1 -> {
-                int shovelIndex = InvUtil.findStackSlot(maidInv, KITCHEN_SHOVEL);
+                int shovelIndex = InvUtil.findSlot(maidInv, KITCHEN_SHOVEL);
                 if (shovelIndex == -1) {
                     return CookResult.INTERRUPTED;
                 }
                 if (!KITCHEN_SHOVEL.test(maid.getMainHandItem())) {
-                    MaidUtils.exchangeToHand(maid, InteractionHand.MAIN_HAND, shovelIndex);
+                    InvUtil.exchangeToHand(maid, InteractionHand.MAIN_HAND, shovelIndex);
                 }
 
                 be.onShovelHit(level, maid, maid.getMainHandItem());

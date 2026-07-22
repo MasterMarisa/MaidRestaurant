@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InvUtil {
-    public static int findStackSlot(IItemHandler handler, Ingredient ingredient, int start, int end) {
+    public static int findSlot(IItemHandler handler, Ingredient ingredient, int start, int end) {
         for(int i = start; i < Math.min(handler.getSlots(), end); ++i) {
             ItemStack stack = handler.getStackInSlot(i);
             if (ingredient.test(stack)) return i;
@@ -25,11 +26,11 @@ public class InvUtil {
         return -1;
     }
 
-    public static int findStackSlot(IItemHandler handler, Ingredient ingredient) {
-        return findStackSlot(handler, ingredient, 0, handler.getSlots());
+    public static int findSlot(IItemHandler handler, Ingredient ingredient) {
+        return findSlot(handler, ingredient, 0, handler.getSlots());
     }
 
-    public static List<Integer> findStackSlots(IItemHandler handler, Ingredient ingredient, int start, int end) {
+    public static List<Integer> findSlots(IItemHandler handler, Ingredient ingredient, int start, int end) {
         IntList slots = new IntArrayList();
         for(int i = start; i < Math.min(handler.getSlots(), end); ++i) {
             ItemStack stack = handler.getStackInSlot(i);
@@ -38,17 +39,17 @@ public class InvUtil {
         return slots;
     }
 
-    public static List<Integer> findStackSlots(IItemHandler handler, Ingredient ingredient) {
-        return findStackSlots(handler, ingredient, 0, handler.getSlots());
+    public static List<Integer> findSlots(IItemHandler handler, Ingredient ingredient) {
+        return findSlots(handler, ingredient, 0, handler.getSlots());
     }
 
     public static boolean isStackIn(IItemHandler handler, Ingredient ingredient) {
-        return findStackSlot(handler, ingredient) != -1;
+        return findSlot(handler, ingredient) != -1;
     }
 
     public static int count(IItemHandler handler, Ingredient ingredient) {
         int count = 0;
-        for (int i = 0;i < handler.getSlots();i++) {
+        for (int i = 0; i < handler.getSlots(); i++) {
             ItemStack stack = handler.getStackInSlot(i);
             if (ingredient.test(stack)) {
                 count += stack.getCount();
@@ -86,8 +87,12 @@ public class InvUtil {
         return false;
     }
 
+    public static List<ItemStack> tryExtract(IItemHandler handler, int count, Ingredient ingredient, boolean strict) {
+        return tryExtract(handler, count, ingredient, strict, false);
+    }
+
     public static List<ItemStack> tryExtract(IItemHandler handler, int count, Ingredient ingredient, boolean strict, boolean simulate) {
-        List<Integer> slots = findStackSlots(handler, ingredient);
+        List<Integer> slots = findSlots(handler, ingredient);
         List<ItemStack> stacks = new ArrayList<>();
         if (!strict || count <= count(handler, ingredient)) {
             for (int slot : slots) {
@@ -133,5 +138,17 @@ public class InvUtil {
             }
         }
         inventory.clearContent();
+    }
+
+    public static void exchangeToHand(EntityMaid maid, InteractionHand hand, int index) {
+        IItemHandler maidInv = maid.getAvailableInv(false);
+        ItemStack remainder = maidInv.extractItem(index, 64, false);
+        ItemStack itemInHand = maid.getItemInHand(hand).copyAndClear();
+        if (!remainder.isEmpty()) {
+            maid.setItemInHand(hand, remainder);
+        }
+        if (!itemInHand.isEmpty()) {
+            maidInv.insertItem(index, itemInHand, false);
+        }
     }
 }

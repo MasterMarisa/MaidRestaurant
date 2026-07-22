@@ -4,6 +4,11 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
 
 public class PosUtil {
     public static double distSqrHorizontal(EntityMaid maid, BlockPos pos) {
@@ -24,5 +29,34 @@ public class PosUtil {
         return isEmptyBlockPos(level, pos)
                 && isEmptyBlockPos(level, pos.above())
                 && !isEmptyBlockPos(level, pos.below());
+    }
+
+    public static boolean findHorizontal(BlockPos pos, Predicate<BlockPos> predicate, List<BlockPos> results) {
+        int preSize = results.size();
+        if (predicate.test(pos.north())) results.add(pos.north());
+        if (predicate.test(pos.east())) results.add(pos.east());
+        if (predicate.test(pos.south())) results.add(pos.south());
+        if (predicate.test(pos.west())) results.add(pos.west());
+        return results.size() > preSize;
+    }
+
+    @Nullable
+    public static BlockPos findNearestSafePosHorizontal(Level level, EntityMaid maid, BlockPos pos) {
+        List<BlockPos> results = new ArrayList<>();
+        if (!findHorizontal(pos, p -> isSafePos(level, p), results)) {
+            return null;
+        }
+
+        BlockPos best = null;
+        double bestDist = Double.MAX_VALUE;
+        for (var blockPos : results) {
+            double dist = distSqrHorizontal(maid, blockPos);
+            if (dist < bestDist) {
+                best = blockPos;
+                bestDist = dist;
+            }
+        }
+
+        return best;
     }
 }

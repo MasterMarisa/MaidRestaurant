@@ -12,17 +12,22 @@ import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidTickRateTask;
 import com.mastermarisa.maid_restaurant.schedule.ChefScheduler;
 import com.mastermarisa.maid_restaurant.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.tree.NodeState;
-import com.mastermarisa.maid_restaurant.uitls.BehaviorUtil;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtil;
+import com.mastermarisa.maid_restaurant.uitls.MemoryUtil;
+import com.mastermarisa.maid_restaurant.uitls.PosUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
 
 public class MaidExecuteCookStepTask extends MaidTickRateTask {
-    public MaidExecuteCookStepTask() {
+    private final double closeEnoughDistSqr;
+
+    public MaidExecuteCookStepTask(double closeEnoughDist) {
         super(ImmutableMap.of(ModEntities.TARGET_POS.get(), MemoryStatus.VALUE_PRESENT));
+        this.closeEnoughDistSqr = closeEnoughDist * closeEnoughDist;
     }
 
     @Override
@@ -32,8 +37,16 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
             return false;
         }
 
-        BlockPos pos = maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).orElseThrow().currentBlockPosition();
+        BlockPos pos = maid.getBrain()
+                .getMemory(ModEntities.TARGET_POS.get())
+                .orElseThrow()
+                .currentBlockPosition();
         if (BlockUsageUtil.isUsed(pos) && !BlockUsageUtil.isUsing(pos, maid.getUUID())) {
+            return false;
+        }
+
+        double distVertical = Math.abs(maid.getY() - pos.getY());
+        if (distVertical > 4) {
             return false;
         }
 
@@ -51,12 +64,31 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
         if (ticksRemain > 0){
             return true;
         } else {
-            return BehaviorUtil.isTarget(maid, TargetType.EXECUTE_COOK_STEP) && checkExtraStartConditions(level, maid);
+            return MemoryUtil.isTarget(maid, TargetType.EXECUTE_COOK_STEP) && checkExtraStartConditions(level, maid);
         }
     }
 
     @Override
     protected void tick(ServerLevel level, EntityMaid maid, long gameTime) {
+        BlockPos pos = maid.getBrain()
+                .getMemory(ModEntities.TARGET_POS.get())
+                .orElseThrow()
+                .currentBlockPosition();
+
+        if (gameTime % 10 == 0) {
+            double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
+            if (distHorizontal > closeEnoughDistSqr) {
+                maid.getBrain()
+                        .getMemory(ModEntities.STAND_POS.get())
+                        .ifPresent(tracker -> {
+                            BlockPos walkPos = tracker.currentBlockPosition();
+                            WalkTarget target = new WalkTarget(walkPos, 0.4F, 0);
+                            MemoryUtil.setIfAbsent(maid, MemoryModuleType.WALK_TARGET, target);
+                        });
+            }
+            MemoryUtil.setIfAbsent(maid, MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos));
+        }
+
         if (!shouldTick(level, maid, gameTime)) {
             return;
         }
@@ -71,9 +103,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
             return;
         }
 
-        BlockPos pos = maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).orElseThrow().currentBlockPosition();
         CookResult result = capability.cookTick(level, maid, pos, node.getRecipeNode());
-        maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos.above()));
 
         if (result == CookResult.DONE) {
             node.verifyAndUpdateState(level, maid);
@@ -84,18 +114,20 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
         } else if (result == CookResult.INTERRUPTED) {
             node.verifyAndUpdateState(level, maid);
         }
-        CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidGatherMaterialTask.UID, 5);
-        CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidApproachWorkBlockTask.UID, 5);
     }
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
-        maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(tracker -> {
-            BlockUsageUtil.remove(tracker.currentBlockPosition(), maid.getUUID());
-        });
-        if (BehaviorUtil.isTarget(maid, TargetType.EXECUTE_COOK_STEP)) {
-            BehaviorUtil.eraseTarget(maid);
+        maid.getBrain()
+                .getMemory(ModEntities.TARGET_POS.get())
+                .ifPresent(tracker -> {
+                    BlockUsageUtil.remove(tracker.currentBlockPosition(), maid.getUUID());
+                });
+        if (MemoryUtil.isTarget(maid, TargetType.EXECUTE_COOK_STEP)) {
+            MemoryUtil.removeTarget(maid);
         }
+        CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidGatherMaterialTask.UID, 5);
+        CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidApproachWorkBlockTask.UID, 5);
     }
 
     @Override

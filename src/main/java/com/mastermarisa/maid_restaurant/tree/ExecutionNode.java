@@ -4,8 +4,8 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.recipe.RecipeCacheBuilder;
+import com.mastermarisa.maid_restaurant.schedule.ChefScheduler;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
-import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -133,7 +133,7 @@ public class ExecutionNode {
      */
     public void verifyAndUpdateState(ServerLevel level, EntityMaid maid) {
         IItemHandler handler = maid.getAvailableInv(false);
-        List<ItemStack> existedInputs = MaidUtils.getExistedInputs(level, maid, parent);
+        List<ItemStack> existedInputs = ChefScheduler.getExistedInputs(level, maid, parent);
         boolean containing = InvUtil.contains(handler, existedInputs, recipeNode.getIngredient(), recipeNode.getCount());
 
         if (isLeaf()) {
@@ -183,7 +183,12 @@ public class ExecutionNode {
         return null;
     }
 
-    public void applyOutputCount(Level level, int count) {
+    /**
+     * 设置节点需求的输出物品数,并据此推导更新子树的配方倍率
+     * @param level 所在Level
+     * @param count 新的输出物品数
+     */
+    public void applyCount(Level level, int count) {
         recipeNode.setCount(count);
         recalculateSubtree(level, this.getRecipeNode(), null);
     }

@@ -74,7 +74,7 @@ public class CommandRegistry {
         }
 
         CookingRequest request = new CookingRequest(RecipeNode.fromNBT(CookingGuideItem.getRecipeRoot(itemInHand)), count);
-        request.root.applyOutputCount(level, count);
+        request.root.applyCount(level, count);
         RequestBus.getInstance(level, CookingRequest.class).enqueue(restaurantId, request);
         context.getSource().sendSuccess(() -> Component.literal("§a成功发送委托！"), true);
         return 1;

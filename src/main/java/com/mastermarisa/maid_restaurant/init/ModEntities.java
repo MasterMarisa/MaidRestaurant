@@ -18,4 +18,6 @@ public interface ModEntities {
             .register("target_pos", () -> new MemoryModuleType<>(Optional.empty()));
     Supplier<MemoryModuleType<Integer>> TARGET_TYPE = MEMORY_MODULE_TYPES
             .register("target_type", () -> new MemoryModuleType<>(Optional.of(Codec.INT)));
+    Supplier<MemoryModuleType<PositionTracker>> STAND_POS = MEMORY_MODULE_TYPES
+            .register("stand_pos", () -> new MemoryModuleType<>(Optional.empty()));
 }

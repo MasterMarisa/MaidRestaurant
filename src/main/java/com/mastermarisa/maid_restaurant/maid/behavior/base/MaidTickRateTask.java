@@ -12,7 +12,7 @@ public abstract class MaidTickRateTask extends Behavior<EntityMaid> {
     protected int ticksRemain;
 
     public MaidTickRateTask(Map<MemoryModuleType<?>, MemoryStatus> entryCondition, int duration){
-        super(entryCondition,duration);
+        super(entryCondition, duration);
     }
 
     public MaidTickRateTask(Map<MemoryModuleType<?>, MemoryStatus> entryCondition){

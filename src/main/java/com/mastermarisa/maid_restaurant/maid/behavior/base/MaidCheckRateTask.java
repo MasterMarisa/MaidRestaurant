@@ -12,7 +12,7 @@ public abstract class MaidCheckRateTask extends Behavior<EntityMaid> {
     protected final int maxInterval;
 
     public MaidCheckRateTask(Map<MemoryModuleType<?>, MemoryStatus> entryCondition, int maxInterval, int duration) {
-        super(entryCondition,duration);
+        super(entryCondition, duration);
         this.maxInterval = maxInterval;
     }
 

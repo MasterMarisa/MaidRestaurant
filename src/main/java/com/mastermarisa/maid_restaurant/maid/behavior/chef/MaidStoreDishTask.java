@@ -14,15 +14,17 @@ import com.mastermarisa.maid_restaurant.schedule.ChefScheduler;
 import com.mastermarisa.maid_restaurant.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.tree.NodeState;
-import com.mastermarisa.maid_restaurant.uitls.BehaviorUtil;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
+import com.mastermarisa.maid_restaurant.uitls.MemoryUtil;
 import com.mastermarisa.maid_restaurant.uitls.PosUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
 
 import java.util.List;
@@ -61,8 +63,10 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
 
     @Override
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
-        return BehaviorUtil.isTarget(maid, TargetType.STORE_DISH)
-                && maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).map(tracker -> {
+        return MemoryUtil.isTarget(maid, TargetType.STORE_DISH)
+                && maid.getBrain()
+                .getMemory(ModEntities.TARGET_POS.get())
+                .map(tracker -> {
                     BlockPos pos = tracker.currentBlockPosition();
                     double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
                     double distVertical = Math.abs(maid.getY() - pos.getY());
@@ -72,24 +76,33 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
 
     @Override
     protected void tick(ServerLevel level, EntityMaid maid, long gameTime) {
-        if (gameTime % 10 != 0) return;
-        maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(tracker -> {
-            BehaviorUtil.setWalkAndLookTargetMemories(maid, tracker.currentBlockPosition(), tracker.currentBlockPosition(), movementSpeed, 0);
-        });
+        if (gameTime % 10 != 0) {
+            return;
+        }
+        maid.getBrain()
+                .getMemory(ModEntities.STAND_POS.get())
+                .ifPresent(tracker -> {
+                    BlockPos pos = tracker.currentBlockPosition();
+                    WalkTarget target = new WalkTarget(pos, movementSpeed, 0);
+                    MemoryUtil.setIfAbsent(maid, MemoryModuleType.WALK_TARGET, target);
+                });
     }
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
-        maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(tracker -> {
-            BlockPos pos = tracker.currentBlockPosition();
-            double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
-            double distVertical = Math.abs(maid.getY() - pos.getY());
-            if (distHorizontal <= closeEnoughDistSqr && distVertical <= 4) {
-                storeDish(level, maid, pos);
-            }
-        });
-        if (BehaviorUtil.isTarget(maid, TargetType.STORE_DISH)) BehaviorUtil.eraseTarget(maid);
+        maid.getBrain()
+                .getMemory(ModEntities.TARGET_POS.get())
+                .ifPresent(tracker -> {
+                    BlockPos pos = tracker.currentBlockPosition();
+                    double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
+                    double distVertical = Math.abs(maid.getY() - pos.getY());
+                    if (distHorizontal <= closeEnoughDistSqr && distVertical <= 4) {
+                        storeDish(level, maid, pos);
+                    }
+                });
+        MemoryUtil.removeTargetIfMatch(maid, TargetType.STORE_DISH);
         maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+        maid.setDeltaMovement(Vec3.ZERO);
     }
 
     private boolean searchTarget(ServerLevel level, EntityMaid maid, ExecutionNode node) {
@@ -125,8 +138,8 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         }
 
         if (best != null) {
-            BehaviorUtil.setTarget(maid, new BlockPosTracker(best), TargetType.STORE_DISH);
-            BehaviorUtil.setWalkAndLookTargetMemories(maid, best, best, movementSpeed, 0);
+            MemoryUtil.setTarget(maid, new BlockPosTracker(best), TargetType.STORE_DISH);
+            MemoryUtil.setWalkAndLookTargetMemories(maid, best, best, movementSpeed, 0);
             return true;
         }
 
@@ -165,7 +178,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
             ChefScheduler.submitRequest(level, maid);
             CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidGatherMaterialTask.UID, 5);
         } else {
-            request.root.applyOutputCount(level, node.getCount() - inserted);
+            request.root.applyCount(level, node.getCount() - inserted);
             CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
         }
     }

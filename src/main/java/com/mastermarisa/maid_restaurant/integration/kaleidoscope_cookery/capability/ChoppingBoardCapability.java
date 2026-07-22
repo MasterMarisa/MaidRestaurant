@@ -13,7 +13,6 @@ import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.uitls.IngredientUtil;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
-import com.mastermarisa.maid_restaurant.uitls.MaidUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -108,12 +107,12 @@ public class ChoppingBoardCapability implements ICookCapability {
             return CookResult.PROGRESS;
         }
 
-        int index = InvUtil.findStackSlot(maidInv, KITCHEN_KNIFE);
+        int index = InvUtil.findSlot(maidInv, KITCHEN_KNIFE);
         if (index == -1) {
             return CookResult.INTERRUPTED;
         }
         if (!KITCHEN_KNIFE.test(maid.getMainHandItem())) {
-            MaidUtils.exchangeToHand(maid, InteractionHand.MAIN_HAND, index);
+            InvUtil.exchangeToHand(maid, InteractionHand.MAIN_HAND, index);
         }
 
         if (be.getCurrentCutCount() < be.getMaxCutCount()) {

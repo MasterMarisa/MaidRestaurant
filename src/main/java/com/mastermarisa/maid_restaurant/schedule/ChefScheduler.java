@@ -3,18 +3,22 @@ package com.mastermarisa.maid_restaurant.schedule;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
+import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
 import com.mastermarisa.maid_restaurant.data.task_data.ChefInformation;
+import com.mastermarisa.maid_restaurant.data.task_data.WorkBlockCache;
 import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import com.mastermarisa.maid_restaurant.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.tree.NodeState;
+import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtil;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class ChefScheduler {
     /**
@@ -156,5 +160,31 @@ public class ChefScheduler {
             return null;
         }
         return request.root.findNode(state);
+    }
+
+    public static List<ItemStack> getExistedInputs(ServerLevel level, EntityMaid maid, @Nullable ExecutionNode node) {
+        if (node == null || node.isLeaf()) {
+            return List.of();
+        }
+
+        WorkBlockCache cache = maid.getData(ModTaskDataKeys.WORK_BLOCK_CACHE);
+        if (cache == null || BlockUsageUtil.isUsed(cache.getPos())) {
+            return List.of();
+        }
+
+        ICookCapability capability = node.getCapability();
+        if (capability == null || !capability.getUID().equals(cache.getCapabilityUID())) {
+            return List.of();
+        }
+
+        AbstractZone zone = ChefScheduler.getWorkZone(maid);
+        if (zone == null || !zone.contains(cache.getPos())) {
+            return List.of();
+        }
+
+        if (capability.isValidWorkBlock(level, cache.getPos()) && zone.contains(cache.getPos())) {
+            return capability.getExistedInputs(level, cache.getPos(), node.getRecipeNode());
+        }
+        return List.of();
     }
 }
