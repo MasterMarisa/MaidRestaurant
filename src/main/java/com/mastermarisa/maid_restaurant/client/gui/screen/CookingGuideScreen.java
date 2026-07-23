@@ -52,6 +52,7 @@ public class CookingGuideScreen extends Screen {
     private RecipeNode selectedNode;
     @Nullable
     private RecipeSelectOverlay selectOverlay;
+    private RecipeType<?> cachedType;
 
     public CookingGuideScreen(ItemStack itemStack) {
         super(Component.empty());
@@ -65,6 +66,7 @@ public class CookingGuideScreen extends Screen {
         rebindIngredient(this.root);
         this.searchBox.setResponder(this::onSearchBoxContentChanged);
         this.offset = Vec2.ZERO;
+        this.cachedType = RecipeType.CRAFTING;
     }
 
     public static void open(ItemStack stack) {
@@ -220,11 +222,14 @@ public class CookingGuideScreen extends Screen {
         Rectangle frame = new Rectangle(getScreenCenterX() - 110,
                 getScreenCenterY() - 91, 220, 182);
         this.selectOverlay = new RecipeSelectOverlay(frame, level, output, this::onRecipeSelected);
-        this.selectOverlay.open();
+        this.selectOverlay.open(this.cachedType);
         this.addRenderableWidget(this.searchBox);
     }
 
     private void onRecipeSelected(RecipeType<?> type, ResourceLocation recipeId) {
+        if (this.selectOverlay != null) {
+            this.cachedType = this.selectOverlay.getSelectedType();
+        }
         this.selectOverlay = null;
         ICookCapability capability = CapabilityRegistry.get(type);
         if (capability != null) {

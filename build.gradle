@@ -153,6 +153,9 @@ dependencies {
 
     // Patchouli
     implementation "curse.maven:patchouli-306770:6842247";
+
+    // Bakeries
+    implementation fg.deobf("curse.maven:bakeries-1191781:8041836")
 }
 
 tasks.named('processResources', ProcessResources).configure {

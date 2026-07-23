@@ -100,23 +100,26 @@ public class SteamerCapability implements ICookCapability {
             return CookResult.INTERRUPTED;
         }
 
-        int input = 0;
         int required = node.calculateCount(level, maid);
         if (required <= 0) {
             return CookResult.DONE;
         }
 
+        int freeSlots = 0;
+        int existedInput = 0;
         for (var be : steamers) {
             int size = be.getBlockState().getValue(SteamerBlock.HALF) ? 4 : 8;
             for (int i = 0; i < size; i++) {
                 ItemStack stack = be.getItems().get(i);
                 if (stack.isEmpty()) {
+                    freeSlots++;
                     continue;
                 }
 
                 if (ItemStack.isSameItem(recipe.getResult(), stack)) {
                     if (ItemHandlerHelper.insertItem(maidInv, stack, true).isEmpty()) {
                         required--;
+                        freeSlots++;
                         InvUtil.getItemToMaid(maid, removeItem(be, i));
                         maid.swing(InteractionHand.MAIN_HAND);
                         if (required <= 0) {
@@ -124,19 +127,21 @@ public class SteamerCapability implements ICookCapability {
                         }
                     }
                 } else if (recipe.getIngredient().test(stack)) {
-                    input++;
+                    existedInput++;
                 } else {
+                    freeSlots++;
                     InvUtil.getItemToMaid(maid, removeItem(be, i));
                     maid.swing(InteractionHand.MAIN_HAND);
                 }
             }
         }
 
-        if (input >= required) {
+        if (existedInput >= required) {
             return CookResult.PROGRESS;
         }
 
-        List<ItemStack> inputs = InvUtil.tryExtract(maidInv, required - input, recipe.getIngredient(), true, false);
+        int toExtract = Math.min(freeSlots, required - existedInput);
+        List<ItemStack> inputs = InvUtil.tryExtract(maidInv, toExtract, recipe.getIngredient(), true, false);
         if (inputs.isEmpty()) {
             return CookResult.INTERRUPTED;
         }
@@ -156,6 +161,7 @@ public class SteamerCapability implements ICookCapability {
             }
             be.refresh();
         }
+
         return CookResult.PROGRESS;
     }
 

@@ -92,11 +92,14 @@ public class RecipeSelectOverlay extends UIElement {
         for (int i = 0; i < CATEGORIES; i++) {
             this.uiCategories[i].setSelectedType(type);
         }
+
+        int categoryIndex = recipeTypes.indexOf(type) / 5 * 5;
+        for (int i = 0; i < CATEGORIES; i++) {
+            this.uiCategories[i].setRecipeType(categoryIndex + i < recipeTypes.size() ? recipeTypes.get(categoryIndex + i) : null);
+        }
     }
 
-    public void open() {
-        open(recipeTypes.get(0));
-    }
+    public RecipeType<?> getSelectedType() { return this.selectedType; }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY) {

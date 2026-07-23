@@ -50,7 +50,7 @@ public class TaskChef implements IMaidTask {
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         return Lists.newArrayList(
-                Pair.of(5, new MaidGatherMaterialTask(60, 0.4F, 1.5D)),
+                Pair.of(5, new MaidGatherMaterialTask(60, 0.4F, 2.5D)),
                 Pair.of(5, new MaidApproachWorkBlockTask(60, 0.4F, 1.5D)),
                 Pair.of(5, new MaidExecuteCookStepTask(1.5D)),
                 Pair.of(5, new MaidStoreDishTask(60, 0.4F, 1.5D))

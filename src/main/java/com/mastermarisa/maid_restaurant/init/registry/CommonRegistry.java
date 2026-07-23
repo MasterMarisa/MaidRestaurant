@@ -5,6 +5,7 @@ import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.capability.CraftingTableCapability;
 import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModItems;
+import com.mastermarisa.maid_restaurant.integration.bakeries.BakeriesCompat;
 import com.mastermarisa.maid_restaurant.integration.create.CreateCompat;
 import com.mastermarisa.maid_restaurant.integration.kaleidoscope_cookery.KaleidoscopeCookeryCompat;
 import com.mastermarisa.maid_restaurant.schedule.RequestBus;
@@ -43,6 +44,7 @@ public class CommonRegistry {
     private static void registerCapabilities() {
         CapabilityRegistry.register(new CraftingTableCapability());
         KaleidoscopeCookeryCompat.registerCapabilities();
+        BakeriesCompat.registerCapabilities();
     }
 
     private static void registerStorages() {
