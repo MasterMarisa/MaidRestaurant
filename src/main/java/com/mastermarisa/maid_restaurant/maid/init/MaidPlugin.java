@@ -10,12 +10,14 @@ import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.item.bauble.ChefLicenseBauble;
 import com.mastermarisa.maid_restaurant.maid.task.TaskChef;
+import com.mastermarisa.maid_restaurant.maid.task.TaskWaiter;
 
 @LittleMaidExtension
 public class MaidPlugin implements ILittleMaid {
     @Override
     public void addMaidTask(TaskManager manager) {
         manager.add(new TaskChef());
+        manager.add(new TaskWaiter());
     }
 
     @Override

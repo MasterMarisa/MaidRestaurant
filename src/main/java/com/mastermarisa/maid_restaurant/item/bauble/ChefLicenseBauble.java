@@ -42,6 +42,9 @@ public class ChefLicenseBauble implements IMaidBauble {
             ItemStack itemStack = handler.getStackInSlot(i);
             if (itemStack.getItem() instanceof ZoneDefinitionItem) {
                 AbstractZone zone = ZoneDefinitionItem.getZone(itemStack);
+                if (zone == null) {
+                    continue;
+                }
                 if (i < 4) {
                     workZones.add(zone);
                 } else if (i < 8) {

@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = MaidRestaurant.MOD_ID)
 public class RequestBus<T extends INBTSerializable<CompoundTag>> extends SavedData {
@@ -29,6 +30,7 @@ public class RequestBus<T extends INBTSerializable<CompoundTag>> extends SavedDa
     private static final ResourceLocation SERVE_REQUEST = MaidRestaurant.modLoc("serve_request");
     private static final SerializerRegistry<INBTSerializable<CompoundTag>> REGISTRY = new SerializerRegistry<>();
     private static final Map<ServerLevel, Map<ResourceLocation, RequestBus<?>>> BUS_MAP = new ConcurrentHashMap<>();
+    private static final Map<ResourceLocation, Supplier<RequestBus<?>>> SUPPLIER_MAP = new ConcurrentHashMap<>();
 
     private final Map<String, List<RequestEntry<T>>> requestPool = new ConcurrentHashMap<>();
 
@@ -139,12 +141,21 @@ public class RequestBus<T extends INBTSerializable<CompoundTag>> extends SavedDa
 
     private void validateAll(ServerLevel level) {
         for (var poolEntry : requestPool.entrySet()) {
+            List<RequestEntry<T>> toRemove = new ArrayList<>();
             for (var entry : poolEntry.getValue()) {
                 if (!validate(level, poolEntry.getKey(), entry)) {
                     setDirty();
                     entry.release();
+                    if (entry.request instanceof ServeRequest) {
+                        toRemove.add(entry);
+                    }
                 }
             }
+
+            for (RequestEntry<T> tRequestEntry : toRemove) {
+                poolEntry.getValue().remove(tRequestEntry);
+            }
+            setDirty();
         }
     }
 

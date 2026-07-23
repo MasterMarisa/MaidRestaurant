@@ -5,22 +5,19 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
 import com.google.common.collect.Lists;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.init.ModItems;
-import com.mastermarisa.maid_restaurant.maid.behavior.chef.MaidApproachWorkBlockTask;
-import com.mastermarisa.maid_restaurant.maid.behavior.chef.MaidExecuteCookStepTask;
-import com.mastermarisa.maid_restaurant.maid.behavior.chef.MaidGatherMaterialTask;
-import com.mastermarisa.maid_restaurant.maid.behavior.chef.MaidStoreDishTask;
+import com.mastermarisa.maid_restaurant.maid.behavior.waiter.MaidPickupDishTask;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class TaskChef implements IMaidTask {
-    public static final ResourceLocation UID = MaidRestaurant.modLoc("chef");
+public class TaskWaiter implements IMaidTask {
+    public static final ResourceLocation UID = MaidRestaurant.modLoc("waiter");
 
     @Override
     public ResourceLocation getUid() {
@@ -29,7 +26,7 @@ public class TaskChef implements IMaidTask {
 
     @Override
     public ItemStack getIcon() {
-        return ModItems.CHEF_LICENSE.get().getDefaultInstance();
+        return Items.CHEST.getDefaultInstance();
     }
 
     @Override
@@ -50,10 +47,7 @@ public class TaskChef implements IMaidTask {
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         return Lists.newArrayList(
-                Pair.of(5, new MaidGatherMaterialTask(60, 0.4F, 1.5D)),
-                Pair.of(5, new MaidApproachWorkBlockTask(60, 0.4F, 1.5D)),
-                Pair.of(5, new MaidExecuteCookStepTask(1.5D)),
-                Pair.of(5, new MaidStoreDishTask(60, 0.4F, 1.5D))
+                Pair.of(5, new MaidPickupDishTask(60, 0.4f, 1.5D))
         );
     }
 

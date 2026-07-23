@@ -177,9 +177,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         InvUtil.tryExtract(maidInv, inserted, node.getIngredient(), true, false);
         ServeRequest serveRequest = request.boundRequest;
         if (serveRequest != null) {
-            if (!serveRequest.pickupPoints.contains(pos)) {
-                serveRequest.pickupPoints.add(pos);
-            }
+            serveRequest.pickupPoints.add(new ServeRequest.Source(pos, inserted));
         }
 
         if (node.getCount() - inserted <= 0) {
