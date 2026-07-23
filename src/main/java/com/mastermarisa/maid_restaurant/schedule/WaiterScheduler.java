@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 public class WaiterScheduler {
     @Nullable
     public static ServeRequest getOrClaimRequest(ServerLevel level, EntityMaid maid) {
-        RequestBus<ServeRequest> bus = RequestBus.getInstance(level, ServeRequest.class);
+        ServeRequestBus bus = ServeRequestBus.getInstance(level);
         ServeRequest request = bus.getClaimed("chef", maid);
         if (request == null) {
             request = bus.claim("chef", maid);

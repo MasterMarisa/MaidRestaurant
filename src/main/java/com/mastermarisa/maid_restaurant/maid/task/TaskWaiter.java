@@ -6,6 +6,7 @@ import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
 import com.google.common.collect.Lists;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.maid.behavior.waiter.MaidPickupDishTask;
+import com.mastermarisa.maid_restaurant.maid.behavior.waiter.MaidServeDishTask;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -47,7 +48,8 @@ public class TaskWaiter implements IMaidTask {
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         return Lists.newArrayList(
-                Pair.of(5, new MaidPickupDishTask(60, 0.4f, 1.5D))
+                Pair.of(5, new MaidPickupDishTask(60, 0.4f, 1.5D)),
+                Pair.of(5, new MaidServeDishTask(60, 0.4f, 1.5D))
         );
     }
 

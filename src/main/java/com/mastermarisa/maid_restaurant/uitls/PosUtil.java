@@ -2,6 +2,7 @@ package com.mastermarisa.maid_restaurant.uitls;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.Nullable;
@@ -58,5 +59,14 @@ public class PosUtil {
         }
 
         return best;
+    }
+
+    public static Direction getHorizontalDirection(double x, double z) {
+        double angle = Math.atan2(z, x) * (180 / Math.PI);
+
+        if (angle < -135 || angle >= 135) return Direction.WEST;
+        if (angle < -45) return Direction.NORTH;
+        if (angle < 45) return Direction.EAST;
+        return Direction.SOUTH;
     }
 }

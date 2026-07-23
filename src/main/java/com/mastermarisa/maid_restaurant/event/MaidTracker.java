@@ -8,7 +8,7 @@ import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import com.mastermarisa.maid_restaurant.maid.task.TaskChef;
 import com.mastermarisa.maid_restaurant.schedule.ChefScheduler;
-import com.mastermarisa.maid_restaurant.schedule.RequestBus;
+import com.mastermarisa.maid_restaurant.schedule.CookingRequestBus;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtil;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -31,7 +31,7 @@ public class MaidTracker {
             ItemStack itemStack = ChefScheduler.getChefLicense(maid);
             if (!itemStack.isEmpty()) {
                 String id = ChefLicenseItem.getRestaurantId(itemStack);
-                CookingRequest request = RequestBus.getInstance(level, CookingRequest.class).getClaimed(id, maid);
+                CookingRequest request = CookingRequestBus.getInstance(level).getClaimed(id, maid);
                 if (request != null) {
                     request.root.verifyAndUpdateState(level, maid);
                 }

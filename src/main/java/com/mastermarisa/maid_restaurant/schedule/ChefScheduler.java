@@ -5,7 +5,6 @@ import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHand
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
-import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
 import com.mastermarisa.maid_restaurant.data.task_data.ChefInformation;
 import com.mastermarisa.maid_restaurant.data.task_data.WorkBlockCache;
 import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
@@ -115,7 +114,7 @@ public class ChefScheduler {
         if (restaurantId == null) {
             return null;
         }
-        RequestBus<CookingRequest> bus = RequestBus.getInstance(level, CookingRequest.class);
+        CookingRequestBus bus = CookingRequestBus.getInstance(level);
         CookingRequest request = bus.getClaimed(restaurantId, maid);
         if (request == null) {
             request = bus.claim(restaurantId, maid);
@@ -134,7 +133,7 @@ public class ChefScheduler {
     public static void releaseRequest(ServerLevel level, EntityMaid maid) {
         String restaurantId = getRestaurantId(maid);
         if (restaurantId != null) {
-            RequestBus.getInstance(level, CookingRequest.class).release(restaurantId, maid);
+            CookingRequestBus.getInstance(level).release(restaurantId, maid);
         }
     }
 
@@ -143,10 +142,10 @@ public class ChefScheduler {
         if (restaurantId == null) {
             return;
         }
-        RequestBus<CookingRequest> bus = RequestBus.getInstance(level, CookingRequest.class);
+        CookingRequestBus bus = CookingRequestBus.getInstance(level);
         CookingRequest request = bus.submit(restaurantId, maid);
         if (request != null && request.boundRequest != null) {
-            RequestBus.getInstance(level, ServeRequest.class).enqueue(restaurantId, request.boundRequest);
+            ServeRequestBus.getInstance(level).enqueue(restaurantId, request.boundRequest);
         }
     }
 

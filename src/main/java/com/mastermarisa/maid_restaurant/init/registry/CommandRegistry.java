@@ -5,7 +5,8 @@ import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
 import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.CookingGuideItem;
-import com.mastermarisa.maid_restaurant.schedule.RequestBus;
+import com.mastermarisa.maid_restaurant.schedule.CookingRequestBus;
+import com.mastermarisa.maid_restaurant.schedule.ServeRequestBus;
 import com.mastermarisa.maid_restaurant.tree.RecipeNode;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -13,6 +14,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
@@ -61,7 +63,7 @@ public class CommandRegistry {
                                         .executes(context -> {
                                             ServerLevel level = context.getSource().getLevel();
                                             String id = StringArgumentType.getString(context, "restaurant_id");
-                                            RequestBus.getInstance(level, CookingRequest.class).clear(id);
+                                            CookingRequestBus.getInstance(level).clear(id);
                                             return 1;
                                         }))))
                 .then(Commands.literal("serve_request")
@@ -70,7 +72,7 @@ public class CommandRegistry {
                                         .executes(context -> {
                                             ServerLevel level = context.getSource().getLevel();
                                             String id = StringArgumentType.getString(context, "restaurant_id");
-                                            RequestBus.getInstance(level, ServeRequest.class).clear(id);
+                                            ServeRequestBus.getInstance(level).clear(id);
                                             return 1;
                                         })))));
     }
@@ -87,8 +89,11 @@ public class CommandRegistry {
         ServeRequest serveRequest = new ServeRequest();
         serveRequest.dish = request.root.getIngredient();
         serveRequest.count = count;
+        serveRequest.targets.add(new ServeRequest.Target(new BlockPos(1, -59, 0), 1));
+        serveRequest.targets.add(new ServeRequest.Target(new BlockPos(-1, -59, 0), 1));
+        serveRequest.targets.add(new ServeRequest.Target(new BlockPos(0, -60, 0), 0));
         request.boundRequest = serveRequest;
-        RequestBus.getInstance(level, CookingRequest.class).enqueue(restaurantId, request);
+        CookingRequestBus.getInstance(level).enqueue(restaurantId, request);
         context.getSource().sendSuccess(() -> Component.literal("§a成功发送委托！"), true);
     }
 }

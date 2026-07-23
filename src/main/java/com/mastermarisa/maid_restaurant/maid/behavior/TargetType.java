@@ -5,7 +5,8 @@ public enum TargetType {
     APPROACH_WORK_BLOCK(1),
     EXECUTE_COOK_STEP(2),
     STORE_DISH(3),
-    PICKUP_DISH(4);
+    PICKUP_DISH(4),
+    SERVE_DISH(5);
 
     TargetType(int id) {
         this.id = id;
