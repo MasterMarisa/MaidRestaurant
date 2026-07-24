@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.capability.CookResult;
+import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import com.renyigesai.bakeries.block.blender.BlenderBlockEntity;
@@ -14,9 +15,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.RecipeMatcher;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -52,6 +55,15 @@ public class BlenderCapability implements ICookCapability {
             ingredients.add(CARRIER_MAP.computeIfAbsent(carrier.getItem(), Ingredient::of));
         }
         return ingredients;
+    }
+
+    @Override
+    public int getIngredientCount(Level level, Recipe<?> recipe, int output, IngredientStack stack) {
+        Ingredient ingredient = stack.getIngredient();
+        if (ingredient.getItems().length == 1 && ingredient.getItems()[0].is(Items.WATER_BUCKET)) {
+            return 1;
+        }
+        return ICookCapability.super.getIngredientCount(level, recipe, output, stack);
     }
 
     @Override

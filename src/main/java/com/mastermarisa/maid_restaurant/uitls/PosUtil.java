@@ -34,6 +34,7 @@ public class PosUtil {
 
     public static boolean findHorizontal(BlockPos pos, Predicate<BlockPos> predicate, List<BlockPos> results) {
         int preSize = results.size();
+        if (predicate.test(pos)) results.add(pos);
         if (predicate.test(pos.north())) results.add(pos.north());
         if (predicate.test(pos.east())) results.add(pos.east());
         if (predicate.test(pos.south())) results.add(pos.south());

@@ -136,7 +136,7 @@ dependencies {
 
     // Kaleidoscope
     implementation fg.deobf("curse.maven:kaleidoscope-cookery-1309203:8266769")
-    implementation fg.deobf("curse.maven:kaleidoscope-tavern-1475175:7785541")
+    implementation fg.deobf("curse.maven:kaleidoscope-tavern-1475175:8350841")
 
     // JEI
     compileOnly fg.deobf("mezz.jei:jei-1.20.1-common-api:${jei_version}")
