@@ -83,6 +83,10 @@ public class RecipeSelectOverlay extends UIElement {
         if (type == this.selectedType) {
             return;
         }
+        if (!recipeTypes.contains(type)) {
+            open(recipeTypes.get(0));
+            return;
+        }
         this.currentIndex = 0;
         this.selectedType = type;
         this.currentList = recipeMap.get(type);
