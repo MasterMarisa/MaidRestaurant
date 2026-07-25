@@ -10,6 +10,7 @@ import com.renyigesai.bakeries.init.BakeriesBlocks;
 import com.renyigesai.bakeries.init.BakeriesItems;
 import com.renyigesai.bakeries.recipe.DoughCraftingRecipe;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -19,14 +20,14 @@ import net.minecraftforge.items.IItemHandler;
 import java.util.List;
 
 public class DoughCraftingTableCapability implements ICookCapability {
-    public static final String UID = "dough_crafting_table";
+    public static final ResourceLocation ID = new ResourceLocation("bakeries", "dough_crafting_table");
 
     public static void register() {
         CapabilityRegistry.register(new DoughCraftingTableCapability());
     }
 
     @Override
-    public String getUID() { return UID; }
+    public ResourceLocation getID() { return ID; }
 
     @Override
     public ItemStack getIcon() { return BakeriesItems.DOUGH_CRAFTING_TABLE.get().getDefaultInstance(); }

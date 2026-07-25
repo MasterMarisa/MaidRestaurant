@@ -10,6 +10,7 @@ import com.refinedmods.refinedstorage.api.util.Action;
 import com.refinedmods.refinedstorage.api.util.IStackList;
 import com.refinedmods.refinedstorage.apiimpl.API;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -21,14 +22,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RSStorage implements IMaidStorage {
-    public static final String UID = "refined_storage";
+    public static final ResourceLocation ID = new ResourceLocation("refinedstorage", "terminal");
 
     public static void register() {
         StorageRegistry.register(new RSStorage());
     }
 
     @Override
-    public String getUID() { return UID; }
+    public ResourceLocation getID() { return ID; }
 
     @Override
     public ItemStack getIcon() { return RSItems.GRID.get(DyeColor.GRAY).get().getDefaultInstance(); }

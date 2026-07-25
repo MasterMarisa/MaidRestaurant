@@ -7,6 +7,7 @@ import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -20,7 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public interface ICookCapability {
-    String getUID();
+    ResourceLocation getID();
 
     ItemStack getIcon();
 

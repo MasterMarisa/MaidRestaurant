@@ -1,8 +1,10 @@
 package com.mastermarisa.maid_restaurant.storage;
 
+import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -16,10 +18,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class CommonStorage implements IMaidStorage {
-    public static final String UID = "common_storage";
+    public static final ResourceLocation ID = MaidRestaurant.modLoc("common");
 
     @Override
-    public String getUID() { return UID; }
+    public ResourceLocation getID() { return ID; }
 
     @Override
     public ItemStack getIcon() { return Items.CHEST.getDefaultInstance(); }

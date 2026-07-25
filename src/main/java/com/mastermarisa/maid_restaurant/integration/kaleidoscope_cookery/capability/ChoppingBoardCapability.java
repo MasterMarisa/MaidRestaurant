@@ -14,6 +14,7 @@ import com.mastermarisa.maid_restaurant.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.uitls.IngredientUtil;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -30,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChoppingBoardCapability implements ICookCapability {
-    public static final String UID = "chopping_board";
+    public static final ResourceLocation ID = new ResourceLocation("kaleidoscope_cookery", "chopping_board");
     private static final Ingredient KITCHEN_KNIFE = Ingredient.of(TagMod.KITCHEN_KNIFE);
     private static Method RESET_BOARD_DATA_METHOD = null;
 
@@ -39,7 +40,7 @@ public class ChoppingBoardCapability implements ICookCapability {
     }
 
     @Override
-    public String getUID() { return UID; }
+    public ResourceLocation getID() { return ID; }
 
     @Override
     public ItemStack getIcon() { return ModItems.CHOPPING_BOARD.get().getDefaultInstance(); }

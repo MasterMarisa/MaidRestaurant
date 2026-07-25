@@ -153,7 +153,7 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
         node.setState(NodeState.EXECUTING);
         BlockUsageUtil.add(pos, maid.getUUID());
         MemoryUtil.setTarget(maid, new BlockPosTracker(pos), TargetType.EXECUTE_COOK_STEP);
-        maid.setData(ModTaskDataKeys.WORK_BLOCK_CACHE, new WorkBlockCache(pos, capability.getUID()));
+        maid.setData(ModTaskDataKeys.WORK_BLOCK_CACHE, new WorkBlockCache(pos, capability.getID()));
     }
 
     @Nullable
@@ -164,7 +164,7 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
             return null;
         }
 
-        if (!capability.getUID().equals(cache.getCapabilityUID())) {
+        if (!capability.getID().equals(cache.getCapabilityID())) {
             return null;
         }
 

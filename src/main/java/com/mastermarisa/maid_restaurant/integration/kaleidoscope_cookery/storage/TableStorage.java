@@ -6,6 +6,7 @@ import com.mastermarisa.maid_restaurant.api.IMaidStorage;
 import com.mastermarisa.maid_restaurant.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
@@ -15,14 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TableStorage implements IMaidStorage {
-    public static final String UID = "table_storage";
+    public static final ResourceLocation ID = new ResourceLocation("kaleidoscope_cookery", "table");
 
     public static void register() {
         StorageRegistry.register(new TableStorage());
     }
 
     @Override
-    public String getUID() { return UID; }
+    public ResourceLocation getID() { return ID; }
 
     @Override
     public ItemStack getIcon() { return ModItems.TABLE_OAK.get().getDefaultInstance(); }

@@ -10,6 +10,7 @@ import com.renyigesai.bakeries.block.oven.OvenBlockEntity;
 import com.renyigesai.bakeries.init.BakeriesItems;
 import com.renyigesai.bakeries.recipe.oven.OvenRecipe;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -22,14 +23,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OvenCapability implements ICookCapability {
-    public static final String UID = "oven";
+    public static final ResourceLocation ID = new ResourceLocation("bakeries", "oven");
 
     public static void register() {
         CapabilityRegistry.register(new OvenCapability());
     }
 
     @Override
-    public String getUID() { return UID; }
+    public ResourceLocation getID() { return ID; }
 
     @Override
     public ItemStack getIcon() { return BakeriesItems.OVEN.get().getDefaultInstance(); }

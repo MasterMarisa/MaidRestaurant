@@ -176,7 +176,7 @@ public class ChefScheduler {
         }
 
         ICookCapability capability = node.getCapability();
-        if (capability == null || !capability.getUID().equals(cache.getCapabilityUID())) {
+        if (capability == null || !capability.getID().equals(cache.getCapabilityID())) {
             return List.of();
         }
 

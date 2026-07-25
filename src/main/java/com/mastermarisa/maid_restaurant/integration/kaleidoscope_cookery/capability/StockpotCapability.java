@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class StockpotCapability implements ICookCapability {
-    public static final String UID = "StockpotCookTask";
+    public static final ResourceLocation ID = new ResourceLocation("kaleidoscope_cookery", "stockpot");
     private static final Map<ResourceLocation, Ingredient> SOUP_BASE_MAP = new LinkedHashMap<>();
     private static final Supplier<Ingredient> STOCKPOT_LID = Suppliers.memoize(() -> Ingredient.of(ModItems.STOCKPOT_LID.get()));
 
@@ -50,8 +50,8 @@ public class StockpotCapability implements ICookCapability {
     }
 
     @Override
-    public String getUID() {
-        return UID;
+    public ResourceLocation getID() {
+        return ID;
     }
 
     @Override

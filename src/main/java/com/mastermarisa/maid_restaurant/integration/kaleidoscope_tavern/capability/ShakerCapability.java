@@ -1,6 +1,7 @@
 package com.mastermarisa.maid_restaurant.integration.kaleidoscope_tavern.capability;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.ysbbbbbb.kaleidoscopetavern.KaleidoscopeTavern;
 import com.github.ysbbbbbb.kaleidoscopetavern.crafting.recipe.ShakerRecipe;
 import com.github.ysbbbbbb.kaleidoscopetavern.init.ModItems;
 import com.github.ysbbbbbb.kaleidoscopetavern.init.ModRecipes;
@@ -15,6 +16,7 @@ import com.mastermarisa.maid_restaurant.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.uitls.IngredientUtil;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -31,7 +33,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class ShakerCapability implements ICookCapability {
-    public static final String UID = "shaker";
+    public static final ResourceLocation ID = KaleidoscopeTavern.modLoc("shaker");
     private static final Supplier<Ingredient> EMPTY_GLASSWARE = Suppliers.memoize(() -> Ingredient.of(ModItems.EMPTY_GLASSWARE.get()));
     private static final Supplier<Ingredient> SHAKER = Suppliers.memoize(() -> Ingredient.of(ModItems.SHAKER.get()));
 
@@ -40,7 +42,7 @@ public class ShakerCapability implements ICookCapability {
     }
 
     @Override
-    public String getUID() { return UID; }
+    public ResourceLocation getID() { return ID; }
 
     @Override
     public ItemStack getIcon() { return ModItems.SHAKER.get().getDefaultInstance(); }

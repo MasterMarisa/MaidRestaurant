@@ -17,6 +17,7 @@ import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtil;
 import com.mastermarisa.maid_restaurant.uitls.IngredientUtil;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -36,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PotCapability implements ICookCapability {
-    public static final String UID = "pot";
+    public static final ResourceLocation ID = new ResourceLocation("kaleidoscope_cookery", "pot");
     private static final Ingredient KITCHEN_SHOVEL = Ingredient.of(TagMod.KITCHEN_SHOVEL);
     private static final Ingredient OIL = Ingredient.of(TagMod.OIL);
 
@@ -45,8 +46,8 @@ public class PotCapability implements ICookCapability {
     }
 
     @Override
-    public String getUID() {
-        return UID;
+    public ResourceLocation getID() {
+        return ID;
     }
 
     @Override

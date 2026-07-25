@@ -7,6 +7,7 @@ import com.mastermarisa.maid_restaurant.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -21,11 +22,11 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import java.util.List;
 
 public class CraftingTableCapability implements ICookCapability {
-    public static final String UID = "crafting_table";
+    public static final ResourceLocation ID = new ResourceLocation("minecraft", "crafting_table");
 
     @Override
-    public String getUID() {
-        return UID;
+    public ResourceLocation getID() {
+        return ID;
     }
 
     @Override

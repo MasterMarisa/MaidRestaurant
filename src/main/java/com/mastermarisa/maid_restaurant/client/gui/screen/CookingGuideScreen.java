@@ -234,9 +234,9 @@ public class CookingGuideScreen extends Screen {
         ICookCapability capability = CapabilityRegistry.get(type);
         if (capability != null) {
             if (this.selectedNode == null) {
-                this.root = fromRecipe(capability.getUID(), recipeId);
+                this.root = fromRecipe(capability.getID(), recipeId);
             } else {
-                this.selectedNode.setStep(new RecipeStep(capability.getUID(), recipeId));
+                this.selectedNode.setStep(new RecipeStep(capability.getID(), recipeId));
                 buildChildren(this.selectedNode);
             }
             save();
@@ -285,11 +285,11 @@ public class CookingGuideScreen extends Screen {
 
     /**
      * 用于从配方生成根节点
-     * @param capabilityUID capabilityUID
+     * @param capabilityID capabilityID
      * @param recipeId 配方Id
      * @return 生成的节点
      */
-    private RecipeNode fromRecipe(String capabilityUID, ResourceLocation recipeId) {
+    private RecipeNode fromRecipe(ResourceLocation capabilityID, ResourceLocation recipeId) {
         RecipeNode node = new RecipeNode();
         Level level = minecraft.level;
         if (level == null) {
@@ -300,7 +300,7 @@ public class CookingGuideScreen extends Screen {
             ItemStack result = recipe.getResultItem(level.registryAccess());
             node.setIngredient(Ingredient.of(result));
             node.setCount(result.getCount());
-            node.setStep(new RecipeStep(capabilityUID, recipeId));
+            node.setStep(new RecipeStep(capabilityID, recipeId));
             buildChildren(node);
         });
         return node;

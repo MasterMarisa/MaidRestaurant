@@ -9,28 +9,28 @@ import net.minecraftforge.common.util.INBTSerializable;
 
 public class WorkBlockCache implements INBTSerializable<CompoundTag> {
     private BlockPos pos;
-    private String capabilityUID;
+    private ResourceLocation capabilityID;
 
     public WorkBlockCache() {}
 
-    public WorkBlockCache(BlockPos pos, String capabilityUID) {
+    public WorkBlockCache(BlockPos pos, ResourceLocation capabilityID) {
         this.pos = pos;
-        this.capabilityUID = capabilityUID;
+        this.capabilityID = capabilityID;
     }
 
     public BlockPos getPos() {
         return pos;
     }
 
-    public String getCapabilityUID() {
-        return capabilityUID;
+    public ResourceLocation getCapabilityID() {
+        return capabilityID;
     }
 
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putLong("pos", pos.asLong());
-        tag.putString("capability_uid", capabilityUID);
+        tag.putString("capability_id", capabilityID.toString());
         return tag;
     }
 
@@ -39,8 +39,8 @@ public class WorkBlockCache implements INBTSerializable<CompoundTag> {
         if (tag.contains("pos")) {
             this.pos = BlockPos.of(tag.getLong("pos"));
         }
-        if (tag.contains("capability_uid")) {
-            this.capabilityUID = tag.getString("capability_uid");
+        if (tag.contains("capability_id")) {
+            this.capabilityID = new ResourceLocation(tag.getString("capability_id"));
         }
     }
 

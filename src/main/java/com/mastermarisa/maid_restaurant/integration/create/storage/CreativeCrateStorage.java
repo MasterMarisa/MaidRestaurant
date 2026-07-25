@@ -3,8 +3,10 @@ package com.mastermarisa.maid_restaurant.integration.create.storage;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
 import com.mastermarisa.maid_restaurant.storage.StorageRegistry;
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.crate.CreativeCrateBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
@@ -12,14 +14,14 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 
 public class CreativeCrateStorage implements IMaidStorage {
-    private static final String UID = "creative_crate_storage";
+    private static final ResourceLocation ID = Create.asResource("creative_crate");
 
     public static void register() {
         StorageRegistry.register(new CreativeCrateStorage());
     }
 
     @Override
-    public String getUID() { return UID; }
+    public ResourceLocation getID() { return ID; }
 
     @Override
     public ItemStack getIcon() {

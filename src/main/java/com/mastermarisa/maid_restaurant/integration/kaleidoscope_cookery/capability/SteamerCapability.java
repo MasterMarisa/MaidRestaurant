@@ -13,6 +13,7 @@ import com.mastermarisa.maid_restaurant.capability.CookResult;
 import com.mastermarisa.maid_restaurant.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -26,14 +27,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SteamerCapability implements ICookCapability {
-    public static final String UID = "steamer";
+    public static final ResourceLocation ID = new ResourceLocation("kaleidoscope_cookery", "steamer");
 
     public static void register() {
         CapabilityRegistry.register(new SteamerCapability());
     }
 
     @Override
-    public String getUID() { return UID; }
+    public ResourceLocation getID() { return ID; }
 
     @Override
     public ItemStack getIcon() { return ModItems.STEAMER.get().getDefaultInstance(); }

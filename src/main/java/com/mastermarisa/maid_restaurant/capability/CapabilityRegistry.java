@@ -1,6 +1,7 @@
 package com.mastermarisa.maid_restaurant.capability;
 
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeType;
 import org.jetbrains.annotations.Nullable;
 
@@ -8,17 +9,17 @@ import java.util.*;
 
 
 public class CapabilityRegistry {
-    private static final Map<String, ICookCapability> registry = new LinkedHashMap<>();
+    private static final Map<ResourceLocation, ICookCapability> registry = new LinkedHashMap<>();
     private static final Map<RecipeType<?>, ICookCapability> typeMap = new LinkedHashMap<>();
 
     public static void register(ICookCapability capability) {
-        registry.put(capability.getUID(), capability);
+        registry.put(capability.getID(), capability);
         typeMap.put(capability.getRecipeType(), capability);
     }
 
     @Nullable
-    public static ICookCapability get(String uid) {
-        return registry.getOrDefault(uid, null);
+    public static ICookCapability get(ResourceLocation id) {
+        return registry.getOrDefault(id, null);
     }
 
     @Nullable
@@ -38,8 +39,8 @@ public class CapabilityRegistry {
         return registry.size();
     }
 
-    public static boolean contains(String uid) {
-        return registry.containsKey(uid);
+    public static boolean contains(ResourceLocation id) {
+        return registry.containsKey(id);
     }
 
     public static boolean contains(RecipeType<?> type) {

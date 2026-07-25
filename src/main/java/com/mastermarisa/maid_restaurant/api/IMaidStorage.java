@@ -1,6 +1,7 @@
 package com.mastermarisa.maid_restaurant.api;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
@@ -8,7 +9,7 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 
 public interface IMaidStorage {
-    String getUID();
+    ResourceLocation getID();
 
     ItemStack getIcon();
 

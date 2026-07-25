@@ -11,6 +11,7 @@ import com.renyigesai.bakeries.block.blender.BlenderBlockEntity;
 import com.renyigesai.bakeries.init.BakeriesItems;
 import com.renyigesai.bakeries.recipe.BlenderRecipe;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
@@ -31,7 +32,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BlenderCapability implements ICookCapability {
-    public static final String UID = "blender";
+    public static final ResourceLocation ID = new ResourceLocation("bakeries", "blender");
     private static final Map<Item, Ingredient> CARRIER_MAP = new ConcurrentHashMap<>();
 
     public static void register() {
@@ -39,7 +40,7 @@ public class BlenderCapability implements ICookCapability {
     }
 
     @Override
-    public String getUID() { return UID; }
+    public ResourceLocation getID() { return ID; }
 
     @Override
     public ItemStack getIcon() { return BakeriesItems.BLENDER.get().getDefaultInstance(); }
