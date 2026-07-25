@@ -156,6 +156,10 @@ dependencies {
 
     // Bakeries
     implementation fg.deobf("curse.maven:bakeries-1191781:8041836")
+
+    // AE2
+    implementation fg.deobf("curse.maven:applied-energistics-2-223794:7148487")
+    runtimeOnly fg.deobf("curse.maven:guideme-1173950:8204776")
 }
 
 tasks.named('processResources', ProcessResources).configure {
