@@ -63,7 +63,9 @@ public class AE2Storage implements IMaidStorage {
                     int scheduled = (int) Math.min(extract, key.getReadOnlyStack().getMaxStackSize());
                     if (scheduled != 0) {
                         results.add(key.getReadOnlyStack().copyWithCount(scheduled));
-                        inv.extract(key, scheduled, Actionable.MODULATE, IActionSource.empty());
+                        if (!simulate) {
+                            inv.extract(key, scheduled, Actionable.MODULATE, IActionSource.empty());
+                        }
                         extract -= scheduled;
                         amount -= scheduled;
                     } else break;
@@ -81,7 +83,8 @@ public class AE2Storage implements IMaidStorage {
         if (inv != null) {
             AEItemKey key = AEItemKey.of(stack);
             if (key != null) {
-                long insert = inv.insert(key, stack.getCount(), Actionable.MODULATE, IActionSource.empty());
+                Actionable action = simulate ? Actionable.SIMULATE : Actionable.MODULATE;
+                long insert = inv.insert(key, stack.getCount(), action, IActionSource.empty());
                 ItemStack result = stack.copy();
                 result.shrink((int) insert);
                 return result;

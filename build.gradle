@@ -152,7 +152,7 @@ dependencies {
     compileOnly fg.deobf("com.tterrag.registrate:Registrate:MC1.20-1.3.11")
 
     // Patchouli
-    implementation "curse.maven:patchouli-306770:6842247";
+    implementation fg.deobf("curse.maven:patchouli-306770:6842247");
 
     // Bakeries
     implementation fg.deobf("curse.maven:bakeries-1191781:8041836")
@@ -160,6 +160,9 @@ dependencies {
     // AE2
     implementation fg.deobf("curse.maven:applied-energistics-2-223794:7148487")
     runtimeOnly fg.deobf("curse.maven:guideme-1173950:8204776")
+
+    // RS
+    implementation fg.deobf("curse.maven:refined-storage-243076:4844585")
 }
 
 tasks.named('processResources', ProcessResources).configure {
