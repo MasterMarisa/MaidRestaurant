@@ -49,6 +49,25 @@ public class CookingPotCookTask implements ICookTask {
     }
 
     @Override
+    public List<ItemStack> getIngredientDisplay(RecipeHolder<? extends Recipe<?>> recipeHolder, Level level) {
+        CookingPotRecipe recipe = (CookingPotRecipe) recipeHolder.value();
+        List<ItemStack> display = new ArrayList<>();
+        for (Ingredient ingredient : recipe.getIngredients()) {
+            if (ingredient.isEmpty()) continue;
+            ItemStack[] items = ingredient.getItems();
+            display.add(items.length > 0 ? items[0] : ItemStack.EMPTY);
+        }
+        // The output container is a separate field, not an ingredient, so it has to be named here or
+        // the "missing a bowl" line has no item to show.
+        ItemStack container = recipe.getOutputContainer();
+        if (!container.isEmpty())
+            for (int i = 0;i < recipe.getResultItem(level.registryAccess()).getCount();i++)
+                display.add(container.copyWithCount(1));
+
+        return display;
+    }
+
+    @Override
     public List<ItemStack> getCurrentInput(Level level, BlockPos pos, EntityMaid maid) {
         List<ItemStack> ans = new ArrayList<>();
         if (level.getBlockEntity(pos) instanceof CookingPotBlockEntity pot) {

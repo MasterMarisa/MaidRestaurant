@@ -11,7 +11,7 @@ import java.util.List;
 
 public class UIItemStackWithCount extends UIElement {
     private final ItemStack itemStack;
-    private final Color color;
+    private Color color;
     public boolean dropShadow = true;
 
     public UIItemStackWithCount(ItemStack itemStack, Color color) {
@@ -24,6 +24,11 @@ public class UIItemStackWithCount extends UIElement {
         super(new Rectangle(21, 16));
         this.itemStack = itemStack;
         this.color = Color.WHITE;
+    }
+
+    /** Switches the count label colour, used to flag an order that cannot be supplied right now. */
+    public void setColor(Color color) {
+        this.color = color;
     }
 
     @Override

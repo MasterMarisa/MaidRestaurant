@@ -37,4 +37,9 @@ public class StackPredicate {
     public boolean test(ItemStack stack){
         return predicate.test(stack);
     }
+
+    /** The raw predicate, for callers that need to count matches themselves. */
+    public Predicate<ItemStack> asPredicate(){
+        return predicate;
+    }
 }

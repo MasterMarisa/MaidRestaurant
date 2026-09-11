@@ -25,6 +25,7 @@ import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -72,6 +73,32 @@ public class PotCookTask implements ICookTask {
     @Override
     public List<StackPredicate> getKitchenWares() {
         return List.of(StackPredicate.of(TagMod.KITCHEN_SHOVEL));
+    }
+
+    @Override
+    public List<ItemStack> getIngredientDisplay(RecipeHolder<? extends Recipe<?>> recipeHolder, Level level) {
+        PotRecipe recipe = (PotRecipe) recipeHolder.value();
+        List<ItemStack> display = new ArrayList<>();
+        for (Ingredient ingredient : recipe.getIngredients()) {
+            if (ingredient.isEmpty()) continue;
+            ItemStack[] items = ingredient.getItems();
+            display.add(items.length > 0 ? items[0] : ItemStack.EMPTY);
+        }
+        if (!recipe.carrier().isEmpty())
+            for (int i = 0;i < recipe.result().getCount();i++)
+                display.add(firstItem(recipe.carrier()));
+        // The oil tag is not part of the recipe's ingredient list, so name it from the item the pot
+        // actually accepts. Without this the requirement had no presentable item and the UI dropped it.
+        display.add(new ItemStack(ModItems.OIL.get()));
+        display.add(StackPredicate.of(TagMod.KITCHEN_SHOVEL).test(new ItemStack(ModItems.KITCHEN_SHOVEL.get()))
+                ? new ItemStack(ModItems.KITCHEN_SHOVEL.get()) : ItemStack.EMPTY);
+
+        return display;
+    }
+
+    private static ItemStack firstItem(Ingredient ingredient) {
+        ItemStack[] items = ingredient.getItems();
+        return items.length > 0 ? items[0] : ItemStack.EMPTY;
     }
 
     @Override

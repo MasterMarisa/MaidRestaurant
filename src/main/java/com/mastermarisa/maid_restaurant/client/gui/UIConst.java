@@ -9,6 +9,8 @@ public interface UIConst {
     Color fullBlack = Color.BLACK;
     Color lessBlack = new Color(0, 0, 0, 128);
     Color leastBlack = new Color(0, 0, 0, 64);
+    /** Used to flag a pending order the player cannot currently supply materials for. */
+    Color warning = new Color(0xFF5555);
     ImageData bookImage = new ImageData(MaidRestaurant.resourceLocation("textures/gui/food_book.png"),new Rectangle(1,1,148,180),148,180,161,256);
     ImageData blackListImage = new ImageData(MaidRestaurant.resourceLocation("textures/gui/food_book.png"),new Rectangle(32,224,16,16),16,16,161,256);
     ImageData whiteListImage = new ImageData(MaidRestaurant.resourceLocation("textures/gui/food_book.png"),new Rectangle(48,224,16,16),16,16,161,256);

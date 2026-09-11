@@ -14,6 +14,11 @@ group = mod_group_id
 
 repositories.clear()
 repositories {
+    // Kaleidoscope Cookery comes from Modrinth. Keep this in step with the version range declared for
+    // it in neoforge.mods.toml: compiling against a different build than players run is what allowed
+    // the mod to reference StockpotBlockEntity.recipe - public in the old jar, gone in 1.4.1 - and
+    // compile cleanly only to die with NoSuchFieldError on a live server.
+    maven { url = "https://api.modrinth.com/maven" }
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" }
     maven { url = "https://maven.createmod.net" }
     maven {url = "https://maven.aliyun.com/repository/public"}
@@ -85,31 +90,48 @@ configurations {
 
 dependencies {
     implementation "curse.maven:touhou-little-maid-355044:7510722"
-    implementation "curse.maven:kaleidoscope-cookery-1309203:7473813"
     implementation "curse.maven:farmers-delight-398521:6917256"
     implementation "curse.maven:patchouli-306770:6842247"
     implementation "curse.maven:bakeries-1191781:7656518"
     implementation "curse.maven:create-328085:7178775"
+    // Was curse.maven:kaleidoscope-cookery-1309203:7473813 - an older build than players run, and the
+    // reason the mod could reference StockpotBlockEntity.recipe (public in that jar, removed in 1.4.1)
+    // and still compile. Keep this in step with the [1.4.1,) range in neoforge.mods.toml.
+    implementation "maven.modrinth:kaleidoscope-cookery:1.4.1-neoforge+mc1.21.1"
     implementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_version}")
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${flywheel_minecraft_version}:${flywheel_version}")
     compileOnly "curse.maven:irisshaders-455508:6661598"
 }
 
-var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
-    var replaceProperties = [
-            minecraft_version      : minecraft_version,
-            minecraft_version_range: minecraft_version_range,
-            neo_version            : neo_version,
-            loader_version_range   : loader_version_range,
-            mod_id                 : mod_id,
-            mod_name               : mod_name,
-            mod_license            : mod_license,
-            mod_version            : mod_version,
-    ]
+// Expands the @...@ placeholders in neoforge.mods.toml. The source file lives alongside the other
+// resources (there is no src/main/templates directory in this project), so the expanded copy is
+// generated into a build directory and used as an additional resources root.
+//
+// ReplaceTokens is used rather than Groovy's expand() on purpose: expand() triggers String
+// interpolation, which breaks on resources containing '$' or '\', and its missing-property failures
+// are a trap for files it should not have touched.
+//
+// NOTE: this filter runs over *all* resources, so the delimiter must stay a token nobody else uses.
+// The ${...} syntax is deliberately avoided here for that reason.
+var replaceProperties = [
+        minecraft_version      : minecraft_version,
+        minecraft_version_range: minecraft_version_range,
+        neo_version            : neo_version,
+        loader_version_range   : loader_version_range,
+        mod_id                 : mod_id,
+        mod_name               : mod_name,
+        mod_license            : mod_license,
+        mod_version            : mod_version,
+]
+
+tasks.named('processResources', ProcessResources).configure {
     inputs.properties replaceProperties
-    expand replaceProperties
-    from "src/main/templates"
-    into "build/generated/sources/modMetadata"
+
+    // Scoped to the one file that needs substitution: the delimiter is deliberately a token nobody
+    // else uses, so textures, models, recipes and the datagen cache all pass through untouched.
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand(replaceProperties)
+    }
 }
 
 publishing {

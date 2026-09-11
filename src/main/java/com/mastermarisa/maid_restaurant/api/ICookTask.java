@@ -32,6 +32,40 @@ public interface ICookTask {
         return new ArrayList<>();
     }
 
+    /**
+     * Display samples for {@link #getIngredients} and {@link #getKitchenWares}, in the same order and
+     * of the same length.
+     *
+     * <p>Some requirements cannot be recovered from a recipe's ingredient list at all: a stockpot's
+     * soup base is a {@code ResourceLocation} and its carrier a separate {@code Ingredient} field
+     * rather than entries in {@code getIngredients()}, and a pot's oil exists only in code. UI that
+     * wants to name such a requirement as "missing a water bucket" has nowhere to look it up, so each
+     * task supplies the sample stack here.
+     *
+     * <p>Use {@link ItemStack#EMPTY} for a requirement that has no presentable item; consumers must
+     * skip empty samples rather than failing. The default implementation covers all requirements that
+     * do come from the recipe.
+     */
+    default List<ItemStack> getIngredientDisplay(RecipeHolder<? extends Recipe<?>> recipeHolder, Level level) {
+        List<ItemStack> display = new ArrayList<>();
+        for (StackPredicate predicate : getIngredients(recipeHolder, level))
+            display.add(firstMatching(predicate, recipeHolder));
+        for (int i = 0; i < getKitchenWares().size(); i++)
+            display.add(ItemStack.EMPTY);
+
+        return display;
+    }
+
+    private static ItemStack firstMatching(StackPredicate predicate, RecipeHolder<? extends Recipe<?>> recipeHolder) {
+        for (var ingredient : recipeHolder.value().getIngredients()) {
+            if (ingredient.isEmpty()) continue;
+            for (ItemStack item : ingredient.getItems())
+                if (!item.isEmpty() && predicate.test(item)) return item;
+        }
+
+        return ItemStack.EMPTY;
+    }
+
     default ItemStack getResult(RecipeHolder<? extends Recipe<?>> recipeHolder, Level level) {
         return recipeHolder.value().getResultItem(level.registryAccess());
     }

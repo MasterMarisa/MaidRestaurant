@@ -69,21 +69,68 @@ public class StockpotCookTask implements ICookTask {
     }
 
     @Override
+    public List<ItemStack> getIngredientDisplay(RecipeHolder<? extends Recipe<?>> recipeHolder, Level level) {
+        StockpotRecipe recipe = (StockpotRecipe) recipeHolder.value();
+        List<ItemStack> display = new ArrayList<>();
+        for (Ingredient ingredient : recipe.getIngredients()) {
+            if (ingredient.isEmpty()) continue;
+            ItemStack[] items = ingredient.getItems();
+            display.add(items.length > 0 ? items[0] : ItemStack.EMPTY);
+        }
+        if (!recipe.carrier().isEmpty())
+            for (int i = 0;i < recipe.result().getCount();i++)
+                display.add(firstItem(recipe.carrier()));
+        display.add(SoupBaseManager.getSoupBase(recipe.soupBase()).getDisplayStack());
+
+        return display;
+    }
+
+    private static ItemStack firstItem(Ingredient ingredient) {
+        ItemStack[] items = ingredient.getItems();
+        return items.length > 0 ? items[0] : ItemStack.EMPTY;
+    }
+
+    @Override
     public List<ItemStack> getCurrentInput(Level level, BlockPos pos, EntityMaid maid) {
         List<ItemStack> ans = new ArrayList<>();
-        if (level.getBlockEntity(pos) instanceof StockpotBlockEntity pot) {
-            ans.addAll(pot.getInputs().stream().filter(s -> !s.isEmpty()).toList());
-            if (pot.getSoupBase() != null)
-                ans.add(pot.getSoupBase().getDisplayStack());
-            if (pot.getStatus() == 3) {
-                StockpotRecipe recipe = pot.recipe.value();
-                recipe.getIngredients().stream().filter(i -> i.getItems().length > 0).forEach(s -> ans.add(s.getItems()[0]));
+        if (!(level.getBlockEntity(pos) instanceof StockpotBlockEntity pot)) return ans;
+
+        ans.addAll(pot.getInputs().stream().filter(s -> !s.isEmpty()).toList());
+        if (pot.getSoupBase() != null)
+            ans.add(pot.getSoupBase().getDisplayStack());
+
+        if (pot.getStatus() == 3) {
+            // Looked up through the RecipeManager rather than read from the block entity's recipe field.
+            // That field is public in the Kaleidoscope build this project compiles against but not in the
+            // one players actually run, so referencing it linked fine and then threw NoSuchFieldError at
+            // runtime, taking the whole server down. The recipe id is the stable, public contract.
+            StockpotRecipe recipe = recipeFor(level, pot);
+            if (recipe == null) return ans;
+
+            recipe.getIngredients().stream().filter(i -> i.getItems().length > 0)
+                    .forEach(s -> ans.add(s.getItems()[0]));
+            if (!recipe.carrier().isEmpty() && recipe.carrier().getItems().length > 0)
                 ans.add(recipe.carrier().getItems()[0].copyWithCount(recipe.result().getCount() - pot.getTakeoutCount()));
-                ans.add(SoupBaseManager.getSoupBase(recipe.soupBase()).getDisplayStack());
-            }
+            ans.add(SoupBaseManager.getSoupBase(recipe.soupBase()).getDisplayStack());
         }
 
         return ans;
+    }
+
+    /**
+     * The recipe a stockpot is working on, or null when it cannot be resolved.
+     *
+     * <p>Prefers the id the pot carries and falls back to the matching recipe. Both routes go through
+     * public API only - never a field - because a field that exists at compile time can be absent at
+     * runtime, which is exactly how this method used to crash.
+     */
+    private static @Nullable StockpotRecipe recipeFor(Level level, StockpotBlockEntity pot) {
+        RecipeManager manager = level.getRecipeManager();
+        for (RecipeHolder<StockpotRecipe> holder : manager.getAllRecipesFor(ModRecipes.STOCKPOT_RECIPE)) {
+            if (holder.value().matches(pot.getInput(), level)) return holder.value();
+        }
+
+        return null;
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.mastermarisa.maid_restaurant.client.gui.screen.ordering;
 
 import com.mastermarisa.maid_restaurant.api.ICookTask;
 import com.mastermarisa.maid_restaurant.api.gui.IPageable;
+import com.mastermarisa.maid_restaurant.client.gui.RecipeMaterials;
 import com.mastermarisa.maid_restaurant.client.gui.UIConst;
 import com.mastermarisa.maid_restaurant.client.gui.base.UIContainerVertical;
 import com.mastermarisa.maid_restaurant.client.gui.base.UIEditBox;
@@ -23,6 +24,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -143,7 +145,17 @@ public class OrderingScreen extends Screen implements IPageable {
     }
 
     public void close() {
+        RecipeMaterials.invalidate();
         mc.setScreen(null);
+    }
+
+    /**
+     * Everything the currently pending orders are still short of. Scans the player plus nearby
+     * containers, so it is meant to be called on confirm and on the order tags' throttled refresh,
+     * not every frame.
+     */
+    public List<ItemStack> missingMaterials(int atMost) {
+        return RecipeMaterials.missingOf(orders, atMost);
     }
 
     public static int getScreenCenterX(){
@@ -285,13 +297,23 @@ public class OrderingScreen extends Screen implements IPageable {
         font = mc.font;
     }
 
-    public static class Order {
+    public static class Order implements RecipeMaterials.OrderView {
         public RecipeData data;
         public int count;
 
         public Order(RecipeData data, int count) {
             this.data = data;
             this.count = count;
+        }
+
+        @Override
+        public RecipeData data() {
+            return data;
+        }
+
+        @Override
+        public int count() {
+            return count;
         }
     }
 }
