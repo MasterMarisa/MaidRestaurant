@@ -44,6 +44,6 @@ file="META-INF/accesstransformer.cfg"
 [[dependencies."maid_restaurant"]]
     modId="kaleidoscope_cookery"
     type="required"
-    versionRange="[1.1.2,)"
+    versionRange="[1.4.1,)"
     ordering="NONE"
     side="BOTH"
