@@ -1,5 +1,7 @@
 package com.mastermarisa.maid_restaurant.tree;
 
+import com.mastermarisa.maid_restaurant.api.ICookCapability;
+import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -8,6 +10,11 @@ import javax.annotation.Nullable;
 public record RecipeStep(ResourceLocation capabilityID, ResourceLocation recipeId) {
     private static final String TAG_CAPABILITY_ID = "capability_id";
     private static final String TAG_RECIPE_ID = "recipe_id";
+
+    @Nullable
+    public ICookCapability getCapability() {
+        return CapabilityRegistry.get(capabilityID);
+    }
 
     public RecipeStep copy() {
         return new RecipeStep(capabilityID, recipeId);

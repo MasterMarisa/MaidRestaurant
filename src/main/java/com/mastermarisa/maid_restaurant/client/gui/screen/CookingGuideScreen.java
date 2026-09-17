@@ -28,20 +28,21 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@OnlyIn(Dist.CLIENT)
 public class CookingGuideScreen extends Screen {
     private static final Minecraft minecraft;
     private static final Font font;
     private static final int ROW_HEIGHT = 22;
     private static final int INDENT_WIDTH = 36;
     private static final Color BG = new Color(24, 24, 24);
-    private static final Color COMMON = new Color(48, 48, 48);
-    private static final Color HIGHLIGHT = new Color(64, 64, 64);
 
     private final List<NodeEntry> entries;
     private final List<ButtonEntry> buttons;
@@ -220,7 +221,7 @@ public class CookingGuideScreen extends Screen {
             return;
         }
         Rectangle frame = new Rectangle(getScreenCenterX() - 110,
-                getScreenCenterY() - 91, 220, 182);
+                getScreenCenterY() - 91, 220, 184);
         this.selectOverlay = new RecipeSelectOverlay(frame, level, output, this::onRecipeSelected);
         this.selectOverlay.open(this.cachedType);
         this.addRenderableWidget(this.searchBox);

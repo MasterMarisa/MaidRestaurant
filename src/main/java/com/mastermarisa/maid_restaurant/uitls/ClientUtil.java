@@ -3,6 +3,7 @@ package com.mastermarisa.maid_restaurant.uitls;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
@@ -25,5 +26,10 @@ public class ClientUtil {
             return pos;
         }
         return null;
+    }
+
+    public static long gameTime() {
+        Level level = Minecraft.getInstance().level;
+        return level != null ? level.getGameTime() : 0;
     }
 }

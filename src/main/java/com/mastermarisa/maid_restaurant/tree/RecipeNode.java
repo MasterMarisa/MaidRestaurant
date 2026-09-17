@@ -71,6 +71,16 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         return children;
     }
 
+    public void collectLeafIngredients(List<IngredientStack> result) {
+        if (this.isLeaf()) {
+            result.add(new IngredientStack(ingredient, count));
+        }
+
+        for (var child : children) {
+            child.collectLeafIngredients(result);
+        }
+    }
+
     @Nullable
     public Recipe<?> getRecipe(RecipeManager recipeManager) {
         if (step != null) {
@@ -96,6 +106,10 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
             }
         }
         return this.cachedStack;
+    }
+
+    public IngredientStack getOutputAsStack() {
+        return new IngredientStack(ingredient, count);
     }
 
     public boolean isEmpty() { return ingredient.isEmpty(); }

@@ -14,7 +14,10 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
+@OnlyIn(Dist.CLIENT)
 public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContainer> {
     private static final ResourceLocation backgroundImage = MaidRestaurant.modLoc("textures/gui/chef_license.png");
     private static final Component workZoneLabel = Component.literal("工作区").withStyle(ChatFormatting.BOLD);

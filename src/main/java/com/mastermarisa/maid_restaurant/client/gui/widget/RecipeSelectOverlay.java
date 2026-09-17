@@ -15,6 +15,8 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
@@ -23,7 +25,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-
+@OnlyIn(Dist.CLIENT)
 public class RecipeSelectOverlay extends UIElement {
     private static final int ENTRIES = 8;
     private static final int CATEGORIES = 5;
@@ -117,6 +119,8 @@ public class RecipeSelectOverlay extends UIElement {
             category.render(graphics, mouseX, mouseY);
             category.tryRenderTooltip(graphics, mouseX, mouseY);
         }
+        String entryText = "%d/%d".formatted(Mth.positiveCeilDiv(currentIndex + 1, 8), Mth.positiveCeilDiv(currentList.size(), 8));
+        RenderUtil.drawCenteredString(graphics, font, entryText, getCenterX(), getMaxY() - 5, 0, 0.5F, Color.WHITE.getRGB());
     }
 
     @Override
@@ -151,6 +155,8 @@ public class RecipeSelectOverlay extends UIElement {
     }
 
     public void resize() {
+        this.categoryFrame.x = frame.x - 26;
+        this.categoryFrame.y = frame.y + 2;
         for (int i = 0; i < this.uiEntries.length; i++) {
             this.uiEntries[i].setMinX(frame.x + 5);
             this.uiEntries[i].setMinY(frame.y + i * 22 + 4);

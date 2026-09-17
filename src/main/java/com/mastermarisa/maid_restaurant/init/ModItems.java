@@ -1,10 +1,7 @@
 package com.mastermarisa.maid_restaurant.init;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
-import com.mastermarisa.maid_restaurant.item.CookingGuideItem;
-import com.mastermarisa.maid_restaurant.item.CuboidZoneDefinitionItem;
-import com.mastermarisa.maid_restaurant.item.PointsetZoneDefinitionItem;
+import com.mastermarisa.maid_restaurant.item.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
@@ -17,4 +14,5 @@ public interface ModItems {
     RegistryObject<Item> CHEF_LICENSE = ITEMS.register("chef_license", () -> new ChefLicenseItem(new Item.Properties().stacksTo(1)));
     RegistryObject<Item> CUBOID_ZONE_DEFINITION = ITEMS.register("cuboid_zone_definition", () -> new CuboidZoneDefinitionItem(new Item.Properties()));
     RegistryObject<Item> POINTSET_ZONE_DEFINITION = ITEMS.register("pointset_zone_definition", () -> new PointsetZoneDefinitionItem(new Item.Properties()));
+    RegistryObject<Item> UNBOUND_MENU = ITEMS.register("unbound_menu", () -> new UnboundMenuItem(new Item.Properties()));
 }

@@ -155,7 +155,7 @@ dependencies {
     implementation fg.deobf("curse.maven:patchouli-306770:6842247");
 
     // Bakeries
-    implementation fg.deobf("curse.maven:bakeries-1191781:8041836")
+    implementation fg.deobf("curse.maven:bakeries-1191781:8537871")
 
     // AE2
     implementation fg.deobf("curse.maven:applied-energistics-2-223794:7148487")

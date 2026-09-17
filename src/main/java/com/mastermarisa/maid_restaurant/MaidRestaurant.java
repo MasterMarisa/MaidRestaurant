@@ -1,6 +1,7 @@
 package com.mastermarisa.maid_restaurant;
 
 import com.mastermarisa.maid_restaurant.init.ModContainers;
+import com.mastermarisa.maid_restaurant.init.ModCreativeTabs;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.integration.kaleidoscope_cookery.KaleidoscopeCookeryCompat;
@@ -25,6 +26,7 @@ public class MaidRestaurant {
         ModEntities.MEMORY_MODULE_TYPES.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         ModContainers.CONTAINER_TYPES.register(modEventBus);
+        ModCreativeTabs.TABS.register(modEventBus);
 
         KaleidoscopeCookeryCompat.registerCapabilities();
     }

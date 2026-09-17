@@ -100,6 +100,16 @@ public class RenderUtil {
 
     public static void renderIngredientStack(GuiGraphics graphics, int x, int y,
                                              IngredientStack stack, long gameTime, int interval) {
+        renderIngredientStack(graphics, x, y, stack, gameTime, interval, Color.WHITE.getRGB(), true);
+    }
+
+    public static void renderIngredientStack(GuiGraphics graphics, int x, int y, IngredientStack stack,
+                                             long gameTime, int interval, int color) {
+        renderIngredientStack(graphics, x, y, stack, gameTime, interval, color, true);
+    }
+
+    public static void renderIngredientStack(GuiGraphics graphics, int x, int y, IngredientStack stack,
+                                             long gameTime, int interval, int color, boolean shadowed) {
         if (stack.getItems().length == 0) {
             return;
         }
@@ -107,19 +117,24 @@ public class RenderUtil {
         int index = Math.toIntExact(gameTime / interval) % items.length;
         ItemStack itemStack = items[index].copyWithCount(1);
         Font font = Minecraft.getInstance().font;
-        drawCenteredString(graphics, font, "x" + stack.getCount(), x + 16, y + 13, 200, 0.6F, Color.WHITE.getRGB());
+        drawCenteredString(graphics, font, "x" + stack.getCount(), x + 16, y + 13, 200, 0.6F, color, shadowed);
         graphics.renderFakeItem(itemStack, x, y);
         graphics.renderItemDecorations(font, itemStack, x, y);
     }
 
     public static void drawCenteredString(GuiGraphics graphics, Font font, String text,
                                           int x, int y, int z, float scale, int color) {
+        drawCenteredString(graphics, font, text, x, y, z, scale, color, true);
+    }
+
+    public static void drawCenteredString(GuiGraphics graphics, Font font, String text,
+                                          int x, int y, int z, float scale, int color, boolean shadowed) {
         PoseStack pose = graphics.pose();
         pose.pushPose();
         {
             pose.translate(x, y, z);
             pose.scale(scale, scale, 1);
-            graphics.drawCenteredString(font, text, 0, 0, color);
+            graphics.drawString(font, text, -font.width(text) / 2, 0, color, shadowed);
         }
         pose.popPose();
     }

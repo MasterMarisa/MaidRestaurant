@@ -6,11 +6,14 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@OnlyIn(Dist.CLIENT)
 public abstract class UIElement {
     protected static final Minecraft mc;
     protected static final Font font;
@@ -50,6 +53,8 @@ public abstract class UIElement {
         return this.children.stream().anyMatch(c -> c.onMouseClicked(mouseX,mouseY,button));
     }
 
+    public Rectangle getFrame() { return this.frame; }
+
     public void addChild(UIElement element){
         children.add(element);
     }
@@ -57,6 +62,8 @@ public abstract class UIElement {
     public void removeChild(UIElement element){
         children.remove(element);
     }
+
+    public void clearChildren() { children.clear(); }
 
     public boolean hasTooltip(){ return !this.tooltip.isEmpty();}
 
