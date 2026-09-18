@@ -1,9 +1,6 @@
 package com.mastermarisa.maid_restaurant.integration.kaleidoscope_cookery;
 
-import com.mastermarisa.maid_restaurant.integration.kaleidoscope_cookery.capability.ChoppingBoardCapability;
-import com.mastermarisa.maid_restaurant.integration.kaleidoscope_cookery.capability.PotCapability;
-import com.mastermarisa.maid_restaurant.integration.kaleidoscope_cookery.capability.SteamerCapability;
-import com.mastermarisa.maid_restaurant.integration.kaleidoscope_cookery.capability.StockpotCapability;
+import com.mastermarisa.maid_restaurant.integration.kaleidoscope_cookery.capability.*;
 import com.mastermarisa.maid_restaurant.integration.kaleidoscope_cookery.storage.FruitBasketStorage;
 import com.mastermarisa.maid_restaurant.integration.kaleidoscope_cookery.storage.TableStorage;
 import net.minecraftforge.fml.ModList;
@@ -13,10 +10,11 @@ public class KaleidoscopeCookeryCompat {
 
     public static void registerCapabilities() {
         if (LOADED) {
-            ChoppingBoardCapability.register();
             PotCapability.register();
             StockpotCapability.register();
             SteamerCapability.register();
+            TeapotCapability.register();
+            ChoppingBoardCapability.register();
         }
     }
 

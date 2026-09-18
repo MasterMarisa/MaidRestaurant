@@ -7,9 +7,7 @@ import com.mastermarisa.maid_restaurant.item.CookingGuideItem;
 import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.tree.RecipeStep;
-import com.mastermarisa.maid_restaurant.uitls.ClientUtil;
 import com.mastermarisa.maid_restaurant.uitls.IngredientUtil;
-import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -37,22 +35,22 @@ public class UnboundMenuScreen extends Screen {
 
     private final ItemStack itemStack;
     private final Player player;
-    private final List<MenuEntry> entries;
-    private final List<RecipeInfo> recipeInfos;
+    private final List<RecipeInfo> writtenEntries;
+    private final List<RecipeInfo> availableEntries;
     private int currentIndex;
 
     public UnboundMenuScreen(ItemStack itemStack, Player player) {
         super(Component.empty());
         this.itemStack = itemStack;
         this.player = player;
-        this.entries = new ArrayList<>();
-        this.recipeInfos = new ArrayList<>();
+        this.writtenEntries = new ArrayList<>();
+        this.availableEntries = new ArrayList<>();
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack stack = player.getInventory().getItem(i);
             if (stack.is(ModItems.COOKING_GUIDE.get())) {
                 CompoundTag tag = CookingGuideItem.getRecipeRoot(stack);
                 RecipeNode root = tag.isEmpty() ? new RecipeNode() : RecipeNode.fromNBT(tag);
-                this.recipeInfos.add(RecipeInfo.fromNode(root));
+                this.availableEntries.add(RecipeInfo.fromNode(root));
             }
         }
         int centerX = getScreenCenterX();
@@ -76,19 +74,6 @@ public class UnboundMenuScreen extends Screen {
         int y = getScreenCenterY() - 108;
         // 210 x 216
         graphics.blit(bgImg, x, y, 0, 0, 210, 216, 360, 358);
-
-        if (!recipeInfos.isEmpty()) {
-            long gameTime = ClientUtil.gameTime();
-            RecipeInfo info = recipeInfos.get(0);
-            RenderUtil.renderIngredientStack(graphics, x + 10, y + 10, info.output, 0, 20);
-            for (int i = 0; i < info.inputs.size(); i++) {
-                IngredientStack stack = info.inputs.get(i);
-                RenderUtil.renderIngredientStack(graphics, x + 10 + 18 * i, y + 30, stack, gameTime, 20);
-            }
-            for (int i = 0; i < info.workBlocks.size(); i++) {
-                graphics.renderItem(info.workBlocks.get(i), x + 10 + 18 * i, y + 50);
-            }
-        }
     }
 
     @Override

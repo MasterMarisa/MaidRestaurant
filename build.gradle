@@ -135,7 +135,7 @@ dependencies {
     implementation fg.deobf("curse.maven:touhou-little-maid-355044:8061847")
 
     // Kaleidoscope
-    implementation fg.deobf("curse.maven:kaleidoscope-cookery-1309203:8266769")
+    implementation fg.deobf("curse.maven:kaleidoscope-cookery-1309203:8910014")
     implementation fg.deobf("curse.maven:kaleidoscope-tavern-1475175:8350841")
 
     // JEI

@@ -50,9 +50,7 @@ public class StockpotCapability implements ICookCapability {
     }
 
     @Override
-    public ResourceLocation getID() {
-        return ID;
-    }
+    public ResourceLocation getID() { return ID; }
 
     @Override
     public ItemStack getIcon() { return ModItems.STOCKPOT.get().getDefaultInstance(); }
