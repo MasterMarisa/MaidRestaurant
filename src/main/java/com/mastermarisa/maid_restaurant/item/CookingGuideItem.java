@@ -1,15 +1,26 @@
 package com.mastermarisa.maid_restaurant.item;
 
+import com.google.gson.JsonElement;
+import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.client.gui.screen.CookingGuideScreen;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.Nullable;
 
 public class CookingGuideItem extends Item {
+    public static final ResourceLocation HAS_RECIPE_PROPERTY = MaidRestaurant.modLoc("has_recipe");
     private static final String TAG_RECIPE_ROOT = "recipe_root";
 
     public CookingGuideItem(Properties properties) {
@@ -39,5 +50,31 @@ public class CookingGuideItem extends Item {
     public static void setRecipeRoot(ItemStack itemStack, CompoundTag root) {
         CompoundTag tag = itemStack.getOrCreateTag();
         tag.put(TAG_RECIPE_ROOT, root);
+    }
+
+    public static boolean hasRecipe(ItemStack stack) {
+        CompoundTag tag = getRecipeRoot(stack);
+        if (tag.isEmpty()) {
+            return false;
+        }
+
+        if (!tag.contains("count") || !tag.contains("ingredient")) {
+            return false;
+        }
+
+        int count = tag.getInt("count");
+        if (count <= 0) {
+            return false;
+        }
+
+        JsonElement jsonElement = GsonHelper.parse(tag.getString("ingredient"));
+        Ingredient ingredient = Ingredient.fromJson(jsonElement);
+
+        return !ingredient.isEmpty();
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static float getTexture(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+        return hasRecipe(stack) ? 1.0F : 0.0F;
     }
 }

@@ -46,7 +46,7 @@ public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContai
         this.chefIdField.setMaxLength(50);
         this.chefIdField.setBordered(false);
         this.chefIdField.setEditable(true);
-        this.chefIdField.setCanLoseFocus(false);
+        this.chefIdField.setCanLoseFocus(true);
         String existingId = ChefLicenseItem.getRestaurantId(this.menu.getLicense());
         if (!existingId.isEmpty()) {
             this.chefIdField.setValue(existingId);
@@ -69,6 +69,13 @@ public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContai
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.chefIdField.isFocused() && !this.chefIdField.isHovered()) {
+            String text = this.chefIdField.getValue().trim();
+            if (!text.isEmpty()) {
+                NetworkHandler.sendToServer(new RestaurantIdUpdateMessage(text));
+            }
+        }
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -79,9 +86,7 @@ public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContai
         }
 
         if (keyCode == InputConstants.KEY_RETURN) {
-            this.chefIdField.setCanLoseFocus(true);
             this.chefIdField.setFocused(false);
-            this.chefIdField.setCanLoseFocus(false);
             String text = this.chefIdField.getValue().trim();
             if (!text.isEmpty()) {
                 NetworkHandler.sendToServer(new RestaurantIdUpdateMessage(text));

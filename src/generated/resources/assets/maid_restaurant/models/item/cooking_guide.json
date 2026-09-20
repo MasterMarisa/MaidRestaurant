@@ -1,6 +1,16 @@
 {
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "maid_restaurant:item/cooking_guide"
-  }
+  "overrides": [
+    {
+      "model": "maid_restaurant:item/cooking_guide_no_recipe",
+      "predicate": {
+        "maid_restaurant:has_recipe": 0.0
+      }
+    },
+    {
+      "model": "maid_restaurant:item/cooking_guide_has_recipe",
+      "predicate": {
+        "maid_restaurant:has_recipe": 1.0
+      }
+    }
+  ]
 }
