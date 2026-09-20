@@ -8,7 +8,9 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -137,5 +139,33 @@ public class RenderUtil {
             graphics.drawString(font, text, -font.width(text) / 2, 0, color, shadowed);
         }
         pose.popPose();
+    }
+
+    public static void drawString(GuiGraphics graphics, Font font, Component component,
+                                  int x, int y, float scale, int color, boolean dropShadow) {
+        PoseStack pose = graphics.pose();
+        pose.pushPose();
+        {
+            pose.translate(x, y, 0);
+            pose.scale(scale, scale, 1);
+            graphics.drawString(font, component, 0, 0, color, dropShadow);
+        }
+        pose.popPose();
+    }
+
+    public static void drawString(GuiGraphics graphics, Font font, Component component,
+                                  int x, int y, float scale, int color) {
+        drawString(graphics, font, component, x, y, scale, color, false);
+    }
+
+    public static void renderIngredient(GuiGraphics graphics, Ingredient ingredient,
+                                        int x, int y, long gameTime, int interval) {
+        if (ingredient.getItems().length == 0) {
+            return;
+        }
+        ItemStack[] items = ingredient.getItems();
+        int index = Math.toIntExact(gameTime / interval) % items.length;
+        ItemStack itemStack = items[index].copyWithCount(1);
+        graphics.renderItem(itemStack, x, y);
     }
 }

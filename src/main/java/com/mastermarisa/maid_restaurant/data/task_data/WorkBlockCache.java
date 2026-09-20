@@ -30,7 +30,9 @@ public class WorkBlockCache implements INBTSerializable<CompoundTag> {
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putLong("pos", pos.asLong());
-        tag.putString("capability_id", capabilityID.toString());
+        if (capabilityID != null) {
+            tag.putString("capability_id", capabilityID.toString());
+        }
         return tag;
     }
 
