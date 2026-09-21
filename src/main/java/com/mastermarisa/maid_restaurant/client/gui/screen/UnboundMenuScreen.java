@@ -470,12 +470,15 @@ public class UnboundMenuScreen extends Screen {
         @Override
         public boolean onMouseClicked(double mouseX, double mouseY, int button) {
             for (Slot slot : slots) {
-                if (slot.frame.contains(mouseX, mouseY) && slot.getItem().is(ModItems.COOKING_GUIDE.get())) {
-                    CompoundTag tag = CookingGuideItem.getRecipeRoot(slot.getItem());
-                    RecipeNode root = tag.isEmpty() ? new RecipeNode() : RecipeNode.fromNBT(tag);
-                    this.callback.accept(RecipeInfo.fromNode(root));
-                    this.active = false;
-                    return true;
+                if (slot.frame.contains(mouseX, mouseY)) {
+                    ItemStack stack = slot.getItem();
+                    if (stack.is(ModItems.COOKING_GUIDE.get()) && CookingGuideItem.hasRecipe(stack)) {
+                        CompoundTag tag = CookingGuideItem.getRecipeRoot(slot.getItem());
+                        RecipeNode root = tag.isEmpty() ? new RecipeNode() : RecipeNode.fromNBT(tag);
+                        this.callback.accept(RecipeInfo.fromNode(root));
+                        this.active = false;
+                        return true;
+                    }
                 }
             }
             return super.onMouseClicked(mouseX, mouseY, button);

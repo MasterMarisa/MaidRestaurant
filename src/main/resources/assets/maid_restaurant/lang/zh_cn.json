@@ -3,5 +3,24 @@
   "item.maid_restaurant.cuboid_zone_definition" : "长方体区域定义",
   "item.maid_restaurant.pointset_zone_definition" : "点集区域定义",
   "item.maid_restaurant.cooking_guide" : "烹饪指南",
-  "cook_capability.maid_restaurant.crafting_table.name" : "合成台"
+  "item.maid_restaurant.unbound_menu" : "未装订的菜单",
+
+  "item_group.maid_restaurant.main.name" : "女仆餐厅",
+
+  "task.maid_restaurant.chef" : "主厨",
+  "task.maid_restaurant.waiter" : "侍者",
+  "task.maid_restaurant.chef.desc" : "女仆会根据收到的委托烹饪菜品",
+  "task.maid_restaurant.waiter.desc" : "功能开发中,暂不可用...",
+
+  "minecraft.cook_capability.crafting_table.name" : "合成台",
+  "kaleidoscope_cookery.cook_capability.pot.name" : "炒锅",
+  "kaleidoscope_cookery.cook_capability.stockpot.name" : "汤锅",
+  "kaleidoscope_cookery.cook_capability.steamer.name" : "蒸笼",
+  "kaleidoscope_cookery.cook_capability.teapot.name" : "茶壶",
+  "kaleidoscope_cookery.cook_capability.chopping_board.name" : "菜板",
+  "kaleidoscope_tavern.cook_capability.shaker.name" : "雪克杯",
+  "bakeries.cook_capability.dough_crafting_table.name" : "面胚制作台",
+  "bakeries.cook_capability.blender.name" : "搅拌机",
+  "bakeries.cook_capability.fermentation_box.name" : "醒发箱",
+  "bakeries.cook_capability.oven.name" : "烤箱"
 }

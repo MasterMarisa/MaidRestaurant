@@ -3,5 +3,24 @@
   "item.maid_restaurant.cuboid_zone_definition" : "Cuboid Zone Definition",
   "item.maid_restaurant.pointset_zone_definition" : "Point Set Zone Definition",
   "item.maid_restaurant.cooking_guide" : "Cooking Guide",
-  "cook_capability.maid_restaurant.crafting_table.name" : "Crafting Table"
+  "item.maid_restaurant.unbound_menu" : "Unbound Menu",
+
+  "item_group.maid_restaurant.main.name" : "Maid Restaurant",
+
+  "task.maid_restaurant.chef" : "Chef",
+  "task.maid_restaurant.waiter" : "Waiter",
+  "task.maid_restaurant.chef.desc" : "女仆会根据收到的委托烹饪菜品",
+  "task.maid_restaurant.waiter.desc" : "功能开发中,暂不可用...",
+
+  "minecraft.cook_capability.crafting_table.name" : "Crafting Table",
+  "kaleidoscope_cookery.cook_capability.pot.name" : "Pot",
+  "kaleidoscope_cookery.cook_capability.stockpot.name" : "Stockpot",
+  "kaleidoscope_cookery.cook_capability.steamer.name" : "Steamer",
+  "kaleidoscope_cookery.cook_capability.teapot.name" : "Teapot",
+  "kaleidoscope_cookery.cook_capability.chopping_board.name" : "Chopping Board",
+  "kaleidoscope_tavern.cook_capability.shaker.name" : "Shaker",
+  "bakeries.cook_capability.dough_crafting_table.name" : "Dough Crafting Table",
+  "bakeries.cook_capability.blender.name" : "Blender",
+  "bakeries.cook_capability.fermentation_box.name" : "Fermentation Box",
+  "bakeries.cook_capability.oven.name" : "Oven"
 }

@@ -74,6 +74,7 @@ public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContai
             if (!text.isEmpty()) {
                 NetworkHandler.sendToServer(new RestaurantIdUpdateMessage(text));
             }
+            this.chefIdField.setFocused(false);
         }
 
         return super.mouseClicked(mouseX, mouseY, button);
@@ -85,7 +86,7 @@ public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContai
             return super.keyPressed(keyCode, scanCode, modifiers);
         }
 
-        if (keyCode == InputConstants.KEY_RETURN) {
+        if (keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_ESCAPE) {
             this.chefIdField.setFocused(false);
             String text = this.chefIdField.getValue().trim();
             if (!text.isEmpty()) {
