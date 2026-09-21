@@ -1,19 +1,17 @@
 package com.mastermarisa.maid_restaurant.client.gui.screen;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.client.gui.widget.ImageData;
 import com.mastermarisa.maid_restaurant.client.gui.widget.UIElement;
+import com.mastermarisa.maid_restaurant.data.menu.MenuEntry;
+import com.mastermarisa.maid_restaurant.data.menu.RecipeInfo;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.CookingGuideItem;
 import com.mastermarisa.maid_restaurant.item.UnboundMenuItem;
 import com.mastermarisa.maid_restaurant.network.NetworkHandler;
-import com.mastermarisa.maid_restaurant.network.message.SaveUnboundMenuMessage;
-import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
+import com.mastermarisa.maid_restaurant.network.message.UpdateUnboundMenuMessage;
 import com.mastermarisa.maid_restaurant.tree.RecipeNode;
-import com.mastermarisa.maid_restaurant.tree.RecipeStep;
 import com.mastermarisa.maid_restaurant.uitls.ClientUtil;
-import com.mastermarisa.maid_restaurant.uitls.IngredientUtil;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
@@ -30,7 +28,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
@@ -75,7 +72,7 @@ public class UnboundMenuScreen extends Screen {
         super(Component.empty());
         this.itemStack = itemStack;
         this.player = player;
-        this.writtenEntries = UnboundMenuItem.deserializeMap(UnboundMenuItem.getMenuEntries(itemStack));
+        this.writtenEntries = UnboundMenuItem.getEntries(itemStack);
         this.overlay = new GuideSelectOverlay(player.getInventory(), this::onSelectRecipe);
         this.nameEditBox = new EditBox(font, getScreenCenterX() - 165, getScreenCenterY() + 78, 100, 14, Component.empty());
         this.nameEditBox.setMaxLength(30);
@@ -104,17 +101,11 @@ public class UnboundMenuScreen extends Screen {
         Minecraft.getInstance().setScreen(new UnboundMenuScreen(itemStack, player));
     }
 
-    private void onSelectRecipe(RecipeInfo info) {
+    private void onSelectRecipe(RecipeNode root) {
         if (this.editingEntry == null) {
             this.editingEntry = new MenuEntry();
         }
-        this.editingEntry.info = info;
-    }
-
-    private void sendSyncMessage() {
-        CompoundTag tag = UnboundMenuItem.serializeMap(this.writtenEntries);
-        SaveUnboundMenuMessage message = new SaveUnboundMenuMessage(tag);
-        NetworkHandler.sendToServer(message);
+        this.editingEntry.setRoot(root);
     }
 
     @Override
@@ -143,8 +134,8 @@ public class UnboundMenuScreen extends Screen {
 
             if (writtenEntries.containsKey(currentPage * 4 + i)) {
                 MenuEntry entry = writtenEntries.get(currentPage * 4 + i);
-                Component text = entry.name.copy().withStyle(ChatFormatting.BOLD);
-                graphics.renderItem(entry.info.output.getItems()[0], x + 1, y - 1);
+                Component text = Component.literal(entry.getName()).withStyle(ChatFormatting.BOLD);
+                graphics.renderItem(entry.getInfo().output(), x + 1, y - 1);
                 RenderUtil.drawString(graphics, font, text, x + 19, y + 4, 1F, LINE.getRGB());
                 ERASER.render(graphics, x - 14, y);
             }
@@ -157,7 +148,7 @@ public class UnboundMenuScreen extends Screen {
             Component text = Component.literal("请选择需要编辑的条目").withStyle(ChatFormatting.BOLD);
             graphics.drawString(font, text, getScreenCenterX() - 100 - font.width(text) / 2, getScreenCenterY(), LINE.getRGB(), false);
         } else {
-            if (this.editingEntry.info == null) {
+            if (this.editingEntry.getRoot() == null) {
                 CLIP_BOARD_2.renderCentered(graphics, getScreenCenterX() - 100, getScreenCenterY() - 5);
                 RenderUtil.drawString(graphics, font, Component.literal("+"), centerX - 105, centerY - 2, 2.0F, LINE.getRGB());
             } else {
@@ -167,22 +158,22 @@ public class UnboundMenuScreen extends Screen {
                 Component text = Component.literal("菜品").withStyle(ChatFormatting.BOLD);
                 Component text1 = Component.literal("烹饪方式").withStyle(ChatFormatting.BOLD);
                 Component text2 = Component.literal("材料").withStyle(ChatFormatting.BOLD);
-                RecipeInfo info = this.editingEntry.info;
+                RecipeInfo info = this.editingEntry.getInfo();
 
                 graphics.drawString(font, text, x, y, LINE.getRGB(), false);
                 y += 12;
-                graphics.renderItem(info.output.getItems()[0], x, y);
+                graphics.renderItem(info.output(), x, y);
                 y += 20;
                 graphics.drawString(font, text1, x, y , LINE.getRGB(), false);
                 y += 12;
-                if (info.workBlocks.size() > 6) {
+                if (info.workBlocks().size() > 6) {
                     for (int i = 0; i < 5; i++) {
-                        graphics.renderItem(info.workBlocks.get(i), x + 20 * i, y);
+                        graphics.renderItem(info.workBlocks().get(i), x + 20 * i, y);
                     }
                     ELLIPSIS.render(graphics, x + 90, y);
                 }  else {
-                    for (int i = 0; i < Math.min(6, info.workBlocks.size()); i++) {
-                        graphics.renderItem(info.workBlocks.get(i), x + 20 * i, y);
+                    for (int i = 0; i < Math.min(6, info.workBlocks().size()); i++) {
+                        graphics.renderItem(info.workBlocks().get(i), x + 20 * i, y);
                     }
                 }
                 y += 20;
@@ -190,19 +181,19 @@ public class UnboundMenuScreen extends Screen {
                 long gameTime = ClientUtil.gameTime();
                 graphics.drawString(font, text2, x, y, LINE.getRGB(), false);
                 y += 12;
-                for (int i = 0; i < Math.min(6, info.inputs.size()); i++) {
-                    RenderUtil.renderIngredient(graphics, info.inputs.get(i).getIngredient(), x + 20 * i, y, gameTime, 20);
+                for (int i = 0; i < Math.min(6, info.inputs().size()); i++) {
+                    RenderUtil.renderIngredient(graphics, info.inputs().get(i), x + 20 * i, y, gameTime, 20);
                 }
                 y += 20;
-                if (info.inputs.size() > 6) {
-                    if (info.inputs.size() > 12) {
+                if (info.inputs().size() > 6) {
+                    if (info.inputs().size() > 12) {
                         for (int i = 6; i < 11; i++) {
-                            RenderUtil.renderIngredient(graphics, info.inputs.get(i).getIngredient(), x + 20 * (i - 6), y, gameTime, 20);
+                            RenderUtil.renderIngredient(graphics, info.inputs().get(i), x + 20 * (i - 6), y, gameTime, 20);
                         }
                         ELLIPSIS.render(graphics, x + 90, y);
                     } else {
-                        for (int i = 6; i < Math.min(12, info.inputs.size()); i++) {
-                            RenderUtil.renderIngredient(graphics, info.inputs.get(i).getIngredient(), x + 20 * (i - 6), y, gameTime, 20);
+                        for (int i = 6; i < Math.min(12, info.inputs().size()); i++) {
+                            RenderUtil.renderIngredient(graphics, info.inputs().get(i), x + 20 * (i - 6), y, gameTime, 20);
                         }
                     }
                 }
@@ -262,7 +253,7 @@ public class UnboundMenuScreen extends Screen {
                 if (this.menuEntryBtn[i].contains(mouseX, mouseY)) {
                     this.currentIndex = this.currentPage * 4 + i;
                     this.editingEntry = this.writtenEntries.getOrDefault(this.currentIndex, new MenuEntry()).copy();
-                    this.nameEditBox.setValue(this.editingEntry.name.getString());
+                    this.nameEditBox.setValue(this.editingEntry.getName());
                     this.nameEditBox.setFocused(false);
                     return true;
                 }
@@ -276,24 +267,26 @@ public class UnboundMenuScreen extends Screen {
                         this.editingEntry = new MenuEntry();
                         this.nameEditBox.setValue("");
                     }
-                    sendSyncMessage();
+                    UpdateUnboundMenuMessage.Remove message = new UpdateUnboundMenuMessage.Remove(index);
+                    NetworkHandler.sendToServer(message);
                     return true;
                 }
             }
 
-            if (this.editingEntry != null && this.editingEntry.info == null) {
+            if (this.editingEntry != null && this.editingEntry.getRoot() == null) {
                 if (this.guideSelectBtn.contains(mouseX, mouseY)) {
                     this.overlay.active = true;
                     return true;
                 }
             }
 
-            if (this.editingEntry != null && this.editingEntry.info != null) {
+            if (this.editingEntry != null && this.editingEntry.getRoot() != null) {
                 if (this.saveBtn.contains(mouseX, mouseY)) {
-                    this.editingEntry.name = Component.literal(this.nameEditBox.getValue());
+                    this.editingEntry.setName(this.nameEditBox.getValue());
                     this.writtenEntries.put(this.currentIndex, this.editingEntry.copy());
                     this.nameEditBox.setFocused(false);
-                    this.sendSyncMessage();
+                    UpdateUnboundMenuMessage.Update message = new UpdateUnboundMenuMessage.Update(this.currentIndex, this.writtenEntries.get(this.currentIndex).serializeNBT());
+                    NetworkHandler.sendToServer(message);
                     return true;
                 }
             }
@@ -322,125 +315,13 @@ public class UnboundMenuScreen extends Screen {
         return minecraft.getWindow().getGuiScaledHeight() / 2;
     }
 
-    public static class MenuEntry implements INBTSerializable<CompoundTag> {
-        public RecipeInfo info;
-        public Component name;
-
-        public MenuEntry() {
-            this.info = null;
-            this.name = Component.empty();
-        }
-
-        public MenuEntry(RecipeInfo info, Component name) {
-            this.info = info;
-            this.name = name;
-        }
-
-        public MenuEntry copy() {
-            return new MenuEntry(this.info, this.name.copy());
-        }
-
-        @Override
-        public CompoundTag serializeNBT() {
-            CompoundTag tag = new CompoundTag();
-            if (this.info != null) {
-                tag.put("info", info.root.serializeNBT());
-            }
-            tag.putString("name", name.getString());
-            return tag;
-        }
-
-        @Override
-        public void deserializeNBT(CompoundTag tag) {
-            if (tag.contains("info")) {
-                RecipeNode root = RecipeNode.fromNBT(tag.getCompound("info"));
-                this.info = RecipeInfo.fromNode(root);
-            }
-            if (tag.contains("name")) {
-                this.name = Component.literal(tag.getString("name"));
-            }
-        }
-    }
-
-    public static class RecipeInfo {
-        private RecipeNode root;
-        private IngredientStack output;
-        private List<IngredientStack> inputs;
-        private List<ItemStack> workBlocks;
-
-        public static RecipeInfo fromNode(RecipeNode root) {
-            RecipeInfo info = new RecipeInfo();
-            info.root = root;
-            info.output = root.getOutputAsStack();
-            List<RecipeStep> steps = new ArrayList<>();
-            traversalStep(root, steps);
-            List<ItemStack> workBlocks = new ArrayList<>();
-            for (var step : steps) {
-                ICookCapability capability = step.getCapability();
-                if (capability != null) {
-                    ItemStack icon = capability.getIcon();
-                    boolean contained = false;
-                    for (var stack : workBlocks) {
-                        if (ItemStack.isSameItem(icon, stack)) {
-                            contained = true;
-                            break;
-                        }
-                    }
-                    if (!contained) {
-                        workBlocks.add(capability.getIcon());
-                    }
-                }
-            }
-            info.workBlocks = workBlocks;
-            List<RecipeNode> leaves = new ArrayList<>();
-            traversalLeaf(root, leaves);
-            List<IngredientStack> inputs = new ArrayList<>();
-            for (RecipeNode node : leaves) {
-                IngredientStack input = node.getOutputAsStack();
-                boolean merged = false;
-                for (IngredientStack stack : inputs) {
-                    if (IngredientUtil.equals(input.getIngredient(), stack.getIngredient())) {
-                        merged = true;
-                        stack.setCount(stack.getCount() + input.getCount());
-                        break;
-                    }
-                }
-                if (!merged) {
-                    inputs.add(input);
-                }
-            }
-            info.inputs = inputs;
-            return info;
-        }
-
-        private static void traversalStep(RecipeNode node, List<RecipeStep> steps) {
-            if (node.isLeaf()) {
-                return;
-            }
-            steps.add(node.getStep());
-            for (RecipeNode child : node.getChildren()) {
-                traversalStep(child, steps);
-            }
-        }
-
-        private static void traversalLeaf(RecipeNode node, List<RecipeNode> leaves) {
-            if (node.isLeaf()) {
-                leaves.add(node);
-                return;
-            }
-            for (RecipeNode child : node.getChildren()) {
-                traversalLeaf(child, leaves);
-            }
-        }
-    }
-
     public static class GuideSelectOverlay extends UIElement {
         private static final Color BG = new Color(0, 0, 0, 128);
         private final List<Slot> slots;
-        private final Consumer<RecipeInfo> callback;
+        private final Consumer<RecipeNode> callback;
         public boolean active;
 
-        public GuideSelectOverlay(Inventory inventory, Consumer<RecipeInfo> callback) {
+        public GuideSelectOverlay(Inventory inventory, Consumer<RecipeNode> callback) {
             super(new Rectangle(240, 120));
             this.slots = new ArrayList<>();
             for (int i = 0; i < 36; i++) {
@@ -475,7 +356,7 @@ public class UnboundMenuScreen extends Screen {
                     if (stack.is(ModItems.COOKING_GUIDE.get()) && CookingGuideItem.hasRecipe(stack)) {
                         CompoundTag tag = CookingGuideItem.getRecipeRoot(slot.getItem());
                         RecipeNode root = tag.isEmpty() ? new RecipeNode() : RecipeNode.fromNBT(tag);
-                        this.callback.accept(RecipeInfo.fromNode(root));
+                        this.callback.accept(root);
                         this.active = false;
                         return true;
                     }

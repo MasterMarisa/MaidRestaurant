@@ -1,6 +1,7 @@
 package com.mastermarisa.maid_restaurant.item;
 
 import com.mastermarisa.maid_restaurant.client.gui.screen.UnboundMenuScreen;
+import com.mastermarisa.maid_restaurant.data.menu.MenuEntry;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -17,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 
 public class UnboundMenuItem extends Item {
-    private static final String TAG_ENTRY_MAP = "entry_map";
     private static final String TAG_INDEX_LIST = "index_list";
     private static final String TAG_ENTRY_LIST = "entry_list";
 
@@ -37,26 +37,15 @@ public class UnboundMenuItem extends Item {
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }
 
-    public static CompoundTag getMenuEntries(ItemStack itemStack) {
+    public static Map<Integer, MenuEntry> getEntries(ItemStack itemStack) {
         CompoundTag tag = itemStack.getOrCreateTag();
-        if (tag.contains(TAG_ENTRY_MAP)) {
-            return tag.getCompound(TAG_ENTRY_MAP);
-        }
-        return new CompoundTag();
-    }
-
-    public static void setMenuEntries(ItemStack itemStack, CompoundTag tag) {
-        itemStack.getOrCreateTag().put(TAG_ENTRY_MAP, tag);
-    }
-
-    public static Map<Integer, UnboundMenuScreen.MenuEntry> deserializeMap(CompoundTag tag) {
-        Int2ObjectLinkedOpenHashMap<UnboundMenuScreen.MenuEntry> map = new Int2ObjectLinkedOpenHashMap<>();
+        Int2ObjectLinkedOpenHashMap<MenuEntry> map = new Int2ObjectLinkedOpenHashMap<>();
         if (tag.contains(TAG_ENTRY_LIST) && tag.contains(TAG_INDEX_LIST)) {
             int[] indexList = tag.getIntArray(TAG_INDEX_LIST);
             ListTag entryList = tag.getList(TAG_ENTRY_LIST, Tag.TAG_COMPOUND);
             if (indexList.length == entryList.size()) {
                 for (int i = 0; i < indexList.length; i++) {
-                    UnboundMenuScreen.MenuEntry entry = new UnboundMenuScreen.MenuEntry();
+                    MenuEntry entry = new MenuEntry();
                     entry.deserializeNBT(entryList.getCompound(i));
                     map.put(indexList[i], entry);
                 }
@@ -65,16 +54,15 @@ public class UnboundMenuItem extends Item {
         return map;
     }
 
-    public static CompoundTag serializeMap(Map<Integer, UnboundMenuScreen.MenuEntry> map) {
-        CompoundTag tag = new CompoundTag();
+    public static void setEntries(ItemStack itemStack, Map<Integer, MenuEntry> map) {
+        CompoundTag tag = itemStack.getOrCreateTag();
         List<Integer> indexList = new ArrayList<>();
         ListTag entryList = new ListTag();
         for (var entry : map.entrySet()) {
-           indexList.add(entry.getKey());
-           entryList.add(entry.getValue().serializeNBT());
+            indexList.add(entry.getKey());
+            entryList.add(entry.getValue().serializeNBT());
         }
         tag.putIntArray(TAG_INDEX_LIST, indexList);
         tag.put(TAG_ENTRY_LIST, entryList);
-        return tag;
     }
 }
