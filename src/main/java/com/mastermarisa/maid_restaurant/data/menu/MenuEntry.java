@@ -68,4 +68,10 @@ public class MenuEntry implements INBTSerializable<CompoundTag> {
             this.name = tag.getString(TAG_NAME);
         }
     }
+
+    public static MenuEntry fromNBT(CompoundTag tag) {
+        MenuEntry entry = new MenuEntry();
+        entry.deserializeNBT(tag);
+        return entry;
+    }
 }

@@ -168,4 +168,8 @@ public class RenderUtil {
         ItemStack itemStack = items[index].copyWithCount(1);
         graphics.renderItem(itemStack, x, y);
     }
+
+    public static void fill(GuiGraphics graphics, Rectangle frame, int color) {
+        graphics.fill(frame.x, frame.y, frame.x + frame.width, frame.y + frame.height, color);
+    }
 }

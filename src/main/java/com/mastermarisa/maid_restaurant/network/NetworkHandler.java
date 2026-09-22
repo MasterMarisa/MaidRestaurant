@@ -1,6 +1,7 @@
 package com.mastermarisa.maid_restaurant.network;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.network.message.BindMenuMessage;
 import com.mastermarisa.maid_restaurant.network.message.RestaurantIdUpdateMessage;
 import com.mastermarisa.maid_restaurant.network.message.SaveRecipeTreeMessage;
 import com.mastermarisa.maid_restaurant.network.message.UpdateUnboundMenuMessage;
@@ -25,6 +26,7 @@ public class NetworkHandler {
         CHANNEL.registerMessage(packetId++, SaveRecipeTreeMessage.class, SaveRecipeTreeMessage::encode, SaveRecipeTreeMessage::decode, SaveRecipeTreeMessage::handle);
         CHANNEL.registerMessage(packetId++, UpdateUnboundMenuMessage.Remove.class, UpdateUnboundMenuMessage.Remove::encode, UpdateUnboundMenuMessage.Remove::decode, UpdateUnboundMenuMessage.Remove::handle);
         CHANNEL.registerMessage(packetId++, UpdateUnboundMenuMessage.Update.class, UpdateUnboundMenuMessage.Update::encode, UpdateUnboundMenuMessage.Update::decode, UpdateUnboundMenuMessage.Update::handle);
+        CHANNEL.registerMessage(packetId++, BindMenuMessage.class, BindMenuMessage::encode, BindMenuMessage::decode, BindMenuMessage::handle);
     }
 
     public static void sendToClientPlayer(Object message, Player player) {

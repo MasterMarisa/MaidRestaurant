@@ -2,7 +2,6 @@ package com.mastermarisa.maid_restaurant.init.registry;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
-import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.CookingGuideItem;
 import com.mastermarisa.maid_restaurant.schedule.CookingRequestBus;
@@ -14,7 +13,6 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
@@ -86,13 +84,13 @@ public class CommandRegistry {
 
         CookingRequest request = new CookingRequest(RecipeNode.fromNBT(CookingGuideItem.getRecipeRoot(itemInHand)));
         request.root.applyCount(level, count);
-        ServeRequest serveRequest = new ServeRequest();
-        serveRequest.dish = request.root.getIngredient();
-        serveRequest.count = count;
-        serveRequest.targets.add(new ServeRequest.Target(new BlockPos(1, -59, 0), 1));
-        serveRequest.targets.add(new ServeRequest.Target(new BlockPos(-1, -59, 0), 1));
-        serveRequest.targets.add(new ServeRequest.Target(new BlockPos(0, -60, 0), 0));
-        request.boundRequest = serveRequest;
+//        ServeRequest serveRequest = new ServeRequest();
+//        serveRequest.dish = request.root.getIngredient();
+//        serveRequest.count = count;
+//        serveRequest.targets.add(new ServeRequest.Target(new BlockPos(1, -59, 0), 1));
+//        serveRequest.targets.add(new ServeRequest.Target(new BlockPos(-1, -59, 0), 1));
+//        serveRequest.targets.add(new ServeRequest.Target(new BlockPos(0, -60, 0), 0));
+//        request.boundRequest = serveRequest;
         CookingRequestBus.getInstance(level).enqueue(restaurantId, request);
         context.getSource().sendSuccess(() -> Component.literal("§a成功发送委托！"), true);
     }

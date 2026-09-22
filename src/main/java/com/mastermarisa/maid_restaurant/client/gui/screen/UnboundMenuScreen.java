@@ -9,10 +9,12 @@ import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.CookingGuideItem;
 import com.mastermarisa.maid_restaurant.item.UnboundMenuItem;
 import com.mastermarisa.maid_restaurant.network.NetworkHandler;
+import com.mastermarisa.maid_restaurant.network.message.BindMenuMessage;
 import com.mastermarisa.maid_restaurant.network.message.UpdateUnboundMenuMessage;
 import com.mastermarisa.maid_restaurant.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.uitls.ClientUtil;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -41,60 +43,80 @@ public class UnboundMenuScreen extends Screen {
     private static final Minecraft minecraft;
     private static final Font font;
     private static final ImageData MENU;
+    private static final ImageData MENU_HOVERED;
+    private static final ImageData MENU_BINDING;
     private static final ImageData CLIP_BOARD;
     private static final ImageData CLIP_BOARD_1;
     private static final ImageData CLIP_BOARD_2;
     private static final ImageData PENCIL;
     private static final ImageData ERASER;
     private static final ImageData ELLIPSIS;
-    private static final Color lessBlack = new Color(0, 0, 0, 128);
-    private static final Color leastBlack = new Color(0, 0, 0, 16);
+    private static final ImageData CROSS_MARK;
+    private static final ImageData CROSS_MARK_HOVERED;
+    private static final ImageData TICK_MARK;
+    private static final ImageData TICK_MARK_HOVERED;
     private static final Color LINE = new Color(178, 148, 135);
-
-    private final ItemStack itemStack;
-    private final Player player;
-    private final Map<Integer, MenuEntry> writtenEntries;
-    private final GuideSelectOverlay overlay;
-    private final EditBox nameEditBox;
+    private static final Color LESS_BLACK = new Color(0, 0, 0, 128);
 
     private final Rectangle guideSelectBtn;
     private final Rectangle[] menuEntryBtn;
     private final Rectangle saveBtn;
     private final Rectangle menuArea;
     private final Rectangle[] eraserBtns;
+    private final Rectangle[] bindBtn;
+    private final Rectangle cancelBtn;
+    private final Rectangle confirmBtn;
+
+    private final Map<Integer, MenuEntry> writtenEntries;
+    private final GuideSelectOverlay overlay;
+    private final EditBox nameEditBox;
+    private final EditBox idEditBox;
 
     @Nullable
     private MenuEntry editingEntry;
     private int currentPage;
     private int currentIndex;
+    private boolean binding;
 
     public UnboundMenuScreen(ItemStack itemStack, Player player) {
         super(Component.empty());
-        this.itemStack = itemStack;
-        this.player = player;
+        int centerX = getScreenCenterX();
+        int centerY = getScreenCenterY();
         this.writtenEntries = UnboundMenuItem.getEntries(itemStack);
         this.overlay = new GuideSelectOverlay(player.getInventory(), this::onSelectRecipe);
-        this.nameEditBox = new EditBox(font, getScreenCenterX() - 165, getScreenCenterY() + 78, 100, 14, Component.empty());
+        this.nameEditBox = new EditBox(font, centerX - 165, centerY + 78, 100, 14, Component.empty());
         this.nameEditBox.setMaxLength(30);
         this.nameEditBox.setBordered(false);
         this.nameEditBox.setCanLoseFocus(true);
         this.nameEditBox.setTextColor(LINE.getRGB());
+        this.idEditBox = new EditBox(font, centerX - 30, centerY + 3, 60, 15, Component.empty());
+        this.idEditBox.setMaxLength(30);
+        this.idEditBox.setBordered(false);
         this.currentIndex = -1;
-        this.guideSelectBtn = new Rectangle(getScreenCenterX() - 147, getScreenCenterY() - 58, 94, 124);
+        this.guideSelectBtn = new Rectangle(centerX - 147, centerY - 58, 94, 124);
         this.menuEntryBtn = new Rectangle[4];
         for (int i = 0; i < 4; i++) {
-            int x = getScreenCenterX() + 45;
-            int y = getScreenCenterY() - 57 + i * 32;
+            int x = centerX + 45;
+            int y = centerY - 57 + i * 32;
             this.menuEntryBtn[i] = new Rectangle(x, y, 94, 16);
         }
         this.saveBtn = new Rectangle(nameEditBox.getX() + 111, nameEditBox.getY() - 2, 12, 12);
-        this.menuArea = new Rectangle(getScreenCenterX() + 27, getScreenCenterY() - 81, 132, 165);
+        this.menuArea = new Rectangle(centerX + 27, centerY - 81, 132, 165);
         this.eraserBtns = new Rectangle[4];
         for (int i = 0; i < 4; i++) {
-            int x = getScreenCenterX() + 31;
-            int y = getScreenCenterY() - 55 + i * 32;
+            int x = centerX + 31;
+            int y = centerY - 55 + i * 32;
             this.eraserBtns[i] = new Rectangle(x, y, 12, 12);
         }
+        this.bindBtn = new Rectangle[6];
+        this.bindBtn[0] = new Rectangle(centerX + 135, centerY + 72, 27, 26);
+        this.bindBtn[1] = new Rectangle(centerX + 143, centerY + 54, 26, 18);
+        this.bindBtn[2] = new Rectangle(centerX + 149, centerY + 37, 28, 18);
+        this.bindBtn[3] = new Rectangle(centerX + 163, centerY + 22, 21, 15);
+        this.bindBtn[4] = new Rectangle(centerX + 175, centerY + 12, 17, 11);
+        this.bindBtn[5] = new Rectangle(centerX + 185, centerY + 4, 13, 9);
+        this.cancelBtn = new Rectangle(centerX - 38, centerY + 22, 16, 16);
+        this.confirmBtn = new Rectangle(centerX + 22, centerY + 22, 16, 16);
     }
 
     public static void open(ItemStack itemStack, Player player) {
@@ -106,13 +128,21 @@ public class UnboundMenuScreen extends Screen {
             this.editingEntry = new MenuEntry();
         }
         this.editingEntry.setRoot(root);
+        this.removeWidget(this.nameEditBox);
+        this.addRenderableWidget(this.nameEditBox);
     }
 
     @Override
     protected void init() {
         super.init();
-        this.removeWidget(this.nameEditBox);
-        this.addRenderableWidget(this.nameEditBox);
+        if (this.editingEntry != null && this.editingEntry.getRoot() != null) {
+            this.removeWidget(this.nameEditBox);
+            this.addRenderableWidget(this.nameEditBox);
+        }
+        if (this.binding) {
+            this.removeWidget(this.idEditBox);
+            this.addRenderableWidget(this.idEditBox);
+        }
     }
 
     @Override
@@ -121,7 +151,37 @@ public class UnboundMenuScreen extends Screen {
         renderBackground(graphics);
         int centerX = getScreenCenterX();
         int centerY = getScreenCenterY();
-        MENU.renderCentered(graphics, getScreenCenterX() + 100, getScreenCenterY() + 10);
+
+        if (binding) {
+            MENU_BINDING.renderCentered(graphics, centerX - 5, centerY);
+            this.idEditBox.render(graphics, mouseX, mouseY, partialTick);
+            if (this.cancelBtn.contains(mouseX, mouseY)) {
+                CROSS_MARK_HOVERED.render(graphics, this.cancelBtn.x, this.cancelBtn.y);
+            } else {
+                CROSS_MARK.render(graphics, this.cancelBtn.x, this.cancelBtn.y);
+            }
+            if (this.confirmBtn.contains(mouseX, mouseY)) {
+                TICK_MARK_HOVERED.render(graphics, this.confirmBtn.x, this.confirmBtn.y);
+            } else {
+                TICK_MARK.render(graphics, this.confirmBtn.x, this.confirmBtn.y);
+            }
+            return;
+        }
+
+        boolean hovered = false;
+        if (!overlay.active) {
+            for (Rectangle rectangle : this.bindBtn) {
+                if (rectangle.contains(mouseX, mouseY)) {
+                    hovered = true;
+                    break;
+                }
+            }
+        }
+        if (hovered) {
+            MENU_HOVERED.renderCentered(graphics, getScreenCenterX() + 100, getScreenCenterY() + 10);
+        } else {
+            MENU.renderCentered(graphics, getScreenCenterX() + 100, getScreenCenterY() + 10);
+        }
         for (int i = 0; i < 4; i++) {
             int x = centerX + 45;
             int y = centerY - 57 + i * 32;
@@ -214,11 +274,17 @@ public class UnboundMenuScreen extends Screen {
     public void resize(Minecraft pMinecraft, int pWidth, int pHeight) {
         String text = this.nameEditBox.getValue();
         boolean focused = this.nameEditBox.isFocused();
+        String text1 = this.idEditBox.getValue();
+        boolean focused1 = this.idEditBox.isFocused();
         super.resize(pMinecraft, pWidth, pHeight);
         this.nameEditBox.setValue(text);
         this.nameEditBox.setFocused(focused);
         this.nameEditBox.setX(getScreenCenterX() - 100 - 65);
         this.nameEditBox.setY(getScreenCenterY() + 78);
+        this.idEditBox.setValue(text1);
+        this.idEditBox.setFocused(focused1);
+        this.idEditBox.setX(getScreenCenterX() - 30);
+        this.idEditBox.setY(getScreenCenterY() + 3);
         this.guideSelectBtn.setLocation(getScreenCenterX() - 147, getScreenCenterY() - 58);
         for (int i = 0; i < 4; i++) {
             int x = getScreenCenterX() - 5 + 50;
@@ -232,6 +298,14 @@ public class UnboundMenuScreen extends Screen {
             int y = getScreenCenterY() - 55 + i * 32;
             this.eraserBtns[i].setLocation(x, y);
         }
+        this.bindBtn[0].setLocation(getScreenCenterX() + 135, getScreenCenterY() + 72);
+        this.bindBtn[1].setLocation(getScreenCenterX() + 143, getScreenCenterY() + 54);
+        this.bindBtn[2].setLocation(getScreenCenterX() + 149, getScreenCenterY() + 37);
+        this.bindBtn[3].setLocation(getScreenCenterX() + 163, getScreenCenterY() + 22);
+        this.bindBtn[4].setLocation(getScreenCenterX() + 175, getScreenCenterY() + 12);
+        this.bindBtn[5].setLocation(getScreenCenterX() + 185, getScreenCenterY() + 4);
+        this.cancelBtn.setLocation(getScreenCenterX() - 38, getScreenCenterY() + 22);
+        this.confirmBtn.setLocation(getScreenCenterX() + 22, getScreenCenterY() + 22);
         this.overlay.resize();
     }
 
@@ -241,7 +315,26 @@ public class UnboundMenuScreen extends Screen {
             return super.mouseClicked(mouseX, mouseY, button);
         }
 
-        if (overlay.active) {
+        if (this.binding) {
+            if (this.idEditBox.isFocused() && !this.idEditBox.isHovered()) {
+                this.idEditBox.setFocused(false);
+            }
+
+            if (this.cancelBtn.contains(mouseX, mouseY)) {
+                this.binding = false;
+                this.removeWidget(this.idEditBox);
+                this.idEditBox.setValue("");
+                return true;
+            }
+
+            if (this.confirmBtn.contains(mouseX, mouseY) && !this.idEditBox.getValue().isEmpty()) {
+                BindMenuMessage message = new BindMenuMessage(this.idEditBox.getValue());
+                NetworkHandler.sendToServer(message);
+                minecraft.setScreen(null);
+                return true;
+            }
+        }
+        else if (overlay.active) {
             if (overlay.frame.contains(mouseX, mouseY)) {
                 return overlay.onMouseClicked(mouseX, mouseY, button);
             } else {
@@ -249,12 +342,21 @@ public class UnboundMenuScreen extends Screen {
                 return true;
             }
         } else {
+            if (this.nameEditBox.isFocused() && !this.nameEditBox.isHovered()) {
+                this.nameEditBox.setFocused(false);
+            }
+
             for (int i = 0; i < 4; i++) {
                 if (this.menuEntryBtn[i].contains(mouseX, mouseY)) {
+                    this.removeWidget(this.nameEditBox);
+                    this.nameEditBox.setValue("");
                     this.currentIndex = this.currentPage * 4 + i;
                     this.editingEntry = this.writtenEntries.getOrDefault(this.currentIndex, new MenuEntry()).copy();
-                    this.nameEditBox.setValue(this.editingEntry.getName());
-                    this.nameEditBox.setFocused(false);
+                    if (this.editingEntry.getRoot() != null) {
+                        this.addRenderableWidget(this.nameEditBox);
+                        this.nameEditBox.setValue(this.editingEntry.getName());
+                        this.nameEditBox.setFocused(true);
+                    }
                     return true;
                 }
             }
@@ -266,6 +368,7 @@ public class UnboundMenuScreen extends Screen {
                     if (this.currentIndex == index) {
                         this.editingEntry = new MenuEntry();
                         this.nameEditBox.setValue("");
+                        this.removeWidget(this.nameEditBox);
                     }
                     UpdateUnboundMenuMessage.Remove message = new UpdateUnboundMenuMessage.Remove(index);
                     NetworkHandler.sendToServer(message);
@@ -290,6 +393,17 @@ public class UnboundMenuScreen extends Screen {
                     return true;
                 }
             }
+
+            for (Rectangle frame : this.bindBtn) {
+                if (frame.contains(mouseX, mouseY)) {
+                    this.binding = true;
+                    this.removeWidget(this.nameEditBox);
+                    this.removeWidget(this.idEditBox);
+                    this.addRenderableWidget(this.idEditBox);
+                    this.idEditBox.setFocused(true);
+                    return true;
+                }
+            }
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -300,6 +414,20 @@ public class UnboundMenuScreen extends Screen {
             this.currentPage = Math.max(0, currentPage - Mth.sign(delta));
         }
         return super.mouseScrolled(mouseX, mouseY, delta);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_ESCAPE) {
+            if (this.nameEditBox.isFocused()) {
+                this.nameEditBox.setFocused(false);
+            }
+
+            if (this.idEditBox.isFocused()) {
+                this.idEditBox.setFocused(false);
+            }
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
@@ -420,11 +548,17 @@ public class UnboundMenuScreen extends Screen {
         minecraft = Minecraft.getInstance();
         font = minecraft.font;
         MENU = new ImageData(MaidRestaurant.modLoc("textures/gui/unbound_menu.png"), 0, 0, 210, 216, 360, 358);
+        MENU_HOVERED = new ImageData(MaidRestaurant.modLoc("textures/gui/unbound_menu1.png"), 0, 0, 210, 216, 360, 358);
+        MENU_BINDING = new ImageData(MaidRestaurant.modLoc("textures/gui/unbound_menu2.png"), 50, 40, 178, 198, 275, 263);
         CLIP_BOARD = new ImageData(MaidRestaurant.modLoc("textures/gui/clipboard.png"), 76, 13, 167, 224, 359, 278);
         CLIP_BOARD_1 = new ImageData(MaidRestaurant.modLoc("textures/gui/clipboard1.png"), 0, 0, 240, 120, 240, 120);
         CLIP_BOARD_2 = new ImageData(MaidRestaurant.modLoc("textures/gui/clipboard2.png"), 76, 13, 167, 224, 359, 278);
         PENCIL = new ImageData(MaidRestaurant.modLoc("textures/gui/pencil.png"), 0, 0, 12, 12, 12, 12);
         ERASER = new ImageData(MaidRestaurant.modLoc("textures/gui/eraser.png"), 0, 0, 12, 12, 12, 12);
         ELLIPSIS = new ImageData(MaidRestaurant.modLoc("textures/gui/ellipsis.png"), 0, 0, 16,16, 16, 16);
+        CROSS_MARK = new ImageData(MaidRestaurant.modLoc("textures/gui/cross_mark.png"), 0, 0, 16, 16, 16, 16);
+        CROSS_MARK_HOVERED = new ImageData(MaidRestaurant.modLoc("textures/gui/cross_mark_hovered.png"), 0, 0, 16, 16, 16, 16);
+        TICK_MARK = new ImageData(MaidRestaurant.modLoc("textures/gui/tick_mark.png"), 0, 0, 16, 16, 16, 16);
+        TICK_MARK_HOVERED = new ImageData(MaidRestaurant.modLoc("textures/gui/tick_mark_hovered.png"), 0, 0, 16, 16, 16, 16);
     }
 }

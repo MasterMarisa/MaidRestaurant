@@ -21,6 +21,7 @@ public class ItemModelGenerator extends ItemModelProvider {
         basicItem(ModItems.CUBOID_ZONE_DEFINITION.get());
         basicItem(ModItems.POINTSET_ZONE_DEFINITION.get());
         basicItem(ModItems.UNBOUND_MENU.get());
+        basicItem(ModItems.RESTAURANT_MENU.get());
 
         ResourceLocation cookingGuide = ForgeRegistries.ITEMS.getKey(ModItems.COOKING_GUIDE.get());
         if (cookingGuide != null) {

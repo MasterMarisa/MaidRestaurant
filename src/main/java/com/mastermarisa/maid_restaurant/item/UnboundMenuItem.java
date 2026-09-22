@@ -2,6 +2,7 @@ package com.mastermarisa.maid_restaurant.item;
 
 import com.mastermarisa.maid_restaurant.client.gui.screen.UnboundMenuScreen;
 import com.mastermarisa.maid_restaurant.data.menu.MenuEntry;
+import com.mastermarisa.maid_restaurant.init.ModItems;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -31,6 +32,14 @@ public class UnboundMenuItem extends Item {
         if (hand != InteractionHand.MAIN_HAND) {
             return InteractionResultHolder.fail(stack);
         }
+
+        if (player.isSecondaryUseActive()) {
+            player.setItemInHand(InteractionHand.MAIN_HAND, ModItems.RESTAURANT_MENU.get().getDefaultInstance());
+            Map<Integer, MenuEntry> map = UnboundMenuItem.getEntries(stack);
+            RestaurantMenuItem.setEntries(player.getMainHandItem(), map);
+            return InteractionResultHolder.success(stack);
+        }
+
         if (level.isClientSide()) {
             UnboundMenuScreen.open(stack, player);
         }
