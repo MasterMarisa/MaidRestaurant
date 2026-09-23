@@ -23,6 +23,7 @@ public class MaidRestaurant {
         ModEntities.MEMORY_MODULE_TYPES.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         ModBlocks.BLOCKS.register(modEventBus);
+        ModBlocks.BLOCK_ENTITIES.register(modEventBus);
         ModContainers.CONTAINER_TYPES.register(modEventBus);
         ModCreativeTabs.TABS.register(modEventBus);
 

@@ -161,7 +161,8 @@ public class RestaurantMenuScreen extends Screen {
             return true;
         }
         for (int i = 0; i < this.menuEntryBtns.length; i++) {
-            if (this.menuEntryBtns[i].contains(mouseX, mouseY) && this.orders[orders.length - 1] == null) {
+            if (this.menuEntryBtns[i].contains(mouseX, mouseY) && this.orders[currentPage * 4 + i] != null
+                    && this.orders[orders.length - 1] == null) {
                 this.addOrder(menuEntries.get(currentPage * 4 + i));
                 return true;
             }
