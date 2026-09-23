@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "minecraft:writable_book"
+    },
+    {
+      "item": "maid_restaurant:cooking_guide"
+    },
+    {
+      "item": "maid_restaurant:cooking_guide"
+    },
+    {
+      "item": "maid_restaurant:cooking_guide"
+    }
+  ],
+  "result": {
+    "item": "maid_restaurant:unbound_menu"
+  }
+}

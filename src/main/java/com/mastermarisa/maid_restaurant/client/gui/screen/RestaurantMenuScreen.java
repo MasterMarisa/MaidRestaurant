@@ -30,8 +30,11 @@ public class RestaurantMenuScreen extends Screen {
     private static final Font FONT;
     private static final ImageData MENU;
     private static final ImageData CLIPBOARD;
-    private static final ImageData PENCIL;
     private static final ImageData ERASER;
+    private static final ImageData CROSS_MARK;
+    private static final ImageData CROSS_MARK_HOVERED;
+    private static final ImageData SNED_ORDER;
+    private static final ImageData SNED_ORDER_HOVERED;
     private static final Color COMMON = new Color(178, 148, 135);
     private static final Color LESS_BLACK = new Color(0, 0, 0, 128);
 
@@ -67,11 +70,11 @@ public class RestaurantMenuScreen extends Screen {
             int y = getScreenCenterY() - 65 + i * 18;
             this.orderEntryBtns[i] = new Rectangle(x, y, 108, 16);
         }
-        this.orderBtn = new Rectangle(getScreenCenterX() - 164, getScreenCenterY() + 70, 24, 16);
+        this.orderBtn = new Rectangle(getScreenCenterX() - 164, getScreenCenterY() + 66, 24, 24);
         this.cancelBtns = new Rectangle[this.orders.length];
         for (int i = 0; i < this.cancelBtns.length; i++) {
             int x = getScreenCenterX() - 44;
-            int y = getScreenCenterY() - 64 + i * 18;
+            int y = getScreenCenterY() - 63 + i * 18;
             this.cancelBtns[i] = new Rectangle(x, y, 12, 12);
         }
     }
@@ -129,14 +132,22 @@ public class RestaurantMenuScreen extends Screen {
             MenuEntry entry = order.getEntry();
             RecipeInfo info = entry.getInfo();
             graphics.renderItem(info.output(), x, y + 18 * i);
-            graphics.drawString(FONT, entry.getName(), x + 17, y + 5 + 18 * i, COMMON.getRGB(), false);
+            Component text = Component.literal(entry.getName()).withStyle(ChatFormatting.BOLD);
+            graphics.drawString(FONT, text, x + 17, y + 5 + 18 * i, COMMON.getRGB(), false);
             graphics.drawString(FONT, "x%d".formatted(order.getCount()), x + 100, y + 5 + 18 * i, COMMON.getRGB(), false);
-            ERASER.render(graphics, this.cancelBtns[i].x, this.cancelBtns[i].y);
+            if (this.cancelBtns[i].contains(mouseX, mouseY)) {
+                CROSS_MARK_HOVERED.render(graphics, cancelBtns[i].x, cancelBtns[i].y);
+            } else {
+                CROSS_MARK.render(graphics, cancelBtns[i].x, cancelBtns[i].y);
+            }
         }
 
         if (orders[0] != null) {
-            RenderUtil.fill(graphics, this.orderBtn, LESS_BLACK.getRGB());
-            graphics.drawString(FONT, "下单", this.orderBtn.x + 3, this.orderBtn.y + 4, COMMON.getRGB());
+            if (this.orderBtn.contains(mouseX, mouseY)) {
+                SNED_ORDER_HOVERED.render(graphics, orderBtn.x, orderBtn.y);
+            } else {
+                SNED_ORDER.render(graphics, orderBtn.x, orderBtn.y);
+            }
         }
     }
 
@@ -194,10 +205,10 @@ public class RestaurantMenuScreen extends Screen {
             int y = getScreenCenterY() - 65 + i * 18;
             this.orderEntryBtns[i].setLocation(x, y);
         }
-        this.orderBtn.setLocation(getScreenCenterX() - 164, getScreenCenterY() + 70);
+        this.orderBtn.setLocation(getScreenCenterX() - 164, getScreenCenterY() + 66);
         for (int i = 0; i < this.cancelBtns.length; i++) {
             int x = getScreenCenterX() - 44;
-            int y = getScreenCenterY() - 64 + i * 18;
+            int y = getScreenCenterY() - 63 + i * 18;
             this.cancelBtns[i].setLocation(x, y);
         }
     }
@@ -215,7 +226,10 @@ public class RestaurantMenuScreen extends Screen {
         FONT = MINECRAFT.font;
         MENU = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu.png"), 25, 11, 182, 185, 360, 358);
         CLIPBOARD = new ImageData(MaidRestaurant.modLoc("textures/gui/clipboard.png"), 76, 13, 167, 224, 359, 278);
-        PENCIL = new ImageData(MaidRestaurant.modLoc("textures/gui/pencil.png"), 0, 0, 12, 12, 12, 12);
         ERASER = new ImageData(MaidRestaurant.modLoc("textures/gui/eraser1.png"), 0, 0, 12, 12, 12, 12);
+        CROSS_MARK = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/cross_mark.png"), 0, 0, 12, 12, 12, 12);
+        CROSS_MARK_HOVERED = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/cross_mark_hovered.png"), 0, 0, 12, 12, 12, 12);
+        SNED_ORDER = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/send_order.png"), 0, 0, 24, 24, 24, 24);
+        SNED_ORDER_HOVERED = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/send_order_hovered.png"), 0, 0, 24, 24, 24, 24);
     }
 }
