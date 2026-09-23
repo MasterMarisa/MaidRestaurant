@@ -1,6 +1,8 @@
 package com.mastermarisa.maid_restaurant.datagen;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.datagen.model.BlockModelGenerator;
+import com.mastermarisa.maid_restaurant.datagen.model.BlockStateGenerator;
 import com.mastermarisa.maid_restaurant.datagen.model.ItemModelGenerator;
 import com.mastermarisa.maid_restaurant.datagen.tag.TagBlock;
 import com.mastermarisa.maid_restaurant.datagen.tag.TagItem;
@@ -21,6 +23,8 @@ public class DataGenerators {
         var block = vanillaPack.addProvider(packOutput -> new TagBlock(packOutput, registries, helper));
         vanillaPack.addProvider(packOutput -> new TagItem(packOutput, registries, block.contentsGetter(), helper));
 
+        generator.addProvider(event.includeClient(), new BlockModelGenerator(pack, helper));
+        generator.addProvider(event.includeClient(), new BlockStateGenerator(pack, helper));
         generator.addProvider(event.includeClient(), new ItemModelGenerator(pack, helper));
     }
 }

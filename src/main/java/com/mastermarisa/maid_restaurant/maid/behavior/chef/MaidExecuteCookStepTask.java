@@ -64,6 +64,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
         if (ticksRemain > 0){
             return true;
         } else {
+            MaidRestaurant.LOGGER.debug("CAN STILL USE CHECKED");
             return MemoryUtil.isTarget(maid, TargetType.EXECUTE_COOK_STEP) && checkExtraStartConditions(level, maid);
         }
     }
@@ -118,6 +119,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
+        MaidRestaurant.LOGGER.debug("MaidExecuteCookStepTask - STOP");
         maid.getBrain()
                 .getMemory(ModEntities.TARGET_POS.get())
                 .ifPresent(tracker -> {
@@ -125,6 +127,10 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
                 });
         if (MemoryUtil.isTarget(maid, TargetType.EXECUTE_COOK_STEP)) {
             MemoryUtil.removeTarget(maid);
+        }
+        ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.EXECUTING);
+        if (node != null) {
+            node.verifyAndUpdateState(level, maid);
         }
         CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidGatherMaterialTask.UID, 5);
         CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidApproachWorkBlockTask.UID, 5);

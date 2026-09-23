@@ -1,9 +1,6 @@
 package com.mastermarisa.maid_restaurant;
 
-import com.mastermarisa.maid_restaurant.init.ModContainers;
-import com.mastermarisa.maid_restaurant.init.ModCreativeTabs;
-import com.mastermarisa.maid_restaurant.init.ModEntities;
-import com.mastermarisa.maid_restaurant.init.ModItems;
+import com.mastermarisa.maid_restaurant.init.*;
 import com.mastermarisa.maid_restaurant.integration.kaleidoscope_cookery.KaleidoscopeCookeryCompat;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
@@ -25,6 +22,7 @@ public class MaidRestaurant {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModEntities.MEMORY_MODULE_TYPES.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
+        ModBlocks.BLOCKS.register(modEventBus);
         ModContainers.CONTAINER_TYPES.register(modEventBus);
         ModCreativeTabs.TABS.register(modEventBus);
 

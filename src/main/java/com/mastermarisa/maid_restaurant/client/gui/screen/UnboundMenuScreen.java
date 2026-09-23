@@ -213,8 +213,8 @@ public class UnboundMenuScreen extends Screen {
                 RenderUtil.drawString(graphics, font, Component.literal("+"), centerX - 105, centerY - 2, 2.0F, LINE.getRGB());
             } else {
                 CLIP_BOARD.renderCentered(graphics, getScreenCenterX() - 100, getScreenCenterY() - 5);
-                int x = getScreenCenterX() - 100 - 84 + 20;
-                int y = getScreenCenterY() - 112 + 45;
+                int x = getScreenCenterX() - 164;
+                int y = getScreenCenterY() - 67;
                 Component text = Component.literal("菜品").withStyle(ChatFormatting.BOLD);
                 Component text1 = Component.literal("烹饪方式").withStyle(ChatFormatting.BOLD);
                 Component text2 = Component.literal("材料").withStyle(ChatFormatting.BOLD);

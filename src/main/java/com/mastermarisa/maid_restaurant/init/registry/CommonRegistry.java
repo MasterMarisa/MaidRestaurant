@@ -6,12 +6,12 @@ import com.mastermarisa.maid_restaurant.capability.CraftingTableCapability;
 import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.integration.ae2.AE2Compat;
 import com.mastermarisa.maid_restaurant.integration.bakeries.BakeriesCompat;
-import com.mastermarisa.maid_restaurant.integration.create.CreateCompat;
 import com.mastermarisa.maid_restaurant.integration.kaleidoscope_cookery.KaleidoscopeCookeryCompat;
 import com.mastermarisa.maid_restaurant.integration.kaleidoscope_tavern.KaleidoscopeTavernCompat;
 import com.mastermarisa.maid_restaurant.integration.rs.RSCompat;
 import com.mastermarisa.maid_restaurant.schedule.RequestBus;
 import com.mastermarisa.maid_restaurant.storage.CommonStorage;
+import com.mastermarisa.maid_restaurant.storage.CreativeCrateStorage;
 import com.mastermarisa.maid_restaurant.storage.StorageRegistry;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -40,9 +40,9 @@ public class CommonRegistry {
 
     private static void registerStorages() {
         StorageRegistry.register(new CommonStorage());
+        StorageRegistry.register(new CreativeCrateStorage());
         KaleidoscopeCookeryCompat.registerStorages();
         AE2Compat.registerStorages();
         RSCompat.registerStorages();
-        CreateCompat.registerStorages();
     }
 }

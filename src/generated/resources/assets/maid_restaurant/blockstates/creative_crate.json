@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "maid_restaurant:block/creative_crate",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "maid_restaurant:block/creative_crate"
+    },
+    "facing=south": {
+      "model": "maid_restaurant:block/creative_crate",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "maid_restaurant:block/creative_crate",
+      "y": 270
+    }
+  }
+}

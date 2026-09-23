@@ -23,6 +23,8 @@ public class ItemModelGenerator extends ItemModelProvider {
         basicItem(ModItems.UNBOUND_MENU.get());
         basicItem(ModItems.RESTAURANT_MENU.get());
 
+        withExistingParent("creative_crate", modLoc("block/creative_crate"));
+
         ResourceLocation cookingGuide = ForgeRegistries.ITEMS.getKey(ModItems.COOKING_GUIDE.get());
         if (cookingGuide != null) {
             ItemModelBuilder noRecipe = this.basicItem(MaidRestaurant.modLoc("cooking_guide_no_recipe"));

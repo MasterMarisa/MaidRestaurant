@@ -6,6 +6,8 @@
   "item.maid_restaurant.unbound_menu" : "Unbound Menu",
   "item.maid_restaurant.restaurant_menu" : "Restaurant Menu",
 
+  "block.maid_restaurant.creative_crate" : "Creative Crate",
+
   "item_group.maid_restaurant.main.name" : "Maid Restaurant",
 
   "task.maid_restaurant.chef" : "Chef",

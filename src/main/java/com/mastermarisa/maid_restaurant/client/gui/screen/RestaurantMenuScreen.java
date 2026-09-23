@@ -3,7 +3,11 @@ package com.mastermarisa.maid_restaurant.client.gui.screen;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.client.gui.widget.ImageData;
 import com.mastermarisa.maid_restaurant.data.menu.MenuEntry;
+import com.mastermarisa.maid_restaurant.data.menu.OrderEntry;
+import com.mastermarisa.maid_restaurant.data.menu.RecipeInfo;
 import com.mastermarisa.maid_restaurant.item.RestaurantMenuItem;
+import com.mastermarisa.maid_restaurant.network.NetworkHandler;
+import com.mastermarisa.maid_restaurant.network.message.SendOrderMessage;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -17,8 +21,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.awt.*;
-import java.util.Comparator;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class RestaurantMenuScreen extends Screen {
@@ -27,15 +31,20 @@ public class RestaurantMenuScreen extends Screen {
     private static final ImageData MENU;
     private static final ImageData CLIPBOARD;
     private static final ImageData PENCIL;
+    private static final ImageData ERASER;
     private static final Color COMMON = new Color(178, 148, 135);
     private static final Color LESS_BLACK = new Color(0, 0, 0, 128);
 
     private final Rectangle menuArea;
     private final Rectangle[] menuEntryBtns;
+    private final Rectangle[] orderEntryBtns;
+    private final Rectangle orderBtn;
+    private final Rectangle[] cancelBtns;
 
     private final int maxPage;
+    private final String restaurantId;
     private final Map<Integer, MenuEntry> menuEntries;
-    private final Order[] orders;
+    private final OrderEntry[] orders;
 
     private int currentPage;
 
@@ -43,13 +52,27 @@ public class RestaurantMenuScreen extends Screen {
         super(Component.empty());
         this.menuEntries = RestaurantMenuItem.getEntries(itemStack);
         this.maxPage = Mth.positiveCeilDiv(this.menuEntries.keySet().stream().max(Comparator.comparingInt(a -> a)).orElse(0) + 1, 4);
-        this.orders = new Order[6];
+        this.restaurantId = RestaurantMenuItem.getRestaurantId(itemStack);
+        this.orders = new OrderEntry[7];
         this.menuArea = new Rectangle(getScreenCenterX() + 27, getScreenCenterY() - 81, 132, 165);
         this.menuEntryBtns = new Rectangle[4];
         for (int i = 0; i < 4; i++) {
             int x = getScreenCenterX() + 40;
             int y = getScreenCenterY() - 53 + i * 32;
             this.menuEntryBtns[i] = new Rectangle(x, y, 94, 16);
+        }
+        this.orderEntryBtns = new Rectangle[this.orders.length];
+        for (int i = 0; i < this.orderEntryBtns.length; i++) {
+            int x = getScreenCenterX() - 164;
+            int y = getScreenCenterY() - 65 + i * 18;
+            this.orderEntryBtns[i] = new Rectangle(x, y, 108, 16);
+        }
+        this.orderBtn = new Rectangle(getScreenCenterX() - 164, getScreenCenterY() + 70, 24, 16);
+        this.cancelBtns = new Rectangle[this.orders.length];
+        for (int i = 0; i < this.cancelBtns.length; i++) {
+            int x = getScreenCenterX() - 44;
+            int y = getScreenCenterY() - 64 + i * 18;
+            this.cancelBtns[i] = new Rectangle(x, y, 12, 12);
         }
     }
 
@@ -60,9 +83,17 @@ public class RestaurantMenuScreen extends Screen {
     private void addOrder(MenuEntry entry) {
         for (int i = 0; i < this.orders.length; i++) {
             if (this.orders[i] == null) {
-                this.orders[i] = new Order(1, entry);
+                this.orders[i] = new OrderEntry(1, entry);
+                break;
             }
         }
+    }
+
+    private void removeOrder(int index) {
+        for (int i = index + 1; i < this.orders.length; i++) {
+            this.orders[i - 1] = this.orders[i];
+        }
+        this.orders[this.orders.length - 1] = null;
     }
 
     @Override
@@ -88,17 +119,48 @@ public class RestaurantMenuScreen extends Screen {
                 centerX + 90, centerY + 79, 0, 0.6F, COMMON.getRGB(), false);
 
         CLIPBOARD.renderCentered(graphics, getScreenCenterX() - 100, getScreenCenterY() - 5);
+        int x = getScreenCenterX() - 164;
+        int y = getScreenCenterY() - 65;
+        for (int i = 0; i < this.orders.length; i++) {
+            OrderEntry order = this.orders[i];
+            if (order == null) {
+                break;
+            }
+            MenuEntry entry = order.getEntry();
+            RecipeInfo info = entry.getInfo();
+            graphics.renderItem(info.output(), x, y + 18 * i);
+            graphics.drawString(FONT, entry.getName(), x + 17, y + 5 + 18 * i, COMMON.getRGB(), false);
+            graphics.drawString(FONT, "x%d".formatted(order.getCount()), x + 100, y + 5 + 18 * i, COMMON.getRGB(), false);
+            ERASER.render(graphics, this.cancelBtns[i].x, this.cancelBtns[i].y);
+        }
+
+        if (orders[0] != null) {
+            RenderUtil.fill(graphics, this.orderBtn, LESS_BLACK.getRGB());
+            graphics.drawString(FONT, "下单", this.orderBtn.x + 3, this.orderBtn.y + 4, COMMON.getRGB());
+        }
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.orders[0] != null && this.orderBtn.contains(mouseX, mouseY)) {
+            List<OrderEntry> orderEntryList = Arrays.stream(this.orders).filter(Objects::nonNull).toList();
+            SendOrderMessage message = new SendOrderMessage(restaurantId, orderEntryList);
+            NetworkHandler.sendToServer(message);
+            MINECRAFT.setScreen(null);
+            return true;
+        }
         for (int i = 0; i < this.menuEntryBtns.length; i++) {
             if (this.menuEntryBtns[i].contains(mouseX, mouseY) && this.orders[orders.length - 1] == null) {
                 this.addOrder(menuEntries.get(currentPage * 4 + i));
                 return true;
             }
         }
-
+        for (int i = 0; i < this.cancelBtns.length; i++) {
+            if (this.orders[i] != null && this.cancelBtns[i].contains(mouseX, mouseY)) {
+                this.removeOrder(i);
+                return true;
+            }
+        }
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -106,6 +168,14 @@ public class RestaurantMenuScreen extends Screen {
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         if (this.menuArea.contains(mouseX, mouseY)) {
             this.currentPage = Mth.clamp(currentPage - Mth.sign(delta), 0, maxPage - 1);
+            return true;
+        }
+        for (int i = 0; i < this.orderEntryBtns.length; i++) {
+            if (this.orderEntryBtns[i].contains(mouseX, mouseY) && this.orders[i] != null) {
+                OrderEntry order = this.orders[i];
+                order.setCount(Mth.clamp(order.getCount() + (int) delta, 1, 64));
+                return true;
+            }
         }
         return super.mouseScrolled(mouseX, mouseY, delta);
     }
@@ -119,6 +189,17 @@ public class RestaurantMenuScreen extends Screen {
             int y = getScreenCenterY() - 53 + i * 32;
             this.menuEntryBtns[i].setLocation(x, y);
         }
+        for (int i = 0; i < this.orderEntryBtns.length; i++) {
+            int x = getScreenCenterX() - 164;
+            int y = getScreenCenterY() - 65 + i * 18;
+            this.orderEntryBtns[i].setLocation(x, y);
+        }
+        this.orderBtn.setLocation(getScreenCenterX() - 164, getScreenCenterY() + 70);
+        for (int i = 0; i < this.cancelBtns.length; i++) {
+            int x = getScreenCenterX() - 44;
+            int y = getScreenCenterY() - 64 + i * 18;
+            this.cancelBtns[i].setLocation(x, y);
+        }
     }
 
     public static int getScreenCenterX(){
@@ -129,21 +210,12 @@ public class RestaurantMenuScreen extends Screen {
         return MINECRAFT.getWindow().getGuiScaledHeight() / 2;
     }
 
-    private static class Order {
-        private int count;
-        private MenuEntry entry;
-
-        public Order(int count, MenuEntry entry) {
-            this.count = count;
-            this.entry = entry;
-        }
-    }
-
     static {
         MINECRAFT = Minecraft.getInstance();
         FONT = MINECRAFT.font;
         MENU = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu.png"), 25, 11, 182, 185, 360, 358);
         CLIPBOARD = new ImageData(MaidRestaurant.modLoc("textures/gui/clipboard.png"), 76, 13, 167, 224, 359, 278);
         PENCIL = new ImageData(MaidRestaurant.modLoc("textures/gui/pencil.png"), 0, 0, 12, 12, 12, 12);
+        ERASER = new ImageData(MaidRestaurant.modLoc("textures/gui/eraser1.png"), 0, 0, 12, 12, 12, 12);
     }
 }

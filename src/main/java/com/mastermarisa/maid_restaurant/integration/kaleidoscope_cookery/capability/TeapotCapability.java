@@ -159,19 +159,24 @@ public class TeapotCapability implements ICookCapability {
                     }
                     maid.swing(InteractionHand.MAIN_HAND);
                 }
+                be.refresh();
             }
             case 2 -> {
                 ItemStack result = be.getResult();
                 if (!ItemStack.isSameItem(result, recipe.result())) {
                     maid.swing(InteractionHand.MAIN_HAND);
-                    level.setBlockEntity(new TeapotBlockEntity(pos, level.getBlockState(pos)));
+                    TeapotBlockEntity teapot = new TeapotBlockEntity(pos, level.getBlockState(pos));
+                    level.setBlockEntity(teapot);
+                    teapot.refresh();
                     return CookResult.PROGRESS;
                 }
                 List<ItemStack> extracted = InvUtil.tryExtract(maidInv, result.getCount(), EMPTY_CUP.get(), true);
                 if (extracted.isEmpty()) {
                     return CookResult.INTERRUPTED;
                 }
-                level.setBlockEntity(new TeapotBlockEntity(pos, level.getBlockState(pos)));
+                TeapotBlockEntity teapot = new TeapotBlockEntity(pos, level.getBlockState(pos));
+                level.setBlockEntity(teapot);
+                teapot.refresh();
                 InvUtil.getItemToMaid(maid, result.copy());
                 maid.swing(InteractionHand.MAIN_HAND);
                 if (node.calculateCount(level, maid) <= 0) {

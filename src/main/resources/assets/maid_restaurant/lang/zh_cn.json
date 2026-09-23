@@ -6,6 +6,8 @@
   "item.maid_restaurant.unbound_menu" : "未装订的菜单",
   "item.maid_restaurant.restaurant_menu" : "餐厅菜单",
 
+  "block.maid_restaurant.creative_crate" : "创造板条箱",
+
   "item_group.maid_restaurant.main.name" : "女仆餐厅",
 
   "task.maid_restaurant.chef" : "主厨",

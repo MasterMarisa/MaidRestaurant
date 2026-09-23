@@ -1,10 +1,7 @@
 package com.mastermarisa.maid_restaurant.network;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.network.message.BindMenuMessage;
-import com.mastermarisa.maid_restaurant.network.message.RestaurantIdUpdateMessage;
-import com.mastermarisa.maid_restaurant.network.message.SaveRecipeTreeMessage;
-import com.mastermarisa.maid_restaurant.network.message.UpdateUnboundMenuMessage;
+import com.mastermarisa.maid_restaurant.network.message.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -27,6 +24,7 @@ public class NetworkHandler {
         CHANNEL.registerMessage(packetId++, UpdateUnboundMenuMessage.Remove.class, UpdateUnboundMenuMessage.Remove::encode, UpdateUnboundMenuMessage.Remove::decode, UpdateUnboundMenuMessage.Remove::handle);
         CHANNEL.registerMessage(packetId++, UpdateUnboundMenuMessage.Update.class, UpdateUnboundMenuMessage.Update::encode, UpdateUnboundMenuMessage.Update::decode, UpdateUnboundMenuMessage.Update::handle);
         CHANNEL.registerMessage(packetId++, BindMenuMessage.class, BindMenuMessage::encode, BindMenuMessage::decode, BindMenuMessage::handle);
+        CHANNEL.registerMessage(packetId++, SendOrderMessage.class, SendOrderMessage::encode, SendOrderMessage::decode, SendOrderMessage::handle);
     }
 
     public static void sendToClientPlayer(Object message, Player player) {

@@ -3,6 +3,7 @@ package com.mastermarisa.maid_restaurant.init;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.item.*;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
@@ -16,4 +17,6 @@ public interface ModItems {
     RegistryObject<Item> POINTSET_ZONE_DEFINITION = ITEMS.register("pointset_zone_definition", () -> new PointsetZoneDefinitionItem(new Item.Properties()));
     RegistryObject<Item> UNBOUND_MENU = ITEMS.register("unbound_menu", () -> new UnboundMenuItem(new Item.Properties().stacksTo(1)));
     RegistryObject<Item> RESTAURANT_MENU = ITEMS.register("restaurant_menu", () -> new RestaurantMenuItem(new Item.Properties().stacksTo(1)));
+
+    RegistryObject<Item> CREATIVE_CRATE = ITEMS.register("creative_crate", () -> new BlockItem(ModBlocks.CREATIVE_CRATE.get(), new Item.Properties()));
 }

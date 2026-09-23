@@ -1,10 +1,9 @@
-package com.mastermarisa.maid_restaurant.integration.create.storage;
+package com.mastermarisa.maid_restaurant.storage;
 
+import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
-import com.mastermarisa.maid_restaurant.storage.StorageRegistry;
-import com.simibubi.create.AllBlocks;
-import com.simibubi.create.Create;
-import com.simibubi.create.content.logistics.crate.CreativeCrateBlockEntity;
+import com.mastermarisa.maid_restaurant.init.ModBlocks;
+import com.mastermarisa.maid_restaurant.init.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -14,18 +13,14 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 
 public class CreativeCrateStorage implements IMaidStorage {
-    private static final ResourceLocation ID = Create.asResource("creative_crate");
-
-    public static void register() {
-        StorageRegistry.register(new CreativeCrateStorage());
-    }
+    private static final ResourceLocation ID = MaidRestaurant.modLoc("creative_crate");
 
     @Override
     public ResourceLocation getID() { return ID; }
 
     @Override
     public ItemStack getIcon() {
-        return AllBlocks.CREATIVE_CRATE.asStack();
+        return ModItems.CREATIVE_CRATE.get().getDefaultInstance();
     }
 
     @Override
@@ -35,15 +30,15 @@ public class CreativeCrateStorage implements IMaidStorage {
 
     @Override
     public boolean isValid(Level level, BlockPos pos) {
-        return level.getBlockEntity(pos) instanceof CreativeCrateBlockEntity;
+        return level.getBlockState(pos).is(ModBlocks.CREATIVE_CRATE.get());
     }
 
     @Override
     public List<ItemStack> extract(Level level, BlockPos pos, Ingredient ingredient, int amount, boolean simulate) {
-        if (ingredient.getItems().length == 0) {
-            return List.of();
+        if (!ingredient.isEmpty()) {
+            return List.of(ingredient.getItems()[0].copyWithCount(amount));
         }
-        return List.of(ingredient.getItems()[0].copyWithCount(amount));
+        return List.of();
     }
 
     @Override
