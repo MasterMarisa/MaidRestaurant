@@ -13,7 +13,6 @@ import com.mastermarisa.maid_restaurant.schedule.ChefScheduler;
 import com.mastermarisa.maid_restaurant.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.tree.NodeState;
-import com.mastermarisa.maid_restaurant.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.uitls.ChatBubbleUtil;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import com.mastermarisa.maid_restaurant.uitls.MemoryUtil;
@@ -55,29 +54,19 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         }
 
         ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.NEED_MATERIALS);
-        if (node == null) {
+        if (node == null || !node.isLeaf()) {
             return false;
         }
 
-        int count = node.calculateRequiredCount(level, maid);
-        if (count == 0) {
-            node.setState(NodeState.DONE);
-            if (node.getParent() != null) {
-                node.getParent().computeState();
+        node.verifyAndUpdateState(level, maid);
+        if (node.getState() != NodeState.NEED_MATERIALS) {
+            node.computeParentState();
+            if (node.getParent() != null && node.getParent().getState() == NodeState.WAITING) {
+                CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
             }
-            CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 1);
             return false;
         }
 
-        List<ItemStack> existedInputs = ChefScheduler.getExistedInputs(level, maid, node.getParent());
-        if (InvUtil.contains(existedInputs, node.getIngredient(), count)) {
-            node.setState(NodeState.DONE);
-            if (node.getParent() != null) {
-                node.getParent().computeState();
-            }
-            CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 1);
-            return false;
-        }
         return searchStorage(level, maid, node);
     }
 
@@ -136,8 +125,10 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
             return false;
         }
 
-        RecipeNode recipeNode = node.getRecipeNode();
-        Ingredient ingredient = recipeNode.getIngredient();
+        Ingredient ingredient = node.getIngredient();
+        if (ingredient.isEmpty()) {
+            return false;
+        }
 
         BlockPos best = null;
         double bestDist = Double.MAX_VALUE;
@@ -171,24 +162,32 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
             return;
         }
 
+        IItemHandler maidInv = maid.getAvailableInv(false);
+        int count = node.calculateRequiredCount(level, maid);
+        if (count > 0) {
+            List<ItemStack> existed = ChefScheduler.getExistedInputs(level, maid, node.getParent());
+            count -= InvUtil.count(existed, node.getIngredient());
+        }
+
+        if (count <= 0) {
+            node.setState(NodeState.DONE);
+            node.computeParentState();
+            if (node.getParent() != null && node.getParent().getState() == NodeState.WAITING) {
+                CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
+            }
+            return;
+        }
+
         IMaidStorage storage = StorageRegistry.tryGetAt(level, pos);
         if (storage == null) {
             return;
         }
 
-        IItemHandler maidInv = maid.getAvailableInv(false);
-        int required = node.calculateRequiredCount(level, maid);
-
         maid.swing(InteractionHand.OFF_HAND);
-        if (InvUtil.tryTake(level, pos, storage, maidInv, node.getIngredient(), required)) {
+        if (InvUtil.tryTake(level, pos, storage, maidInv, node.getIngredient(), count)) {
             node.setState(NodeState.DONE);
+            node.computeParentState();
         }
-
-        ExecutionNode parent = node.getParent();
-        if (parent != null) {
-            parent.computeState();
-        }
-
         CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
     }
 }

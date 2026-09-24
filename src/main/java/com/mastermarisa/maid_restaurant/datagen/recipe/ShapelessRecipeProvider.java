@@ -31,14 +31,14 @@ public class ShapelessRecipeProvider extends ModRecipeProvider {
 
         ShapelessRecipeBuilder.shapeless(RecipeCategory.TOOLS, ModItems.CUBOID_ZONE_DEFINITION.get())
                 .requires(Items.PAPER)
-                .requires(Items.LIME_DYE)
+                .requires(Items.LIGHT_BLUE_DYE)
                 .requires(Items.CHEST)
                 .unlockedBy("has_paper", has(Items.PAPER))
                 .save(consumer);
 
         ShapelessRecipeBuilder.shapeless(RecipeCategory.TOOLS, ModItems.POINTSET_ZONE_DEFINITION.get())
                 .requires(Items.PAPER)
-                .requires(Items.CYAN_DYE)
+                .requires(Items.LIGHT_BLUE_DYE)
                 .requires(ItemTags.WOODEN_BUTTONS)
                 .unlockedBy("has_paper", has(Items.PAPER))
                 .save(consumer);

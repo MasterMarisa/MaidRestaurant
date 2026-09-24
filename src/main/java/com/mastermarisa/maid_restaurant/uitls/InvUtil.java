@@ -58,6 +58,16 @@ public class InvUtil {
         return count;
     }
 
+    public static int count(List<ItemStack> itemStacks, Ingredient ingredient) {
+        int count = 0;
+        for (ItemStack itemStack : itemStacks) {
+            if (ingredient.test(itemStack)) {
+                count += itemStack.getCount();
+            }
+        }
+        return count;
+    }
+
     public static boolean contains(IItemHandler handler, Ingredient ingredient, int count) {
         if (count == 1) {
             return isStackIn(handler, ingredient);

@@ -5,17 +5,16 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumMap;
 import java.util.List;
 
 public class VoxelShapeUtil {
-    public static EnumMap<Direction, VoxelShape> horizontalShapes(@NotNull VoxelShape northShape) {
+    public static EnumMap<Direction, VoxelShape> horizontalShapes(VoxelShape northShape) {
         return horizontalShapes(northShape, Vec3.ZERO);
     }
 
-    public static EnumMap<Direction, VoxelShape> horizontalShapes(@NotNull VoxelShape northShape, Vec3 offset) {
+    public static EnumMap<Direction, VoxelShape> horizontalShapes(VoxelShape northShape, Vec3 offset) {
         EnumMap<Direction, VoxelShape> result = new EnumMap<>(Direction.class);
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             result.put(direction, rotateShape(northShape, direction).move(offset.x, offset.y, offset.z));

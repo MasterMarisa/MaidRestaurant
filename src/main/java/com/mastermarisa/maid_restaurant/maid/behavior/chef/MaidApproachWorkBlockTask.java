@@ -44,19 +44,21 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
         if (!super.checkExtraStartConditions(level, maid)) {
             return false;
         }
+
         ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.READY);
         if (node == null) {
             return false;
         }
-        int count = node.calculateRequiredCount(level, maid);
-        if (count <= 0) {
-            node.setState(NodeState.DONE);
-            if (node.getParent() != null) {
-                node.getParent().computeState();
+
+        node.verifyAndUpdateState(level, maid);
+        if (node.getState() != NodeState.READY) {
+            node.computeParentState();
+            if (node.getParent() != null && node.getParent().getState() == NodeState.READY) {
                 CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
             }
             return false;
         }
+
         return searchWorkBlock(level, maid, node);
     }
 
@@ -135,8 +137,8 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
             MemoryUtil.setWalkAndLookTargetMemories(maid, walkPos, workPos, movementSpeed, 0);
             return true;
         }
-        ChatBubbleUtil.setTextChatBubble(maid, Component.literal("主人,我找不到空闲的" + capability.getIcon().getDisplayName().getString() + "方块!"));
 
+        ChatBubbleUtil.setTextChatBubble(maid, Component.literal("主人,我找不到空闲的" + capability.getIcon().getDisplayName().getString() + "方块!"));
         return false;
     }
 
@@ -150,16 +152,17 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
             return;
         }
 
-        ICookCapability capability = node.getCapability();
-        if (capability == null || !capability.isValidWorkBlock(level, pos)) {
+        node.verifyAndUpdateState(level, maid);
+        if (node.getState() != NodeState.READY) {
+            node.computeParentState();
+            if (node.getParent() != null && node.getParent().getState() == NodeState.READY) {
+                CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
+            }
             return;
         }
 
-        node.verifyAndUpdateState(level, maid);
-        if (node.getState() != NodeState.READY) {
-            if (node.getParent() != null) {
-                node.getParent().computeState();
-            }
+        ICookCapability capability = node.getCapability();
+        if (capability == null || !capability.isValidWorkBlock(level, pos)) {
             return;
         }
 

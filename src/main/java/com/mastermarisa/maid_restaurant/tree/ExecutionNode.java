@@ -111,6 +111,12 @@ public class ExecutionNode {
         }
     }
 
+    public void computeParentState() {
+        if (this.parent != null) {
+            this.parent.computeState();;
+        }
+    }
+
     /**
      * 验证并更新自身及子树状态
      * @param maid 女仆实体
@@ -121,19 +127,18 @@ public class ExecutionNode {
     }
 
     private void verifyAndUpdateState(ServerLevel level, EntityMaid maid, int parentCount,
-                                      @Nullable List<ItemStack> existedInputs) {
+                                      @Nullable List<ItemStack> existed) {
         int required = RecipeNode.calculateCountByParent(level, maid, recipeNode, parentCount);
-        boolean containing = required <= 0;
-        if (!containing) {
-            if (existedInputs == null) {
-                existedInputs = ChefScheduler.getExistedInputs(level, maid, parent);
+        if (required > 0) {
+            if (existed == null || existed.isEmpty()) {
+                existed = ChefScheduler.getExistedInputs(level, maid, parent);
             }
-            containing = InvUtil.contains(existedInputs, getIngredient(), required);
+            required -= InvUtil.count(existed, recipeNode.getIngredient());
         }
 
         if (isLeaf()) {
-            state = containing ? NodeState.DONE : NodeState.NEED_MATERIALS;
-        } else if (containing) {
+            state = required <= 0 ? NodeState.DONE : NodeState.NEED_MATERIALS;
+        } else if (required <= 0) {
             // 只要自身满足条件,就不再关心子树状态,并将子树所有节点状态覆盖为 DONE
             state = NodeState.DONE;
             setSubtreeState(NodeState.DONE);
@@ -141,7 +146,7 @@ public class ExecutionNode {
             // 否则临时设为 WAITING,等待子树更新状态后重新推导
             state = NodeState.WAITING;
             for (ExecutionNode child : children) {
-                child.verifyAndUpdateState(level, maid, required, existedInputs);
+                child.verifyAndUpdateState(level, maid, required, existed);
             }
             computeState();
         }

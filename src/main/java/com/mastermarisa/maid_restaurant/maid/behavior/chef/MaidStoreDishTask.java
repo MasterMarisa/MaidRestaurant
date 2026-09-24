@@ -155,7 +155,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
 
         ExecutionNode node = request.root;
         IItemHandler maidInv = maid.getAvailableInv(false);
-        List<ItemStack> results = InvUtil.tryExtract(maidInv, node.getCount(), node.getIngredient(), true, true);
+        List<ItemStack> results = InvUtil.tryExtract(maidInv, node.getCount(), node.getIngredient(), false, true);
         if (results.isEmpty()) {
             node.verifyAndUpdateState(level, maid);
             return;

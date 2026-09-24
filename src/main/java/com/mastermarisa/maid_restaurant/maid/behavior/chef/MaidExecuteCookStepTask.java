@@ -37,11 +37,8 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
             return false;
         }
 
-        BlockPos pos = maid.getBrain()
-                .getMemory(ModEntities.TARGET_POS.get())
-                .orElseThrow()
-                .currentBlockPosition();
-        if (BlockUsageUtil.isUsed(pos) && !BlockUsageUtil.isUsing(pos, maid.getUUID())) {
+        BlockPos pos = maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).orElseThrow().currentBlockPosition();
+        if (!BlockUsageUtil.isUsing(pos, maid.getUUID())) {
             return false;
         }
 
@@ -57,6 +54,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long gameTime) {
         MaidRestaurant.LOGGER.debug("MaidExecuteCookStepTask - START");
+        this.ticksRemain = 0;
     }
 
     @Override
@@ -64,17 +62,14 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
         if (ticksRemain > 0){
             return true;
         } else {
-            MaidRestaurant.LOGGER.debug("CAN STILL USE CHECKED");
             return MemoryUtil.isTarget(maid, TargetType.EXECUTE_COOK_STEP) && checkExtraStartConditions(level, maid);
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     protected void tick(ServerLevel level, EntityMaid maid, long gameTime) {
-        BlockPos pos = maid.getBrain()
-                .getMemory(ModEntities.TARGET_POS.get())
-                .orElseThrow()
-                .currentBlockPosition();
+        BlockPos pos = maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).orElseThrow().currentBlockPosition();
 
         if (gameTime % 10 == 0) {
             double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
@@ -95,45 +90,34 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
         }
 
         ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.EXECUTING);
-        if (node == null) {
-            return;
-        }
-
         ICookCapability capability = node.getCapability();
-        if (capability == null) {
-            return;
-        }
-
         CookResult result = capability.cookTick(level, maid, pos, node.getRecipeNode());
 
+        CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidApproachWorkBlockTask.UID, 5);
         if (result == CookResult.DONE) {
-            node.verifyAndUpdateState(level, maid);
-            if (node.getParent() != null) {
-                node.getParent().computeState();
-            }
             CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidStoreDishTask.UID, 5);
+            this.doStop(level, maid, gameTime);
         } else if (result == CookResult.INTERRUPTED) {
-            node.verifyAndUpdateState(level, maid);
+            CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidGatherMaterialTask.UID, 5);
+            this.doStop(level, maid, gameTime);
         }
     }
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
-        MaidRestaurant.LOGGER.debug("MaidExecuteCookStepTask - STOP");
-        maid.getBrain()
-                .getMemory(ModEntities.TARGET_POS.get())
-                .ifPresent(tracker -> {
-                    BlockUsageUtil.remove(tracker.currentBlockPosition(), maid.getUUID());
-                });
+        maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(t -> {
+            BlockUsageUtil.remove(t.currentBlockPosition(), maid.getUUID());
+        });
+
         if (MemoryUtil.isTarget(maid, TargetType.EXECUTE_COOK_STEP)) {
             MemoryUtil.removeTarget(maid);
         }
+
         ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.EXECUTING);
         if (node != null) {
             node.verifyAndUpdateState(level, maid);
+            node.computeParentState();
         }
-        CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidGatherMaterialTask.UID, 5);
-        CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidApproachWorkBlockTask.UID, 5);
     }
 
     @Override
@@ -144,9 +128,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
         ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.EXECUTING);
         if (node != null) {
             ICookCapability capability = node.getCapability();
-            if (capability != null) {
-                return capability.getTickInterval();
-            }
+            return capability != null ? capability.getTickInterval() : 0;
         }
         return 0;
     }
