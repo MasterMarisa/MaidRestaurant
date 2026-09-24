@@ -1,17 +1,17 @@
 package com.mastermarisa.maid_restaurant.tree;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.google.gson.JsonElement;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
+import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -217,7 +217,9 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         if (!ingredient.isEmpty()) {
-            tag.putString(TAG_OUTPUT, ingredient.toJson().toString());
+            FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+            ingredient.toNetwork(buffer);
+            tag.putByteArray(TAG_OUTPUT, buffer.array());
         }
         tag.putInt(TAG_COUNT, count);
 
@@ -239,8 +241,9 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     @Override
     public void deserializeNBT(CompoundTag tag) {
         if (tag.contains(TAG_OUTPUT)) {
-            JsonElement jsonElement = GsonHelper.parse(tag.getString(TAG_OUTPUT));
-            ingredient = Ingredient.fromJson(jsonElement);
+            byte[] bytes = tag.getByteArray(TAG_OUTPUT);
+            FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.wrappedBuffer(bytes));
+            ingredient = Ingredient.fromNetwork(buffer);
         } else {
             ingredient = Ingredient.EMPTY;
         }

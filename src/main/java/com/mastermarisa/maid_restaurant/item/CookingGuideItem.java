@@ -1,12 +1,12 @@
 package com.mastermarisa.maid_restaurant.item;
 
-import com.google.gson.JsonElement;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.client.gui.screen.CookingGuideScreen;
+import io.netty.buffer.Unpooled;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
@@ -67,8 +67,9 @@ public class CookingGuideItem extends Item {
             return false;
         }
 
-        JsonElement jsonElement = GsonHelper.parse(tag.getString("ingredient"));
-        Ingredient ingredient = Ingredient.fromJson(jsonElement);
+        byte[] bytes = tag.getByteArray("ingredient");
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.wrappedBuffer(bytes));
+        Ingredient ingredient = Ingredient.fromNetwork(buffer);
 
         return !ingredient.isEmpty();
     }
