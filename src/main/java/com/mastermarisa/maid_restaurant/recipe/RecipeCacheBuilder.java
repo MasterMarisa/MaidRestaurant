@@ -59,6 +59,10 @@ public class RecipeCacheBuilder {
         }
         for (List<IngredientStack> stacks : INGREDIENT_STACK_MAP.values()) {
             for (IngredientStack stack : stacks) {
+                if (MATCHED_RECIPE_MAP.containsKey(stack.getIngredient())) {
+                    continue;
+                }
+
                 List<ResourceLocation> ids = new ArrayList<>();
                 for (var recipe : recipeList) {
                     if (stack.test(recipe.getResultItem(registryAccess))) {
