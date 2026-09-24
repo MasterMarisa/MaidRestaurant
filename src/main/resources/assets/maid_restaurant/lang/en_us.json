@@ -1,5 +1,6 @@
 {
   "item.maid_restaurant.chef_license" : "Chef License",
+  "item.maid_restaurant.waiter_license" : "Waiter License",
   "item.maid_restaurant.cuboid_zone_definition" : "Cuboid Zone Definition",
   "item.maid_restaurant.pointset_zone_definition" : "Point Set Zone Definition",
   "item.maid_restaurant.cooking_guide" : "Cooking Guide",

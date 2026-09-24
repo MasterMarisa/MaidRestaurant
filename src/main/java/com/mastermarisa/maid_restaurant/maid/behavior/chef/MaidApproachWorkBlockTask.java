@@ -9,6 +9,7 @@ import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
+import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
 import com.mastermarisa.maid_restaurant.schedule.ChefScheduler;
 import com.mastermarisa.maid_restaurant.tree.ExecutionNode;
@@ -45,6 +46,15 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
         }
         ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.READY);
         if (node == null) {
+            return false;
+        }
+        int count = node.calculateRequiredCount(level, maid);
+        if (count <= 0) {
+            node.setState(NodeState.DONE);
+            if (node.getParent() != null) {
+                node.getParent().computeState();
+                CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
+            }
             return false;
         }
         return searchWorkBlock(level, maid, node);
@@ -147,6 +157,9 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
 
         node.verifyAndUpdateState(level, maid);
         if (node.getState() != NodeState.READY) {
+            if (node.getParent() != null) {
+                node.getParent().computeState();
+            }
             return;
         }
 

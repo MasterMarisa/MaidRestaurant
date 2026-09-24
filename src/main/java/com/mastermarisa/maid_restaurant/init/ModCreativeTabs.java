@@ -15,6 +15,7 @@ public interface ModCreativeTabs {
             .icon(ModItems.CHEF_LICENSE.get()::getDefaultInstance)
             .displayItems((par, output) -> {
                 output.accept(ModItems.CHEF_LICENSE.get());
+                output.accept(ModItems.WAITER_LICENSE.get());
                 output.accept(ModItems.POINTSET_ZONE_DEFINITION.get());
                 output.accept(ModItems.CUBOID_ZONE_DEFINITION.get());
                 output.accept(ModItems.COOKING_GUIDE.get());

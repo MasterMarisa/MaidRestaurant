@@ -18,6 +18,7 @@ public class ItemModelGenerator extends ItemModelProvider {
     @Override
     protected void registerModels() {
         basicItem(ModItems.CHEF_LICENSE.get());
+        basicItem(ModItems.WAITER_LICENSE.get());
         basicItem(ModItems.CUBOID_ZONE_DEFINITION.get());
         basicItem(ModItems.POINTSET_ZONE_DEFINITION.get());
         basicItem(ModItems.UNBOUND_MENU.get());
