@@ -22,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
+import net.minecraft.world.entity.ai.behavior.PositionTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
@@ -78,14 +79,10 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
     @Override
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
         return MemoryUtil.isTarget(maid, TargetType.GATHER_MATERIAL)
-                && maid.getBrain()
-                .getMemory(ModEntities.TARGET_POS.get())
-                .map(tracker -> {
-                    BlockPos pos = tracker.currentBlockPosition();
-                    double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
-                    double distVertical = Math.abs(maid.getY() - pos.getY());
-                    return distHorizontal > closeEnoughDistSqr || distVertical > 4;
-                }).orElse(false);
+                && maid.getBrain().getMemory(ModEntities.TARGET_POS.get())
+                .map(PositionTracker::currentBlockPosition)
+                .map(pos -> !isCloseEnough(maid, pos))
+                .orElse(false);
     }
 
     @Override
@@ -93,27 +90,21 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         if (gameTime % 10 != 0) {
             return;
         }
-        maid.getBrain()
-                .getMemory(ModEntities.STAND_POS.get())
-                .ifPresent(tracker -> {
-                    BlockPos pos = tracker.currentBlockPosition();
-                    WalkTarget target = new WalkTarget(pos, movementSpeed, 0);
-                    MemoryUtil.setIfAbsent(maid, MemoryModuleType.WALK_TARGET, target);
-                });
+        maid.getBrain().getMemory(ModEntities.STAND_POS.get()).ifPresent(t -> {
+            BlockPos pos = t.currentBlockPosition();
+            WalkTarget target = new WalkTarget(pos, movementSpeed, 0);
+            MemoryUtil.setIfAbsent(maid, MemoryModuleType.WALK_TARGET, target);
+        });
     }
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
-        maid.getBrain()
-                .getMemory(ModEntities.TARGET_POS.get())
-                .ifPresent(tracker -> {
-                    BlockPos pos = tracker.currentBlockPosition();
-                    double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
-                    double distVertical = Math.abs(maid.getY() - pos.getY());
-                    if (distHorizontal <= closeEnoughDistSqr && distVertical <= 4) {
-                        acceptStorage(level, maid, pos);
-                    }
-                });
+        maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(t -> {
+            BlockPos pos = t.currentBlockPosition();
+            if (isCloseEnough(maid, pos)) {
+                acceptStorage(level, maid, pos);
+            }
+        });
         MemoryUtil.removeTargetIfMatch(maid, TargetType.GATHER_MATERIAL);
         maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
         maid.setDeltaMovement(Vec3.ZERO);
@@ -147,6 +138,12 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
 
         if (best != null) {
             ChatBubbleUtil.removeChatBubble(maid);
+
+            if (isCloseEnough(maid, best)) {
+                acceptStorage(level, maid, best);
+                return false;
+            }
+
             MemoryUtil.setTarget(maid, new BlockPosTracker(best), TargetType.GATHER_MATERIAL);
             MemoryUtil.setWalkAndLookTargetMemories(maid, best, best, movementSpeed, 0);
             return true;
@@ -189,6 +186,12 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
             node.computeParentState();
         }
         CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
+    }
+
+    private boolean isCloseEnough(EntityMaid maid, BlockPos pos) {
+        double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
+        double distVertical = Math.abs(maid.getY() - pos.getY());
+        return distHorizontal <= closeEnoughDistSqr && distVertical <= 4;
     }
 }
 

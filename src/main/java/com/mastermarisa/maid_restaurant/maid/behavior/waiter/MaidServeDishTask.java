@@ -18,6 +18,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
+import net.minecraft.world.entity.ai.behavior.PositionTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
@@ -62,14 +63,10 @@ public class MaidServeDishTask extends MaidCheckRateTask {
     @Override
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
         return MemoryUtil.isTarget(maid, TargetType.SERVE_DISH)
-                && maid.getBrain()
-                .getMemory(ModEntities.TARGET_POS.get())
-                .map(tracker -> {
-                    BlockPos pos = tracker.currentBlockPosition();
-                    double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
-                    double distVertical = Math.abs(maid.getY() - pos.getY());
-                    return distHorizontal > closeEnoughDistSqr || distVertical > 4;
-                }).orElse(false);
+                && maid.getBrain().getMemory(ModEntities.TARGET_POS.get())
+                .map(PositionTracker::currentBlockPosition)
+                .map(pos -> !isCloseEnough(maid, pos))
+                .orElse(false);
     }
 
     @Override
@@ -77,27 +74,21 @@ public class MaidServeDishTask extends MaidCheckRateTask {
         if (gameTime % 10 != 0) {
             return;
         }
-        maid.getBrain()
-                .getMemory(ModEntities.STAND_POS.get())
-                .ifPresent(tracker -> {
-                    BlockPos pos = tracker.currentBlockPosition();
-                    WalkTarget target = new WalkTarget(pos, movementSpeed, 0);
-                    MemoryUtil.setIfAbsent(maid, MemoryModuleType.WALK_TARGET, target);
-                });
+        maid.getBrain().getMemory(ModEntities.STAND_POS.get()).ifPresent(t -> {
+            BlockPos pos = t.currentBlockPosition();
+            WalkTarget target = new WalkTarget(pos, movementSpeed, 0);
+            MemoryUtil.setIfAbsent(maid, MemoryModuleType.WALK_TARGET, target);
+        });
     }
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
-        maid.getBrain()
-                .getMemory(ModEntities.TARGET_POS.get())
-                .ifPresent(tracker -> {
-                    BlockPos pos = tracker.currentBlockPosition();
-                    double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
-                    double distVertical = Math.abs(maid.getY() - pos.getY());
-                    if (distHorizontal <= closeEnoughDistSqr && distVertical <= 4) {
-                        acceptTarget(level, maid, pos);
-                    }
-                });
+        maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(t -> {
+            BlockPos pos = t.currentBlockPosition();
+            if (isCloseEnough(maid, pos)) {
+                acceptTarget(level, maid, pos);
+            }
+        });
         MemoryUtil.removeTargetIfMatch(maid, TargetType.SERVE_DISH);
         maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
         maid.setDeltaMovement(Vec3.ZERO);
@@ -170,9 +161,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
             }
         } else if (target.type() == 1) {
             if(level.getBlockState(pos).canBeReplaced() && level.getEntities(null, new AABB(pos)).isEmpty()) {
-                toInsert.stream()
-                        .filter(s -> s.getItem() instanceof BlockItem)
-                        .findAny()
+                toInsert.stream().filter(s -> s.getItem() instanceof BlockItem).findAny()
                         .ifPresent(stack -> {
                             Direction dir = PosUtil.getHorizontalDirection(pos.getX() - maid.getX(), pos.getZ() - maid.getZ());
                             maid.placeItemBlock(InteractionHand.MAIN_HAND, pos, dir, stack.split(1));
@@ -191,5 +180,11 @@ public class MaidServeDishTask extends MaidCheckRateTask {
             WaiterScheduler.submitRequest(level, maid);
         }
         CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
+    }
+
+    private boolean isCloseEnough(EntityMaid maid, BlockPos pos) {
+        double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
+        double distVertical = Math.abs(maid.getY() - pos.getY());
+        return distHorizontal <= closeEnoughDistSqr && distVertical <= 4;
     }
 }
