@@ -12,19 +12,21 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class OrderBellBlockEntity extends BaseBlockEntity {
     private static final String TAG_TARGETS = "targets";
 
-    private List<ServeRequest.Target> targets;
+    private final List<ServeRequest.Target> targets;
     public AnimationState shakingState;
 
     public OrderBellBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlocks.ORDER_BELL_BE.get(), pos, state);
         this.shakingState = new AnimationState();
+        this.targets = new ArrayList<>();
     }
 
     public void animate(Level level) {
@@ -33,19 +35,19 @@ public class OrderBellBlockEntity extends BaseBlockEntity {
     }
 
     public void setTargets(List<ServeRequest.Target> targets) {
-        this.targets = targets;
+        this.targets.clear();
+        this.targets.addAll(targets);
         this.setChanged();
     }
 
-    @Nullable
     public List<ServeRequest.Target> getTargets() {
-        return this.targets;
+        return Collections.unmodifiableList(this.targets);
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
-        if (this.targets != null) {
+        if (!this.targets.isEmpty()) {
             ListTag listTag = new ListTag();
             for (ServeRequest.Target target : targets) {
                 listTag.add(CodecUtil.serialize(target, ServeRequest.Target.CODEC));
@@ -57,7 +59,7 @@ public class OrderBellBlockEntity extends BaseBlockEntity {
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
-        if (tag.contains(TAG_TARGETS, Tag.TAG_LIST)) {
+        if (tag.contains(TAG_TARGETS)) {
             this.targets.clear();
             ListTag listTag = tag.getList(TAG_TARGETS, Tag.TAG_COMPOUND);
             for (int i = 0; i < listTag.size(); i++) {

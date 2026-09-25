@@ -36,7 +36,7 @@ public class UnboundMenuItem extends Item {
         if (player.isSecondaryUseActive()) {
             player.setItemInHand(InteractionHand.MAIN_HAND, ModItems.RESTAURANT_MENU.get().getDefaultInstance());
             Map<Integer, MenuEntry> map = UnboundMenuItem.getEntries(stack);
-            RestaurantMenuItem.setEntries(player.getMainHandItem(), map);
+            UnboundMenuItem.setEntries(player.getMainHandItem(), map);
             return InteractionResultHolder.success(stack);
         }
 

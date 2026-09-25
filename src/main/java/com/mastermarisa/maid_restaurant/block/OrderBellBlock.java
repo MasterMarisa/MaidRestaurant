@@ -1,6 +1,7 @@
 package com.mastermarisa.maid_restaurant.block;
 
 import com.mastermarisa.maid_restaurant.blockentity.OrderBellBlockEntity;
+import com.mastermarisa.maid_restaurant.init.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -38,7 +39,9 @@ public class OrderBellBlock extends HorizontalDirectionalBlock implements Simple
                                  InteractionHand hand, BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof OrderBellBlockEntity be) {
             be.animate(level);
-            return InteractionResult.SUCCESS;
+            if (!player.getMainHandItem().is(ModItems.RESTAURANT_MENU.get())) {
+                return InteractionResult.SUCCESS;
+            }
         }
 
         return InteractionResult.PASS;

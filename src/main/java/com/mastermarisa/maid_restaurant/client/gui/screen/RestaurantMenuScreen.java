@@ -6,8 +6,11 @@ import com.mastermarisa.maid_restaurant.data.menu.MenuEntry;
 import com.mastermarisa.maid_restaurant.data.menu.OrderEntry;
 import com.mastermarisa.maid_restaurant.data.menu.RecipeInfo;
 import com.mastermarisa.maid_restaurant.item.RestaurantMenuItem;
+import com.mastermarisa.maid_restaurant.item.UnboundMenuItem;
 import com.mastermarisa.maid_restaurant.network.NetworkHandler;
-import com.mastermarisa.maid_restaurant.network.message.SendOrderMessage;
+import com.mastermarisa.maid_restaurant.network.message.SendOrdersMessage;
+import com.mastermarisa.maid_restaurant.network.message.SetOrdersMessage;
+import com.mastermarisa.maid_restaurant.network.message.StartSelectTargetsMessage;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -30,11 +33,12 @@ public class RestaurantMenuScreen extends Screen {
     private static final Font FONT;
     private static final ImageData MENU;
     private static final ImageData CLIPBOARD;
-    private static final ImageData ERASER;
     private static final ImageData CROSS_MARK;
     private static final ImageData CROSS_MARK_HOVERED;
     private static final ImageData SNED_ORDER;
     private static final ImageData SNED_ORDER_HOVERED;
+    private static final ImageData BELL;
+    private static final ImageData BELL_HOVERED;
     private static final Color COMMON = new Color(178, 148, 135);
     private static final Color LESS_BLACK = new Color(0, 0, 0, 128);
 
@@ -42,7 +46,9 @@ public class RestaurantMenuScreen extends Screen {
     private final Rectangle[] menuEntryBtns;
     private final Rectangle[] orderEntryBtns;
     private final Rectangle orderBtn;
+    private final Rectangle bellBtn;
     private final Rectangle[] cancelBtns;
+    private final Rectangle selectBtn;
 
     private final int maxPage;
     private final String restaurantId;
@@ -53,7 +59,7 @@ public class RestaurantMenuScreen extends Screen {
 
     public RestaurantMenuScreen(ItemStack itemStack) {
         super(Component.empty());
-        this.menuEntries = RestaurantMenuItem.getEntries(itemStack);
+        this.menuEntries = UnboundMenuItem.getEntries(itemStack);
         this.maxPage = Mth.positiveCeilDiv(this.menuEntries.keySet().stream().max(Comparator.comparingInt(a -> a)).orElse(0) + 1, 4);
         this.restaurantId = RestaurantMenuItem.getRestaurantId(itemStack);
         this.orders = new OrderEntry[7];
@@ -70,13 +76,15 @@ public class RestaurantMenuScreen extends Screen {
             int y = getScreenCenterY() - 65 + i * 18;
             this.orderEntryBtns[i] = new Rectangle(x, y, 108, 16);
         }
-        this.orderBtn = new Rectangle(getScreenCenterX() - 164, getScreenCenterY() + 66, 24, 24);
+        this.bellBtn = new Rectangle(getScreenCenterX() - 140, getScreenCenterY() + 69, 24, 24);
+        this.orderBtn = new Rectangle(getScreenCenterX() - 164, getScreenCenterY() + 70, 20, 18);
         this.cancelBtns = new Rectangle[this.orders.length];
         for (int i = 0; i < this.cancelBtns.length; i++) {
             int x = getScreenCenterX() - 44;
             int y = getScreenCenterY() - 63 + i * 18;
             this.cancelBtns[i] = new Rectangle(x, y, 12, 12);
         }
+        this.selectBtn = new Rectangle(getScreenCenterX() - 64, getScreenCenterY() + 66, 24, 24);
     }
 
     public static void open(ItemStack itemStack) {
@@ -148,17 +156,35 @@ public class RestaurantMenuScreen extends Screen {
             } else {
                 SNED_ORDER.render(graphics, orderBtn.x, orderBtn.y);
             }
+
+            if (this.bellBtn.contains(mouseX, mouseY)) {
+                BELL_HOVERED.render(graphics, bellBtn.x, bellBtn.y);
+            } else {
+                BELL.render(graphics, bellBtn.x, bellBtn.y);
+            }
         }
+
+        RenderUtil.fill(graphics, this.selectBtn, LESS_BLACK.getRGB());
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (this.orders[0] != null && this.orderBtn.contains(mouseX, mouseY)) {
-            List<OrderEntry> orderEntryList = Arrays.stream(this.orders).filter(Objects::nonNull).toList();
-            SendOrderMessage message = new SendOrderMessage(restaurantId, orderEntryList);
-            NetworkHandler.sendToServer(message);
-            MINECRAFT.setScreen(null);
-            return true;
+        if (this.orders[0] != null) {
+            if (this.orderBtn.contains(mouseX, mouseY)) {
+                List<OrderEntry> orderEntryList = Arrays.stream(this.orders).filter(Objects::nonNull).toList();
+                SendOrdersMessage message = new SendOrdersMessage(restaurantId, orderEntryList);
+                NetworkHandler.sendToServer(message);
+                MINECRAFT.setScreen(null);
+                return true;
+            }
+
+            if (this.bellBtn.contains(mouseX, mouseY)) {
+                List<OrderEntry> orderEntryList = Arrays.stream(this.orders).filter(Objects::nonNull).toList();
+                SetOrdersMessage message = new SetOrdersMessage(restaurantId, orderEntryList);
+                NetworkHandler.sendToServer(message);
+                MINECRAFT.setScreen(null);
+                return true;
+            }
         }
         for (int i = 0; i < this.menuEntryBtns.length; i++) {
             if (this.menuEntryBtns[i].contains(mouseX, mouseY) && this.menuEntries.containsKey(currentPage * 4 + i)
@@ -172,6 +198,11 @@ public class RestaurantMenuScreen extends Screen {
                 this.removeOrder(i);
                 return true;
             }
+        }
+        if (this.selectBtn.contains(mouseX, mouseY)) {
+            NetworkHandler.sendToServer(new StartSelectTargetsMessage());
+            MINECRAFT.setScreen(null);
+            return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -206,12 +237,14 @@ public class RestaurantMenuScreen extends Screen {
             int y = getScreenCenterY() - 65 + i * 18;
             this.orderEntryBtns[i].setLocation(x, y);
         }
-        this.orderBtn.setLocation(getScreenCenterX() - 164, getScreenCenterY() + 66);
+        this.orderBtn.setLocation(getScreenCenterX() - 164, getScreenCenterY() + 70);
+        this.bellBtn.setLocation(getScreenCenterX() - 136, getScreenCenterY() + 69);
         for (int i = 0; i < this.cancelBtns.length; i++) {
             int x = getScreenCenterX() - 44;
             int y = getScreenCenterY() - 63 + i * 18;
             this.cancelBtns[i].setLocation(x, y);
         }
+        this.selectBtn.setLocation(getScreenCenterX() - 64, getScreenCenterY() + 66);
     }
 
     public static int getScreenCenterX(){
@@ -227,10 +260,11 @@ public class RestaurantMenuScreen extends Screen {
         FONT = MINECRAFT.font;
         MENU = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu.png"), 25, 11, 182, 185, 360, 358);
         CLIPBOARD = new ImageData(MaidRestaurant.modLoc("textures/gui/clipboard.png"), 76, 13, 167, 224, 359, 278);
-        ERASER = new ImageData(MaidRestaurant.modLoc("textures/gui/eraser1.png"), 0, 0, 12, 12, 12, 12);
         CROSS_MARK = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/cross_mark.png"), 0, 0, 12, 12, 12, 12);
         CROSS_MARK_HOVERED = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/cross_mark_hovered.png"), 0, 0, 12, 12, 12, 12);
-        SNED_ORDER = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/send_order.png"), 0, 0, 24, 24, 24, 24);
-        SNED_ORDER_HOVERED = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/send_order_hovered.png"), 0, 0, 24, 24, 24, 24);
+        SNED_ORDER = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/send_order.png"), 0, 0, 20, 18, 20, 18);
+        SNED_ORDER_HOVERED = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/send_order_hovered.png"), 0, 0, 20, 18, 20, 18);
+        BELL = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/bell.png"), 0, 0, 19, 19, 19, 19);
+        BELL_HOVERED = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/bell_hovered.png"), 0, 0, 19, 19, 19, 19);
     }
 }

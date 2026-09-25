@@ -24,7 +24,9 @@ public class NetworkHandler {
         CHANNEL.registerMessage(packetId++, UpdateUnboundMenuMessage.Remove.class, UpdateUnboundMenuMessage.Remove::encode, UpdateUnboundMenuMessage.Remove::decode, UpdateUnboundMenuMessage.Remove::handle);
         CHANNEL.registerMessage(packetId++, UpdateUnboundMenuMessage.Update.class, UpdateUnboundMenuMessage.Update::encode, UpdateUnboundMenuMessage.Update::decode, UpdateUnboundMenuMessage.Update::handle);
         CHANNEL.registerMessage(packetId++, BindMenuMessage.class, BindMenuMessage::encode, BindMenuMessage::decode, BindMenuMessage::handle);
-        CHANNEL.registerMessage(packetId++, SendOrderMessage.class, SendOrderMessage::encode, SendOrderMessage::decode, SendOrderMessage::handle);
+        CHANNEL.registerMessage(packetId++, SendOrdersMessage.class, SendOrdersMessage::encode, SendOrdersMessage::decode, SendOrdersMessage::handle);
+        CHANNEL.registerMessage(packetId++, SetOrdersMessage.class, SetOrdersMessage::encode, SetOrdersMessage::decode, SetOrdersMessage::handle);
+        CHANNEL.registerMessage(packetId++, StartSelectTargetsMessage.class, StartSelectTargetsMessage::encode, StartSelectTargetsMessage::decode, StartSelectTargetsMessage::handle);
     }
 
     public static void sendToClientPlayer(Object message, Player player) {

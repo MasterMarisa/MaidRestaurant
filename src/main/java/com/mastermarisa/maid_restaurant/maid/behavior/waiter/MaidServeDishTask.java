@@ -24,6 +24,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -121,11 +122,13 @@ public class MaidServeDishTask extends MaidCheckRateTask {
             IMaidStorage storage = StorageRegistry.tryGetAt(level, pos);
             if (storage == null) {
                 request.targets.remove(0);
+                CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 1);
                 return false;
             }
         } else if (target.type() == 1) {
             if (!level.getBlockState(pos).canBeReplaced()) {
                 request.targets.remove(0);
+                CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 1);
                 return false;
             }
         }
@@ -167,7 +170,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
                 }
             }
         } else if (target.type() == 1) {
-            if(level.getBlockState(pos).canBeReplaced()) {
+            if(level.getBlockState(pos).canBeReplaced() && level.getEntities(null, new AABB(pos)).isEmpty()) {
                 toInsert.stream()
                         .filter(s -> s.getItem() instanceof BlockItem)
                         .findAny()

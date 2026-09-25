@@ -9,6 +9,7 @@ import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.item.bauble.ChefLicenseBauble;
+import com.mastermarisa.maid_restaurant.item.bauble.WaiterLicenseBauble;
 import com.mastermarisa.maid_restaurant.maid.task.TaskChef;
 import com.mastermarisa.maid_restaurant.maid.task.TaskWaiter;
 
@@ -33,5 +34,6 @@ public class MaidPlugin implements ILittleMaid {
     @Override
     public void bindMaidBauble(BaubleManager manager) {
         manager.bind(ModItems.CHEF_LICENSE.get(), new ChefLicenseBauble());
+        manager.bind(ModItems.WAITER_LICENSE.get(), new WaiterLicenseBauble());
     }
 }

@@ -30,7 +30,7 @@ public record BindMenuMessage(String restaurantId) {
                 ItemStack itemInHand = player.getMainHandItem();
                 player.setItemInHand(InteractionHand.MAIN_HAND, ModItems.RESTAURANT_MENU.get().getDefaultInstance());
                 Map<Integer, MenuEntry> map = UnboundMenuItem.getEntries(itemInHand);
-                RestaurantMenuItem.setEntries(player.getMainHandItem(), map);
+                UnboundMenuItem.setEntries(player.getMainHandItem(), map);
                 RestaurantMenuItem.setRestaurantId(player.getMainHandItem(), message.restaurantId);
             }
         });

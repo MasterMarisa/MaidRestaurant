@@ -53,7 +53,7 @@ public class TaskChef implements IMaidTask {
                 Pair.of(5, new MaidGatherMaterialTask(60, 0.4F, 2.5D)),
                 Pair.of(5, new MaidApproachWorkBlockTask(60, 0.4F, 1.5D)),
                 Pair.of(5, new MaidExecuteCookStepTask(1.5D)),
-                Pair.of(5, new MaidStoreDishTask(60, 0.4F, 1.5D))
+                Pair.of(5, new MaidStoreDishTask(60, 0.4F, 2.5D))
         );
     }
 
