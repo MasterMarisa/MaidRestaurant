@@ -95,7 +95,7 @@ public class StockpotCapability implements ICookCapability {
         List<ItemStack> inputs = new ArrayList<>();
         if (level.getBlockEntity(pos) instanceof StockpotBlockEntity be) {
             inputs.addAll(be.getInputs().stream().filter(s -> !s.isEmpty()).toList());
-            if (SOUP_BASE_MAP.containsKey(be.getSoupBaseId())) {
+            if (be.getStatus() != 0 && SOUP_BASE_MAP.containsKey(be.getSoupBaseId())) {
                 inputs.add(SOUP_BASE_MAP.get(be.getSoupBaseId()).getItems()[0].copyWithCount(1));
             }
             if (level.getBlockState(pos).getValue(StockpotBlock.HAS_LID)) {

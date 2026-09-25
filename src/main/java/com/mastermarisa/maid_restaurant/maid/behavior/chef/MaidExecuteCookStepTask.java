@@ -108,11 +108,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
         maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(t -> {
             BlockUsageUtil.remove(t.currentBlockPosition(), maid.getUUID());
         });
-
-        if (MemoryUtil.isTarget(maid, TargetType.EXECUTE_COOK_STEP)) {
-            MemoryUtil.removeTarget(maid);
-        }
-
+        MemoryUtil.removeTarget(maid);
         ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.EXECUTING);
         if (node != null) {
             node.verifyAndUpdateState(level, maid);

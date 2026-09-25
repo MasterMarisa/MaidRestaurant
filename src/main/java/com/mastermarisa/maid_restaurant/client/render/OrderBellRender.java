@@ -23,7 +23,9 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 public class OrderBellRender {
     private static final float[] BLUE = new float[]{ 139 / 255F, 193 / 255F, 250 / 255F, 1};
+    private static final float[] BLUE_TARGET = new float[]{ 139 / 255F, 193 / 255F, 250 / 255F, 0.5F};
     private static final float[] ORANGE = new float[]{ 221 / 255F, 120 / 255F, 41 / 255F, 1};
+    private static final float[] ORANGE_TARGET = new float[]{ 221 / 255F, 120 / 255F, 41 / 255F, 0.5F};
     private static final float SELECTOR_TRANSITION_SPEED = 0.2f;
     private static final Vec3CacheHolder SELECTOR_CACHE = new Vec3CacheHolder();
 
@@ -68,7 +70,7 @@ public class OrderBellRender {
                     consumer,
                     aabb.move(cameraOffset),
                     0.075F,
-                    type == 0 ? BLUE : ORANGE
+                    type == 0 ? BLUE_TARGET : ORANGE_TARGET
             );
         }
     }

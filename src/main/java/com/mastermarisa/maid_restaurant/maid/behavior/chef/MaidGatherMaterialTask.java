@@ -105,7 +105,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
                 acceptStorage(level, maid, pos);
             }
         });
-        MemoryUtil.removeTargetIfMatch(maid, TargetType.GATHER_MATERIAL);
+        MemoryUtil.removeTarget(maid);
         maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
         maid.setDeltaMovement(Vec3.ZERO);
     }

@@ -92,7 +92,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
                 storeDish(level, maid, pos);
             }
         });
-        MemoryUtil.removeTargetIfMatch(maid, TargetType.STORE_DISH);
+        MemoryUtil.removeTarget(maid);
         maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
         maid.setDeltaMovement(Vec3.ZERO);
     }

@@ -97,7 +97,9 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
                 onReached(level, maid, pos);
             }
         });
-        MemoryUtil.removeTargetIfMatch(maid, TargetType.APPROACH_WORK_BLOCK);
+        if (!MemoryUtil.isTarget(maid, TargetType.EXECUTE_COOK_STEP)) {
+            MemoryUtil.removeTarget(maid);
+        }
         maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
     }
 
