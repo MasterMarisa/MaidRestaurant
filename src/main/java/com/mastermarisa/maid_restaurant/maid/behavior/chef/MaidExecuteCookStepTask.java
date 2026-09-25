@@ -54,6 +54,8 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long gameTime) {
         MaidRestaurant.LOGGER.debug("MaidExecuteCookStepTask - START");
+        BlockPos pos = maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).orElseThrow().currentBlockPosition();
+        MemoryUtil.setIfAbsent(maid, MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos));
         this.ticksRemain = 0;
     }
 
@@ -74,15 +76,13 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
         if (gameTime % 10 == 0) {
             double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
             if (distHorizontal > closeEnoughDistSqr) {
-                maid.getBrain()
-                        .getMemory(ModEntities.STAND_POS.get())
-                        .ifPresent(tracker -> {
-                            BlockPos walkPos = tracker.currentBlockPosition();
-                            WalkTarget target = new WalkTarget(walkPos, 0.4F, 0);
-                            MemoryUtil.setIfAbsent(maid, MemoryModuleType.WALK_TARGET, target);
-                        });
+                maid.getBrain().getMemory(ModEntities.STAND_POS.get()).ifPresent(t -> {
+                    BlockPos walkPos = t.currentBlockPosition();
+                    WalkTarget target = new WalkTarget(walkPos, 0.4F, 0);
+                    MemoryUtil.setIfAbsent(maid, MemoryModuleType.WALK_TARGET, target);
+                    MemoryUtil.setIfAbsent(maid, MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos));
+                });
             }
-            MemoryUtil.setIfAbsent(maid, MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos));
         }
 
         if (!shouldTick(level, maid, gameTime)) {

@@ -3,7 +3,7 @@ package com.mastermarisa.maid_restaurant.client.gui.screen;
 import com.mastermarisa.maid_restaurant.inventory.container.WaiterLicenseContainer;
 import com.mastermarisa.maid_restaurant.item.WaiterLicenseItem;
 import com.mastermarisa.maid_restaurant.network.NetworkHandler;
-import com.mastermarisa.maid_restaurant.network.message.RestaurantIdUpdateMessage;
+import com.mastermarisa.maid_restaurant.network.message.UpdateRestaurantIdMessage;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -79,7 +79,7 @@ public class WaiterLicenseScreen extends AbstractContainerScreen<WaiterLicenseCo
             this.chefIdField.setFocused(false);
             String text = this.chefIdField.getValue().trim();
             if (!text.isEmpty()) {
-                NetworkHandler.sendToServer(new RestaurantIdUpdateMessage(text));
+                NetworkHandler.sendToServer(new UpdateRestaurantIdMessage(text));
             }
             return true;
         }

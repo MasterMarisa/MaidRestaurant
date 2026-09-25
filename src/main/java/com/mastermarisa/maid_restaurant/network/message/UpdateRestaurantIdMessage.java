@@ -10,16 +10,16 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public record RestaurantIdUpdateMessage(String id) {
-    public static void encode(RestaurantIdUpdateMessage packet, FriendlyByteBuf buf) {
+public record UpdateRestaurantIdMessage(String id) {
+    public static void encode(UpdateRestaurantIdMessage packet, FriendlyByteBuf buf) {
         buf.writeUtf(packet.id);
     }
 
-    public static RestaurantIdUpdateMessage decode(FriendlyByteBuf buf) {
-        return new RestaurantIdUpdateMessage(buf.readUtf());
+    public static UpdateRestaurantIdMessage decode(FriendlyByteBuf buf) {
+        return new UpdateRestaurantIdMessage(buf.readUtf());
     }
 
-    public static void handle(RestaurantIdUpdateMessage packet, Supplier<NetworkEvent.Context> context) {
+    public static void handle(UpdateRestaurantIdMessage packet, Supplier<NetworkEvent.Context> context) {
         context.get().enqueueWork(() -> {
             ServerPlayer player = context.get().getSender();
             if (player != null) {

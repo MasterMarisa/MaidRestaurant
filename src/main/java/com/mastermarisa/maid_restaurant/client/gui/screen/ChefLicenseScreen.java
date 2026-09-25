@@ -4,7 +4,7 @@ import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.inventory.container.ChefLicenseContainer;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import com.mastermarisa.maid_restaurant.network.NetworkHandler;
-import com.mastermarisa.maid_restaurant.network.message.RestaurantIdUpdateMessage;
+import com.mastermarisa.maid_restaurant.network.message.UpdateRestaurantIdMessage;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -72,7 +72,7 @@ public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContai
         if (this.chefIdField.isFocused() && !this.chefIdField.isHovered()) {
             String text = this.chefIdField.getValue().trim();
             if (!text.isEmpty()) {
-                NetworkHandler.sendToServer(new RestaurantIdUpdateMessage(text));
+                NetworkHandler.sendToServer(new UpdateRestaurantIdMessage(text));
             }
             this.chefIdField.setFocused(false);
         }
@@ -90,7 +90,7 @@ public class ChefLicenseScreen extends AbstractContainerScreen<ChefLicenseContai
             this.chefIdField.setFocused(false);
             String text = this.chefIdField.getValue().trim();
             if (!text.isEmpty()) {
-                NetworkHandler.sendToServer(new RestaurantIdUpdateMessage(text));
+                NetworkHandler.sendToServer(new UpdateRestaurantIdMessage(text));
             }
             return true;
         }

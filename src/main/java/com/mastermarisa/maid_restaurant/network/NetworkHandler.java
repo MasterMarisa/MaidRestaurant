@@ -19,7 +19,7 @@ public class NetworkHandler {
     private static int packetId = 0;
 
     public static void init() {
-        CHANNEL.registerMessage(packetId++, RestaurantIdUpdateMessage.class, RestaurantIdUpdateMessage::encode, RestaurantIdUpdateMessage::decode, RestaurantIdUpdateMessage::handle);
+        CHANNEL.registerMessage(packetId++, UpdateRestaurantIdMessage.class, UpdateRestaurantIdMessage::encode, UpdateRestaurantIdMessage::decode, UpdateRestaurantIdMessage::handle);
         CHANNEL.registerMessage(packetId++, SaveRecipeTreeMessage.class, SaveRecipeTreeMessage::encode, SaveRecipeTreeMessage::decode, SaveRecipeTreeMessage::handle);
         CHANNEL.registerMessage(packetId++, UpdateUnboundMenuMessage.Remove.class, UpdateUnboundMenuMessage.Remove::encode, UpdateUnboundMenuMessage.Remove::decode, UpdateUnboundMenuMessage.Remove::handle);
         CHANNEL.registerMessage(packetId++, UpdateUnboundMenuMessage.Update.class, UpdateUnboundMenuMessage.Update::encode, UpdateUnboundMenuMessage.Update::decode, UpdateUnboundMenuMessage.Update::handle);
