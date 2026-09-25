@@ -8,7 +8,6 @@ import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
-import com.mastermarisa.maid_restaurant.schedule.ServeRequestBus;
 import com.mastermarisa.maid_restaurant.schedule.WaiterScheduler;
 import com.mastermarisa.maid_restaurant.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
@@ -111,7 +110,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
 
         IItemHandler maidInv = maid.getAvailableInv(false);
         if (request.targets.isEmpty() || InvUtil.count(maidInv, request.dish) <= 0) {
-            ServeRequestBus.getInstance(level).submit("chef", maid);
+            WaiterScheduler.submitRequest(level, maid);
             return false;
         }
 
@@ -145,7 +144,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
         }
 
         if (request.targets.isEmpty()) {
-            ServeRequestBus.getInstance(level).submit("chef", maid);
+            WaiterScheduler.submitRequest(level, maid);
             return;
         }
 
@@ -153,7 +152,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
         ServeRequest.Target target = request.targets.remove(0);
         List<ItemStack> toInsert = InvUtil.tryExtract(maidInv, request.count, request.dish, false);
         if (toInsert.isEmpty()) {
-            ServeRequestBus.getInstance(level).submit("chef", maid);
+            WaiterScheduler.submitRequest(level, maid);
             return;
         }
 
@@ -189,7 +188,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
         }
 
         if (request.targets.isEmpty()) {
-            ServeRequestBus.getInstance(level).submit("chef", maid);
+            WaiterScheduler.submitRequest(level, maid);
         }
         CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
     }
