@@ -21,7 +21,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = MaidRestaurant.MOD_ID)
 public class BindingRender {
     private static final ResourceLocation EMPTY_TEXTURE = MaidRestaurant.modLoc("textures/white.png");
-    private static BlockPos targetedBlockCache = null;
+    private static BlockPos cache = null;
 
     @SubscribeEvent
     public static void onRender(RenderLevelStageEvent event) {
@@ -39,11 +39,12 @@ public class BindingRender {
 
             BlockPos targetedBlock = ClientUtil.getTargetedBlock();
             if (targetedBlock != null) {
-                targetedBlockCache = targetedBlock;
+                cache = targetedBlock;
             }
 
-            CuboidZoneRenderer.render(poseStack, consumer, position, targetedBlockCache);
-            PointsetZoneRenderer.render(poseStack, consumer, position, targetedBlockCache);
+            CuboidZoneRenderer.render(poseStack, consumer, position, cache);
+            PointsetZoneRenderer.render(poseStack, consumer, position, cache);
+            OrderBellRender.render(poseStack, consumer, position, cache);
         }
     }
 }

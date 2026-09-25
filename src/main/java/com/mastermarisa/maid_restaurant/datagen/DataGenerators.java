@@ -5,6 +5,7 @@ import com.mastermarisa.maid_restaurant.datagen.model.BlockModelGenerator;
 import com.mastermarisa.maid_restaurant.datagen.model.BlockStateGenerator;
 import com.mastermarisa.maid_restaurant.datagen.model.ItemModelGenerator;
 import com.mastermarisa.maid_restaurant.datagen.recipe.ModRecipeGenerator;
+import com.mastermarisa.maid_restaurant.datagen.sound.SoundDefinitionsGenerator;
 import com.mastermarisa.maid_restaurant.datagen.tag.TagBlock;
 import com.mastermarisa.maid_restaurant.datagen.tag.TagItem;
 import net.minecraftforge.data.event.GatherDataEvent;
@@ -28,5 +29,6 @@ public class DataGenerators {
         generator.addProvider(event.includeClient(), new BlockModelGenerator(pack, helper));
         generator.addProvider(event.includeClient(), new BlockStateGenerator(pack, helper));
         generator.addProvider(event.includeClient(), new ItemModelGenerator(pack, helper));
+        generator.addProvider(event.includeServer(), new SoundDefinitionsGenerator(pack, helper));
     }
 }
