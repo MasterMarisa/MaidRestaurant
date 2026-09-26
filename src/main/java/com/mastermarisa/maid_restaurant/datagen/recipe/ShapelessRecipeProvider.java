@@ -17,30 +17,35 @@ public class ShapelessRecipeProvider extends ModRecipeProvider {
 
     @Override
     public void buildRecipes(Consumer<FinishedRecipe> consumer) {
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.TOOLS, ModItems.COOKING_GUIDE.get(), 1)
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.COOKING_GUIDE.get(), 1)
                 .requires(Items.PAPER)
                 .requires(Items.CARROT)
                 .unlockedBy("has_paper", has(Items.PAPER))
                 .save(consumer);
 
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.TOOLS, ModItems.UNBOUND_MENU.get(), 1)
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.UNBOUND_MENU.get(), 1)
                 .requires(Items.WRITABLE_BOOK)
                 .requires(ModItems.COOKING_GUIDE.get(), 3)
                 .unlockedBy("has_cooking_guide", has(ModItems.COOKING_GUIDE.get()))
                 .save(consumer);
 
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.TOOLS, ModItems.CUBOID_ZONE_DEFINITION.get())
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.CUBOID_ZONE_DEFINITION.get())
                 .requires(Items.PAPER)
                 .requires(Items.LIGHT_BLUE_DYE)
                 .requires(Items.CHEST)
                 .unlockedBy("has_paper", has(Items.PAPER))
                 .save(consumer);
 
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.TOOLS, ModItems.POINTSET_ZONE_DEFINITION.get())
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.POINTSET_ZONE_DEFINITION.get())
                 .requires(Items.PAPER)
                 .requires(Items.LIGHT_BLUE_DYE)
                 .requires(ItemTags.WOODEN_BUTTONS)
                 .unlockedBy("has_paper", has(Items.PAPER))
+                .save(consumer);
+
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.UNBOUND_MENU.get())
+                .requires(ModItems.UNBOUND_MENU.get())
+                .unlockedBy("has_unbound_menu", has(ModItems.UNBOUND_MENU.get()))
                 .save(consumer);
     }
 }

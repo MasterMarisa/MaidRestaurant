@@ -16,7 +16,7 @@ public class ShapedRecipeProvider extends ModRecipeProvider {
 
     @Override
     public void buildRecipes(Consumer<FinishedRecipe> consumer) {
-        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, ModItems.CHEF_LICENSE.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.CHEF_LICENSE.get())
                 .pattern(" A ")
                 .pattern("ABA")
                 .pattern(" A ")

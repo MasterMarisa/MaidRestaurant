@@ -1,0 +1,12 @@
+{
+  "type": "maid_restaurant:menu_transforming",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "maid_restaurant:portable_menu"
+    }
+  ],
+  "result": {
+    "item": "maid_restaurant:unbound_menu"
+  }
+}
