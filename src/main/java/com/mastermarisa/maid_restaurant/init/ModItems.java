@@ -19,6 +19,7 @@ public interface ModItems {
     RegistryObject<Item> UNBOUND_MENU = ITEMS.register("unbound_menu", () -> new UnboundMenuItem(new Item.Properties().stacksTo(1)));
     RegistryObject<Item> RESTAURANT_MENU = ITEMS.register("restaurant_menu", () -> new RestaurantMenuItem(new Item.Properties().stacksTo(1)));
     RegistryObject<Item> PORTABLE_MENU = ITEMS.register("portable_menu", () -> new PortableMenuItem(new Item.Properties().stacksTo(1)));
+    RegistryObject<Item> BELL_MENU = ITEMS.register("bell_menu", () -> new BellMenuItem(new Item.Properties().stacksTo(1)));
 
     RegistryObject<Item> ORDER_BELL = ITEMS.register("order_bell", () -> new OrderBellItem(ModBlocks.ORDER_BELL.get(), new Item.Properties()));
     RegistryObject<Item> CREATIVE_CRATE = ITEMS.register("creative_crate", () -> new BlockItem(ModBlocks.CREATIVE_CRATE.get(), new Item.Properties()));

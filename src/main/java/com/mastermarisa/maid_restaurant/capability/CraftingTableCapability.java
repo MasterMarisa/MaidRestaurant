@@ -2,9 +2,9 @@ package com.mastermarisa.maid_restaurant.capability;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
-import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
-import com.mastermarisa.maid_restaurant.recipe.RecipeCacheBuilder;
-import com.mastermarisa.maid_restaurant.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
+import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
+import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;

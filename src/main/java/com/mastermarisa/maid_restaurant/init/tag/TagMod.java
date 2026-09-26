@@ -9,7 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
 public interface TagMod {
-    TagKey<Block> STORAGE_BLOCK = blockTag("storage_block");
+    TagKey<Item> MENU_ITEM = itemTag("menu_item");
 
     static TagKey<Item> itemTag(String name) {
         return TagKey.create(Registries.ITEM, MaidRestaurant.modLoc(name));

@@ -39,7 +39,7 @@ public class OrderBellBlock extends HorizontalDirectionalBlock implements Simple
                                  InteractionHand hand, BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof OrderBellBlockEntity be) {
             be.animate(level);
-            if (!player.getMainHandItem().is(ModItems.RESTAURANT_MENU.get())) {
+            if (!player.getMainHandItem().is(ModItems.BELL_MENU.get())) {
                 return InteractionResult.SUCCESS;
             }
         }

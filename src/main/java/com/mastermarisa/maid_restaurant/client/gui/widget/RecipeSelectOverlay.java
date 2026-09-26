@@ -2,8 +2,8 @@ package com.mastermarisa.maid_restaurant.client.gui.widget;
 
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
-import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
-import com.mastermarisa.maid_restaurant.recipe.RecipeCacheBuilder;
+import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
+import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;

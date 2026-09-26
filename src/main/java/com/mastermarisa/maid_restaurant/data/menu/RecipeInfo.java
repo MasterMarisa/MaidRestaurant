@@ -1,8 +1,8 @@
 package com.mastermarisa.maid_restaurant.data.menu;
 
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
-import com.mastermarisa.maid_restaurant.tree.RecipeNode;
-import com.mastermarisa.maid_restaurant.tree.RecipeStep;
+import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
 import com.mastermarisa.maid_restaurant.uitls.IngredientUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;

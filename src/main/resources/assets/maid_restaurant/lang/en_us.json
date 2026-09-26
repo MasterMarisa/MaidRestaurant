@@ -7,6 +7,7 @@
   "item.maid_restaurant.unbound_menu" : "Unbound Menu",
   "item.maid_restaurant.restaurant_menu" : "Restaurant Menu",
   "item.maid_restaurant.portable_menu" : "Portable Menu",
+  "item.maid_restaurant.bell_menu" : "Bell Menu",
 
   "block.maid_restaurant.order_bell" : "Order Bell",
   "block.maid_restaurant.creative_crate" : "Creative Crate",

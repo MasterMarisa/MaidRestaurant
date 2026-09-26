@@ -1,6 +1,8 @@
 package com.mastermarisa.maid_restaurant.datagen.tag;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
+import com.mastermarisa.maid_restaurant.init.ModItems;
+import com.mastermarisa.maid_restaurant.init.tag.TagMod;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
@@ -17,5 +19,9 @@ public class TagItem extends ItemTagsProvider {
     }
 
     @Override
-    protected void addTags(HolderLookup.Provider provider) {}
+    protected void addTags(HolderLookup.Provider provider) {
+        tag(TagMod.MENU_ITEM)
+                .add(ModItems.PORTABLE_MENU.get())
+                .add(ModItems.BELL_MENU.get());
+    }
 }

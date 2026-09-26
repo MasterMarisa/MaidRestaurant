@@ -11,7 +11,7 @@ import com.mastermarisa.maid_restaurant.item.UnboundMenuItem;
 import com.mastermarisa.maid_restaurant.network.NetworkHandler;
 import com.mastermarisa.maid_restaurant.network.message.BindMenuMessage;
 import com.mastermarisa.maid_restaurant.network.message.UpdateUnboundMenuMessage;
-import com.mastermarisa.maid_restaurant.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.uitls.ClientUtil;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
 import com.mojang.blaze3d.platform.InputConstants;

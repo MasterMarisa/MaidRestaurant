@@ -8,8 +8,8 @@ import com.mastermarisa.maid_restaurant.data.menu.RecipeInfo;
 import com.mastermarisa.maid_restaurant.item.RestaurantMenuItem;
 import com.mastermarisa.maid_restaurant.item.UnboundMenuItem;
 import com.mastermarisa.maid_restaurant.network.NetworkHandler;
+import com.mastermarisa.maid_restaurant.network.message.SendBellOrdersMessage;
 import com.mastermarisa.maid_restaurant.network.message.SendPortableOrdersMessage;
-import com.mastermarisa.maid_restaurant.network.message.SetOrdersMessage;
 import com.mastermarisa.maid_restaurant.network.message.StartSelectTargetsMessage;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
 import net.minecraft.ChatFormatting;
@@ -180,7 +180,7 @@ public class RestaurantMenuScreen extends Screen {
 
             if (this.bellBtn.contains(mouseX, mouseY)) {
                 List<OrderEntry> orderEntryList = Arrays.stream(this.orders).filter(Objects::nonNull).toList();
-                SetOrdersMessage message = new SetOrdersMessage(restaurantId, orderEntryList);
+                SendBellOrdersMessage message = new SendBellOrdersMessage(restaurantId, orderEntryList);
                 NetworkHandler.sendToServer(message);
                 MINECRAFT.setScreen(null);
                 return true;

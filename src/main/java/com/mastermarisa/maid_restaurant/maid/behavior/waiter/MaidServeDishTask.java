@@ -8,8 +8,8 @@ import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
-import com.mastermarisa.maid_restaurant.schedule.WaiterScheduler;
-import com.mastermarisa.maid_restaurant.storage.StorageRegistry;
+import com.mastermarisa.maid_restaurant.core.schedule.WaiterScheduler;
+import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import com.mastermarisa.maid_restaurant.uitls.MemoryUtil;
 import com.mastermarisa.maid_restaurant.uitls.PosUtil;
@@ -89,7 +89,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
                 acceptTarget(level, maid, pos);
             }
         });
-        MemoryUtil.removeTargetIfMatch(maid, TargetType.SERVE_DISH);
+        MemoryUtil.removeTarget(maid);
         maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
         maid.setDeltaMovement(Vec3.ZERO);
     }

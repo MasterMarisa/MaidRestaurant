@@ -48,8 +48,8 @@ public class TaskWaiter implements IMaidTask {
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         return Lists.newArrayList(
-                Pair.of(5, new MaidPickupDishTask(60, 0.4f, 1.5D)),
-                Pair.of(5, new MaidServeDishTask(60, 0.4f, 1.5D))
+                Pair.of(5, new MaidPickupDishTask(60, 0.4f, 2.5D)),
+                Pair.of(5, new MaidServeDishTask(60, 0.4f, 2.5D))
         );
     }
 

@@ -1,6 +1,6 @@
 package com.mastermarisa.maid_restaurant.uitls;
 
-import com.mastermarisa.maid_restaurant.recipe.IngredientStack;
+import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;

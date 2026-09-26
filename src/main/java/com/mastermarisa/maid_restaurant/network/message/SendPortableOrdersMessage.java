@@ -5,8 +5,8 @@ import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
 import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.PortableMenuItem;
-import com.mastermarisa.maid_restaurant.schedule.CookingRequestBus;
-import com.mastermarisa.maid_restaurant.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.schedule.CookingRequestBus;
+import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -42,7 +42,7 @@ public record SendPortableOrdersMessage(String restaurantId, List<OrderEntry> or
                     ServerLevel level = player.serverLevel();
                     List<ServeRequest.Target> targets = PortableMenuItem.getTargets(itemStack);
                     for (OrderEntry entry : message.orders()) {
-                        RecipeNode root = entry.getEntry().getRoot();
+                        RecipeNode root = entry.getEntry().getRoot().copy();
                         CookingRequest request = new CookingRequest(root);
                         request.root.applyCount(level, entry.getCount());
                         if (!targets.isEmpty()) {
@@ -52,7 +52,6 @@ public record SendPortableOrdersMessage(String restaurantId, List<OrderEntry> or
                         CookingRequestBus.getInstance(level).enqueue(message.restaurantId(), request);
                     }
                     PortableMenuItem.removeTargets(itemStack);
-
                     MutableComponent component = Component.literal("下单成功!").withStyle(ChatFormatting.GREEN);
                     player.connection.send(new ClientboundSetActionBarTextPacket(component));
                 }

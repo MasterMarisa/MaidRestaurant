@@ -20,6 +20,8 @@ public interface ModCreativeTabs {
                 output.accept(ModItems.CUBOID_ZONE_DEFINITION.get());
                 output.accept(ModItems.COOKING_GUIDE.get());
                 output.accept(ModItems.UNBOUND_MENU.get());
+                output.accept(ModItems.PORTABLE_MENU.get());
+                output.accept(ModItems.BELL_MENU.get());
                 output.accept(ModItems.ORDER_BELL.get());
                 output.accept(ModItems.CREATIVE_CRATE.get());
             }).build());

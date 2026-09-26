@@ -2,7 +2,7 @@ package com.mastermarisa.maid_restaurant.item;
 
 import com.mastermarisa.maid_restaurant.client.gui.screen.PortableMenuScreen;
 import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
-import com.mastermarisa.maid_restaurant.storage.StorageRegistry;
+import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.uitls.CodecUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;

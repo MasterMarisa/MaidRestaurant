@@ -1,6 +1,6 @@
 package com.mastermarisa.maid_restaurant.data.menu;
 
-import com.mastermarisa.maid_restaurant.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.NotNull;

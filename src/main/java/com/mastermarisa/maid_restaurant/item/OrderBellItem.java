@@ -2,7 +2,7 @@ package com.mastermarisa.maid_restaurant.item;
 
 import com.mastermarisa.maid_restaurant.blockentity.OrderBellBlockEntity;
 import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
-import com.mastermarisa.maid_restaurant.storage.StorageRegistry;
+import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.uitls.CodecUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

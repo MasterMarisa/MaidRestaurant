@@ -1,5 +1,6 @@
 package com.mastermarisa.maid_restaurant.datagen.recipe;
 
+import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
@@ -43,9 +44,14 @@ public class ShapelessRecipeProvider extends ModRecipeProvider {
                 .unlockedBy("has_paper", has(Items.PAPER))
                 .save(consumer);
 
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.COOKING_GUIDE.get())
+                .requires(ModItems.COOKING_GUIDE.get())
+                .unlockedBy("has_cooking_guide", has(ModItems.COOKING_GUIDE.get()))
+                .save(consumer, MaidRestaurant.modLoc("cooking_guide_clear_nbt"));
+
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.UNBOUND_MENU.get())
                 .requires(ModItems.UNBOUND_MENU.get())
                 .unlockedBy("has_unbound_menu", has(ModItems.UNBOUND_MENU.get()))
-                .save(consumer);
+                .save(consumer, MaidRestaurant.modLoc("unbound_menu_clear_nbt"));
     }
 }

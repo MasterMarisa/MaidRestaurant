@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "maid_restaurant:unbound_menu"
+    }
+  ],
+  "result": {
+    "item": "maid_restaurant:unbound_menu"
+  }
+}
