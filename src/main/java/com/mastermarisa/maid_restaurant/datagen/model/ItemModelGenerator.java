@@ -25,6 +25,7 @@ public class ItemModelGenerator extends ItemModelProvider {
         basicItem(ModItems.RESTAURANT_MENU.get());
         basicItem(ModItems.PORTABLE_MENU.get());
         basicItem(ModItems.BELL_MENU.get());
+        basicItem(ModItems.EXCLUSIVE_MENU.get());
 
         withExistingParent("order_bell", modLoc("block/order_bell"));
         withExistingParent("creative_crate", modLoc("block/creative_crate"));

@@ -1,6 +1,7 @@
 package com.mastermarisa.maid_restaurant.crafting.recipe;
 
 import com.mastermarisa.maid_restaurant.init.ModItems;
+import com.mastermarisa.maid_restaurant.init.ModRecipes;
 import com.mastermarisa.maid_restaurant.item.PortableMenuItem;
 import com.mastermarisa.maid_restaurant.item.UnboundMenuItem;
 import net.minecraft.core.NonNullList;
@@ -47,6 +48,6 @@ public class MenuTransformingRecipe extends ShapelessRecipe {
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return super.getSerializer();
+        return ModRecipes.MENU_TRANSFORMING_SERIALIZER.get();
     }
 }

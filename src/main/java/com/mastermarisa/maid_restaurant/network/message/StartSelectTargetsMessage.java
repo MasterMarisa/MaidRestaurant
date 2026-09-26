@@ -1,7 +1,7 @@
 package com.mastermarisa.maid_restaurant.network.message;
 
 import com.mastermarisa.maid_restaurant.init.ModItems;
-import com.mastermarisa.maid_restaurant.item.RestaurantMenuItem;
+import com.mastermarisa.maid_restaurant.item.ExclusiveMenuItem;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -23,9 +23,9 @@ public record StartSelectTargetsMessage() {
             ServerPlayer player = context.get().getSender();
             if (player != null) {
                 ItemStack itemInHand = player.getMainHandItem();
-                if (itemInHand.is(ModItems.RESTAURANT_MENU.get()) && !RestaurantMenuItem.isOrdering(itemInHand)) {
-                    RestaurantMenuItem.setSelectingTargets(itemInHand, true);
-                    RestaurantMenuItem.setTargets(itemInHand, List.of());
+                if (itemInHand.is(ModItems.EXCLUSIVE_MENU.get())) {
+                    ExclusiveMenuItem.setSelectingTargets(itemInHand, true);
+                    ExclusiveMenuItem.setTargets(itemInHand, List.of());
                 }
             }
         });

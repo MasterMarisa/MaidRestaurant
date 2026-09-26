@@ -1,21 +1,33 @@
 package com.mastermarisa.maid_restaurant.compat.jei;
 
-import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.init.ModItems;
-import com.mastermarisa.maid_restaurant.init.tag.TagMod;
-import net.minecraft.core.NonNullList;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
+import com.google.common.collect.Lists;
+import com.mastermarisa.maid_restaurant.crafting.recipe.MenuTransformingRecipe;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
 public class MenuTransformingRecipeMaker {
     public static List<CraftingRecipe> createRecipes() {
-        CraftingRecipe menuUnbinding = new ShapelessRecipe(MaidRestaurant.modLoc("menu_unbinding"), "", CraftingBookCategory.MISC, ModItems.UNBOUND_MENU.get().getDefaultInstance(), NonNullList.of(Ingredient.EMPTY, Ingredient.of(TagMod.MENU_ITEM)));
-        CraftingRecipe bellMenu = new ShapelessRecipe(MaidRestaurant.modLoc("bell_menu"), "", CraftingBookCategory.MISC, ModItems.BELL_MENU.get().getDefaultInstance(), NonNullList.of(Ingredient.EMPTY, Ingredient.of(TagMod.MENU_ITEM), Ingredient.of(ModItems.ORDER_BELL.get())));
-        return List.of(menuUnbinding, bellMenu);
+        List<CraftingRecipe> recipes = Lists.newArrayList();
+        Level level = Minecraft.getInstance().level;
+        if (level != null) {
+            level.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING).stream()
+                    .filter(MenuTransformingRecipe.class::isInstance)
+                    .map(MenuTransformingRecipe.class::cast)
+                    .map(recipe -> new ShapelessRecipe(
+                            recipe.getId(),
+                            recipe.getGroup(),
+                            recipe.category(),
+                            recipe.getResultItem(level.registryAccess()),
+                            recipe.getIngredients()
+                    ))
+                    .forEach(recipes::add);
+        }
+        return recipes;
     }
 
     private MenuTransformingRecipeMaker() {

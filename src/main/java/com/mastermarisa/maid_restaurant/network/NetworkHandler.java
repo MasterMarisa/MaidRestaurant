@@ -26,6 +26,7 @@ public class NetworkHandler {
         CHANNEL.registerMessage(packetId++, BindMenuMessage.class, BindMenuMessage::encode, BindMenuMessage::decode, BindMenuMessage::handle);
         CHANNEL.registerMessage(packetId++, SendPortableOrdersMessage.class, SendPortableOrdersMessage::encode, SendPortableOrdersMessage::decode, SendPortableOrdersMessage::handle);
         CHANNEL.registerMessage(packetId++, SendBellOrdersMessage.class, SendBellOrdersMessage::encode, SendBellOrdersMessage::decode, SendBellOrdersMessage::handle);
+        CHANNEL.registerMessage(packetId++, SendExclusiveOrdersMessage.class, SendExclusiveOrdersMessage::encode, SendExclusiveOrdersMessage::decode, SendExclusiveOrdersMessage::handle);
         CHANNEL.registerMessage(packetId++, StartSelectTargetsMessage.class, StartSelectTargetsMessage::encode, StartSelectTargetsMessage::decode, StartSelectTargetsMessage::handle);
     }
 

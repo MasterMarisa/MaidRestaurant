@@ -44,8 +44,9 @@ public class BindingRender {
 
             CuboidZoneRenderer.render(poseStack, consumer, position, cache);
             PointsetZoneRenderer.render(poseStack, consumer, position, cache);
-            OrderBellRender.render(poseStack, consumer, position, cache);
+            OrderBellRender.render(poseStack, consumer, position, target);
             PortableMenuRender.render(poseStack, consumer, position, target);
+            ExclusiveMenuRender.render(poseStack, consumer, position, target);
         }
     }
 }

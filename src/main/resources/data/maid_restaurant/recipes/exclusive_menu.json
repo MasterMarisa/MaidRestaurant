@@ -1,0 +1,15 @@
+{
+  "type": "maid_restaurant:menu_transforming",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "maid_restaurant:menu_item"
+    },
+    {
+      "item": "minecraft:feather"
+    }
+  ],
+  "result": {
+    "item": "maid_restaurant:exclusive_menu"
+  }
+}

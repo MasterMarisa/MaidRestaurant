@@ -8,6 +8,7 @@
   "item.maid_restaurant.restaurant_menu" : "餐厅菜单",
   "item.maid_restaurant.portable_menu" : "便携菜单",
   "item.maid_restaurant.bell_menu" : "点餐铃菜单",
+  "item.maid_restaurant.exclusive_menu" : "专属菜单",
 
   "block.maid_restaurant.order_bell" : "点餐铃",
   "block.maid_restaurant.creative_crate" : "创造板条箱",
