@@ -22,6 +22,7 @@ public class TagItem extends ItemTagsProvider {
     protected void addTags(HolderLookup.Provider provider) {
         tag(TagMod.MENU_ITEM)
                 .add(ModItems.PORTABLE_MENU.get())
-                .add(ModItems.BELL_MENU.get());
+                .add(ModItems.BELL_MENU.get())
+                .add(ModItems.EXCLUSIVE_MENU.get());
     }
 }

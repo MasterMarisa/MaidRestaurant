@@ -1,6 +1,7 @@
 {
   "values": [
     "maid_restaurant:portable_menu",
-    "maid_restaurant:bell_menu"
+    "maid_restaurant:bell_menu",
+    "maid_restaurant:exclusive_menu"
   ]
 }
