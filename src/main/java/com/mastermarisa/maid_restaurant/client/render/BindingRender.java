@@ -37,15 +37,15 @@ public class BindingRender {
             VertexConsumer consumer = bufferSource.getBuffer(RenderType.entitySolid(EMPTY_TEXTURE));
             Vec3 position = event.getCamera().getPosition().reverse();
 
-            BlockPos targetedBlock = ClientUtil.getTargetedBlock();
-            if (targetedBlock != null) {
-                cache = targetedBlock;
+            BlockPos target = ClientUtil.getTargetedBlock();
+            if (target != null) {
+                cache = target;
             }
 
             CuboidZoneRenderer.render(poseStack, consumer, position, cache);
             PointsetZoneRenderer.render(poseStack, consumer, position, cache);
             OrderBellRender.render(poseStack, consumer, position, cache);
-            RestaurantMenuRender.render(poseStack, consumer, position, cache);
+            PortableMenuRender.render(poseStack, consumer, position, target);
         }
     }
 }

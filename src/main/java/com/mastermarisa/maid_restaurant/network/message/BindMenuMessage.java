@@ -2,7 +2,7 @@ package com.mastermarisa.maid_restaurant.network.message;
 
 import com.mastermarisa.maid_restaurant.data.menu.MenuEntry;
 import com.mastermarisa.maid_restaurant.init.ModItems;
-import com.mastermarisa.maid_restaurant.item.RestaurantMenuItem;
+import com.mastermarisa.maid_restaurant.item.PortableMenuItem;
 import com.mastermarisa.maid_restaurant.item.UnboundMenuItem;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,10 +28,10 @@ public record BindMenuMessage(String restaurantId) {
             ServerPlayer player = context.get().getSender();
             if (player != null && player.getMainHandItem().is(ModItems.UNBOUND_MENU.get())) {
                 ItemStack itemInHand = player.getMainHandItem();
-                player.setItemInHand(InteractionHand.MAIN_HAND, ModItems.RESTAURANT_MENU.get().getDefaultInstance());
+                player.setItemInHand(InteractionHand.MAIN_HAND, ModItems.PORTABLE_MENU.get().getDefaultInstance());
                 Map<Integer, MenuEntry> map = UnboundMenuItem.getEntries(itemInHand);
                 UnboundMenuItem.setEntries(player.getMainHandItem(), map);
-                RestaurantMenuItem.setRestaurantId(player.getMainHandItem(), message.restaurantId);
+                PortableMenuItem.setRestaurantId(player.getMainHandItem(), message.restaurantId);
             }
         });
         context.get().setPacketHandled(true);

@@ -9,8 +9,6 @@ import com.mastermarisa.maid_restaurant.item.RestaurantMenuItem;
 import com.mastermarisa.maid_restaurant.item.UnboundMenuItem;
 import com.mastermarisa.maid_restaurant.network.NetworkHandler;
 import com.mastermarisa.maid_restaurant.network.message.SendPortableOrdersMessage;
-import com.mastermarisa.maid_restaurant.network.message.SetOrdersMessage;
-import com.mastermarisa.maid_restaurant.network.message.StartSelectTargetsMessage;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -28,92 +26,70 @@ import java.util.*;
 import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
-public class RestaurantMenuScreen extends Screen {
+public class PortableMenuScreen extends Screen {
     private static final Minecraft MINECRAFT;
     private static final Font FONT;
+
     private static final ImageData MENU;
     private static final ImageData CLIPBOARD;
     private static final ImageData CROSS_MARK;
     private static final ImageData CROSS_MARK_HOVERED;
     private static final ImageData SNED_ORDER;
     private static final ImageData SNED_ORDER_HOVERED;
-    private static final ImageData BELL;
-    private static final ImageData BELL_HOVERED;
-    private static final Color COMMON = new Color(178, 148, 135);
-    private static final Color LESS_BLACK = new Color(0, 0, 0, 128);
+    private static final Color COMMON;
+    private static final int MAX_ORDER_COUNT;
 
     private final Rectangle menuArea;
     private final Rectangle[] menuEntryBtns;
     private final Rectangle[] orderEntryBtns;
-    private final Rectangle orderBtn;
-    private final Rectangle bellBtn;
     private final Rectangle[] cancelBtns;
-    private final Rectangle selectBtn;
+    private final Rectangle orderBtn;
 
     private final int maxPage;
     private final String restaurantId;
     private final Map<Integer, MenuEntry> menuEntries;
     private final OrderEntry[] orders;
-
     private int currentPage;
 
-    public RestaurantMenuScreen(ItemStack itemStack) {
+    public PortableMenuScreen(ItemStack itemStack) {
         super(Component.empty());
         this.menuEntries = UnboundMenuItem.getEntries(itemStack);
         this.maxPage = Mth.positiveCeilDiv(this.menuEntries.keySet().stream().max(Comparator.comparingInt(a -> a)).orElse(0) + 1, 4);
         this.restaurantId = RestaurantMenuItem.getRestaurantId(itemStack);
-        this.orders = new OrderEntry[7];
-        this.menuArea = new Rectangle(getScreenCenterX() + 27, getScreenCenterY() - 81, 132, 165);
+        this.orders = new OrderEntry[MAX_ORDER_COUNT];
+        this.menuArea = new Rectangle(132, 165);
         this.menuEntryBtns = new Rectangle[4];
         for (int i = 0; i < 4; i++) {
-            int x = getScreenCenterX() + 40;
-            int y = getScreenCenterY() - 53 + i * 32;
-            this.menuEntryBtns[i] = new Rectangle(x, y, 94, 16);
+            this.menuEntryBtns[i] = new Rectangle(94, 16);
         }
-        this.orderEntryBtns = new Rectangle[this.orders.length];
-        for (int i = 0; i < this.orderEntryBtns.length; i++) {
-            int x = getScreenCenterX() - 164;
-            int y = getScreenCenterY() - 65 + i * 18;
-            this.orderEntryBtns[i] = new Rectangle(x, y, 108, 16);
+        this.orderEntryBtns = new Rectangle[MAX_ORDER_COUNT];
+        for (int i = 0; i < MAX_ORDER_COUNT; i++) {
+            this.orderEntryBtns[i] = new Rectangle(108, 16);
         }
-        this.bellBtn = new Rectangle(getScreenCenterX() - 140, getScreenCenterY() + 69, 24, 24);
-        this.orderBtn = new Rectangle(getScreenCenterX() - 164, getScreenCenterY() + 70, 20, 18);
         this.cancelBtns = new Rectangle[this.orders.length];
         for (int i = 0; i < this.cancelBtns.length; i++) {
-            int x = getScreenCenterX() - 44;
-            int y = getScreenCenterY() - 63 + i * 18;
-            this.cancelBtns[i] = new Rectangle(x, y, 12, 12);
+            this.cancelBtns[i] = new Rectangle(12, 12);
         }
-        this.selectBtn = new Rectangle(getScreenCenterX() - 64, getScreenCenterY() + 66, 24, 24);
+        this.orderBtn = new Rectangle(20, 18);
+        this.resize();
     }
 
     public static void open(ItemStack itemStack) {
-        Minecraft.getInstance().setScreen(new RestaurantMenuScreen(itemStack));
+        Minecraft.getInstance().setScreen(new PortableMenuScreen(itemStack));
     }
 
-    private void addOrder(MenuEntry entry) {
-        for (int i = 0; i < this.orders.length; i++) {
-            if (this.orders[i] == null) {
-                this.orders[i] = new OrderEntry(1, entry);
-                break;
-            }
-        }
-    }
-
-    private void removeOrder(int index) {
-        for (int i = index + 1; i < this.orders.length; i++) {
-            this.orders[i - 1] = this.orders[i];
-        }
-        this.orders[this.orders.length - 1] = null;
+    @Override
+    protected void init() {
+        super.init();
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
         this.renderBackground(graphics);
+
         int centerX = getScreenCenterX();
         int centerY = getScreenCenterY();
-
         MENU.renderCentered(graphics, centerX + 107, centerY + 7);
         for (int i = 0; i < 4; i++) {
             int x = centerX + 40;
@@ -156,15 +132,7 @@ public class RestaurantMenuScreen extends Screen {
             } else {
                 SNED_ORDER.render(graphics, orderBtn.x, orderBtn.y);
             }
-
-            if (this.bellBtn.contains(mouseX, mouseY)) {
-                BELL_HOVERED.render(graphics, bellBtn.x, bellBtn.y);
-            } else {
-                BELL.render(graphics, bellBtn.x, bellBtn.y);
-            }
         }
-
-        RenderUtil.fill(graphics, this.selectBtn, LESS_BLACK.getRGB());
     }
 
     @Override
@@ -177,15 +145,8 @@ public class RestaurantMenuScreen extends Screen {
                 MINECRAFT.setScreen(null);
                 return true;
             }
-
-            if (this.bellBtn.contains(mouseX, mouseY)) {
-                List<OrderEntry> orderEntryList = Arrays.stream(this.orders).filter(Objects::nonNull).toList();
-                SetOrdersMessage message = new SetOrdersMessage(restaurantId, orderEntryList);
-                NetworkHandler.sendToServer(message);
-                MINECRAFT.setScreen(null);
-                return true;
-            }
         }
+
         for (int i = 0; i < this.menuEntryBtns.length; i++) {
             if (this.menuEntryBtns[i].contains(mouseX, mouseY) && this.menuEntries.containsKey(currentPage * 4 + i)
                     && this.orders[orders.length - 1] == null) {
@@ -193,17 +154,14 @@ public class RestaurantMenuScreen extends Screen {
                 return true;
             }
         }
+
         for (int i = 0; i < this.cancelBtns.length; i++) {
             if (this.orders[i] != null && this.cancelBtns[i].contains(mouseX, mouseY)) {
                 this.removeOrder(i);
                 return true;
             }
         }
-        if (this.selectBtn.contains(mouseX, mouseY)) {
-            NetworkHandler.sendToServer(new StartSelectTargetsMessage());
-            MINECRAFT.setScreen(null);
-            return true;
-        }
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -213,6 +171,7 @@ public class RestaurantMenuScreen extends Screen {
             this.currentPage = Mth.clamp(currentPage - Mth.sign(delta), 0, maxPage - 1);
             return true;
         }
+
         for (int i = 0; i < this.orderEntryBtns.length; i++) {
             if (this.orderEntryBtns[i].contains(mouseX, mouseY) && this.orders[i] != null) {
                 OrderEntry order = this.orders[i];
@@ -220,31 +179,40 @@ public class RestaurantMenuScreen extends Screen {
                 return true;
             }
         }
+
         return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
-    @Override
-    public void resize(Minecraft minecraft, int width, int height) {
-        super.resize(minecraft, width, height);
-        this.menuArea.setLocation(getScreenCenterX() + 27, getScreenCenterY() - 81);
+    private void resize() {
+        int centerX = getScreenCenterX();
+        int centerY = getScreenCenterY();
+        this.menuArea.setLocation(centerX + 27, centerY - 81);
         for (int i = 0; i < 4; i++) {
-            int x = getScreenCenterX() + 40;
-            int y = getScreenCenterY() - 53 + i * 32;
-            this.menuEntryBtns[i].setLocation(x, y);
+            this.menuEntryBtns[i].setLocation(centerX + 40, centerY - 53 + i * 32);
         }
         for (int i = 0; i < this.orderEntryBtns.length; i++) {
-            int x = getScreenCenterX() - 164;
-            int y = getScreenCenterY() - 65 + i * 18;
-            this.orderEntryBtns[i].setLocation(x, y);
+            this.orderEntryBtns[i].setLocation(centerX - 164, centerY - 65 + i * 18);
         }
-        this.orderBtn.setLocation(getScreenCenterX() - 164, getScreenCenterY() + 70);
-        this.bellBtn.setLocation(getScreenCenterX() - 136, getScreenCenterY() + 69);
         for (int i = 0; i < this.cancelBtns.length; i++) {
-            int x = getScreenCenterX() - 44;
-            int y = getScreenCenterY() - 63 + i * 18;
-            this.cancelBtns[i].setLocation(x, y);
+            this.cancelBtns[i].setLocation(centerX - 44, centerY - 63 + i * 18);
         }
-        this.selectBtn.setLocation(getScreenCenterX() - 64, getScreenCenterY() + 66);
+        this.orderBtn.setLocation(centerX - 164, centerY + 70);
+    }
+
+    private void addOrder(MenuEntry entry) {
+        for (int i = 0; i < MAX_ORDER_COUNT; i++) {
+            if (this.orders[i] == null) {
+                this.orders[i] = new OrderEntry(1, entry);
+                break;
+            }
+        }
+    }
+
+    private void removeOrder(int index) {
+        for (int i = index + 1; i < MAX_ORDER_COUNT; i++) {
+            this.orders[i - 1] = this.orders[i];
+        }
+        this.orders[MAX_ORDER_COUNT - 1] = null;
     }
 
     public static int getScreenCenterX(){
@@ -264,7 +232,7 @@ public class RestaurantMenuScreen extends Screen {
         CROSS_MARK_HOVERED = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/cross_mark_hovered.png"), 0, 0, 12, 12, 12, 12);
         SNED_ORDER = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/send_order.png"), 0, 0, 20, 18, 20, 18);
         SNED_ORDER_HOVERED = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/send_order_hovered.png"), 0, 0, 20, 18, 20, 18);
-        BELL = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/bell.png"), 0, 0, 19, 19, 19, 19);
-        BELL_HOVERED = new ImageData(MaidRestaurant.modLoc("textures/gui/restaurant_menu/bell_hovered.png"), 0, 0, 19, 19, 19, 19);
+        COMMON = new Color(178, 148, 135);
+        MAX_ORDER_COUNT = 7;
     }
 }

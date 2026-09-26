@@ -23,6 +23,7 @@ public class ItemModelGenerator extends ItemModelProvider {
         basicItem(ModItems.POINTSET_ZONE_DEFINITION.get());
         basicItem(ModItems.UNBOUND_MENU.get());
         basicItem(ModItems.RESTAURANT_MENU.get());
+        basicItem(ModItems.PORTABLE_MENU.get());
 
         withExistingParent("order_bell", modLoc("block/order_bell"));
         withExistingParent("creative_crate", modLoc("block/creative_crate"));
