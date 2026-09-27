@@ -1,6 +1,6 @@
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-package com.mastermarisa.maid_restaurant.core.schedule;
+package com.mastermarisa.maid_restaurant.core.request;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 

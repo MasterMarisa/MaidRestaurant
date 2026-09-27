@@ -4,7 +4,6 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
-import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.tree.NodeState;
 import com.mastermarisa.maid_restaurant.data.task_data.WorkBlockCache;

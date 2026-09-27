@@ -1,4 +1,4 @@
-package com.mastermarisa.maid_restaurant.data.request;
+package com.mastermarisa.maid_restaurant.core.request;
 
 import com.google.gson.JsonElement;
 import com.mastermarisa.maid_restaurant.uitls.CodecUtil;

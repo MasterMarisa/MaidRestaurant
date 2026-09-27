@@ -1,9 +1,10 @@
-package com.mastermarisa.maid_restaurant.core.schedule;
+package com.mastermarisa.maid_restaurant.uitls;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
-import com.mastermarisa.maid_restaurant.data.request.ServingRequest;
+import com.mastermarisa.maid_restaurant.core.request.ServingRequestBus;
+import com.mastermarisa.maid_restaurant.core.request.ServingRequest;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.WaiterLicenseItem;
 import net.minecraft.server.level.ServerLevel;
@@ -44,12 +45,8 @@ public class WaiterScheduler {
         if (restaurantId == null) {
             return null;
         }
-        ServeRequestBus bus = ServeRequestBus.getInstance(level);
-        ServingRequest request = bus.getClaimed(restaurantId, maid);
-        if (request == null) {
-            request = bus.claim(restaurantId, maid);
-        }
-        return request;
+        ServingRequestBus bus = ServingRequestBus.getInstance(level);
+        return bus.claim(restaurantId, maid);
     }
 
     public static void submitRequest(ServerLevel level, EntityMaid maid) {
@@ -57,7 +54,7 @@ public class WaiterScheduler {
         if (restaurantId == null) {
             return;
         }
-        ServeRequestBus bus = ServeRequestBus.getInstance(level);
+        ServingRequestBus bus = ServingRequestBus.getInstance(level);
         bus.submit(restaurantId, maid);
     }
 }

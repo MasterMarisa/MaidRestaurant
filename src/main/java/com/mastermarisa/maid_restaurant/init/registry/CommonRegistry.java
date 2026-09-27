@@ -8,11 +8,10 @@ import com.mastermarisa.maid_restaurant.compat.bakeries.BakeriesCompat;
 import com.mastermarisa.maid_restaurant.compat.kaleidoscope_cookery.KaleidoscopeCookeryCompat;
 import com.mastermarisa.maid_restaurant.compat.kaleidoscope_tavern.KaleidoscopeTavernCompat;
 import com.mastermarisa.maid_restaurant.compat.rs.RSCompat;
-import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
-import com.mastermarisa.maid_restaurant.core.schedule.RequestBus;
 import com.mastermarisa.maid_restaurant.core.storage.CommonStorage;
 import com.mastermarisa.maid_restaurant.core.storage.CreativeCrateStorage;
 import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
+import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -28,7 +27,6 @@ public class CommonRegistry {
 
     private static void registerSerializers() {
         AbstractZone.registerAll();
-        RequestBus.registerSerializers();
     }
 
     private static void registerCapabilities() {

@@ -1,10 +1,10 @@
 package com.mastermarisa.maid_restaurant.network.message;
 
-import com.mastermarisa.maid_restaurant.core.schedule.CookingRequestBus;
+import com.mastermarisa.maid_restaurant.core.request.CookingRequestBus;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.data.menu.OrderEntry;
-import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
-import com.mastermarisa.maid_restaurant.data.request.ServingRequest;
+import com.mastermarisa.maid_restaurant.core.request.CookingRequest;
+import com.mastermarisa.maid_restaurant.core.request.ServingRequest;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.ExclusiveMenuItem;
 import net.minecraft.ChatFormatting;

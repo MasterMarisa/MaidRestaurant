@@ -1,7 +1,7 @@
 package com.mastermarisa.maid_restaurant.client.render;
 
 import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
-import com.mastermarisa.maid_restaurant.data.request.ServingRequest;
+import com.mastermarisa.maid_restaurant.core.request.ServingRequest;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.RestaurantMenuItem;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtil;

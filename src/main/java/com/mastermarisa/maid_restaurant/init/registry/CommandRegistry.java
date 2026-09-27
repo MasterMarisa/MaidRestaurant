@@ -1,10 +1,9 @@
 package com.mastermarisa.maid_restaurant.init.registry;
 
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.core.schedule.CookingRequestBus;
-import com.mastermarisa.maid_restaurant.core.schedule.ServeRequestBus;
+import com.mastermarisa.maid_restaurant.core.request.CookingRequest;
+import com.mastermarisa.maid_restaurant.core.request.CookingRequestBus;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
-import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.CookingGuideItem;
 import com.mojang.brigadier.CommandDispatcher;
@@ -64,15 +63,7 @@ public class CommandRegistry {
                                             CookingRequestBus.getInstance(level).clear(id);
                                             return 1;
                                         }))))
-                .then(Commands.literal("serve_request")
-                        .then(Commands.literal("clear")
-                                .then(Commands.argument("restaurant_id", StringArgumentType.string())
-                                        .executes(context -> {
-                                            ServerLevel level = context.getSource().getLevel();
-                                            String id = StringArgumentType.getString(context, "restaurant_id");
-                                            ServeRequestBus.getInstance(level).clear(id);
-                                            return 1;
-                                        })))));
+                );
     }
 
     private static void sendRequest(ServerLevel level, Player player, String restaurantId, int count, CommandContext<CommandSourceStack> context) {
@@ -84,13 +75,6 @@ public class CommandRegistry {
 
         CookingRequest request = new CookingRequest(RecipeNode.fromNBT(CookingGuideItem.getRecipeRoot(itemInHand)));
         request.root.applyCount(level, count);
-//        ServeRequest serveRequest = new ServeRequest();
-//        serveRequest.dish = request.root.getIngredient();
-//        serveRequest.count = count;
-//        serveRequest.targets.add(new ServeRequest.Target(new BlockPos(1, -59, 0), 1));
-//        serveRequest.targets.add(new ServeRequest.Target(new BlockPos(-1, -59, 0), 1));
-//        serveRequest.targets.add(new ServeRequest.Target(new BlockPos(0, -60, 0), 0));
-//        request.boundRequest = serveRequest;
         CookingRequestBus.getInstance(level).enqueue(restaurantId, request);
         context.getSource().sendSuccess(() -> Component.literal("§a成功发送委托！"), true);
     }

@@ -2,7 +2,7 @@ package com.mastermarisa.maid_restaurant.core.tree;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
-import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
+import com.mastermarisa.maid_restaurant.uitls.ChefScheduler;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;

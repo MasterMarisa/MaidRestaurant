@@ -1,6 +1,6 @@
 package com.mastermarisa.maid_restaurant.blockentity;
 
-import com.mastermarisa.maid_restaurant.data.request.ServingRequest;
+import com.mastermarisa.maid_restaurant.core.request.ServingRequest;
 import com.mastermarisa.maid_restaurant.init.ModBlocks;
 import com.mastermarisa.maid_restaurant.init.ModSounds;
 import com.mastermarisa.maid_restaurant.uitls.CodecUtil;

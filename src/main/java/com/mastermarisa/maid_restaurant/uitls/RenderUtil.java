@@ -106,11 +106,6 @@ public class RenderUtil {
     }
 
     public static void renderIngredientStack(GuiGraphics graphics, int x, int y, IngredientStack stack,
-                                             long gameTime, int interval, int color) {
-        renderIngredientStack(graphics, x, y, stack, gameTime, interval, color, true);
-    }
-
-    public static void renderIngredientStack(GuiGraphics graphics, int x, int y, IngredientStack stack,
                                              long gameTime, int interval, int color, boolean shadowed) {
         if (stack.getItems().length == 0) {
             return;

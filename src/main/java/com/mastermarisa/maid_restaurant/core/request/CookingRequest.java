@@ -1,4 +1,4 @@
-package com.mastermarisa.maid_restaurant.data.request;
+package com.mastermarisa.maid_restaurant.core.request;
 
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
@@ -14,7 +14,7 @@ public class CookingRequest implements INBTSerializable<CompoundTag> {
     @Nullable
     public ServingRequest boundRequest;
 
-    public CookingRequest() {}
+    private CookingRequest() {}
 
     public CookingRequest(RecipeNode recipeRoot) {
         this.root = ExecutionNode.fromRecipeTree(recipeRoot);
