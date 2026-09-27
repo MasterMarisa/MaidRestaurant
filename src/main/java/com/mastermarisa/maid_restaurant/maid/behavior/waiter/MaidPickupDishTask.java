@@ -3,8 +3,8 @@ package com.mastermarisa.maid_restaurant.maid.behavior.waiter;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
-import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.core.request.ServingRequest;
+import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
@@ -98,6 +98,8 @@ public class MaidPickupDishTask extends MaidCheckRateTask {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
+        pendingSource.remove(maid);
+
         BlockPos target = getTargetPos(maid);
         if (target != null && isCloseEnough(maid, target)) {
             ServingRequest request = WaiterScheduler.getOrClaimRequest(level, maid);
@@ -112,20 +114,15 @@ public class MaidPickupDishTask extends MaidCheckRateTask {
     }
 
     private void take(ServerLevel level, EntityMaid maid, ServingRequest request, BlockPos pos) {
-        if (request.sources.isEmpty()) {
-            return;
-        }
+        maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos));
+        if (request.sources.isEmpty()) return;
 
         ServingRequest.Source source = request.getFirstSource();
-        if (!source.pos().equals(pos)) {
-            return;
-        }
+        if (!source.pos().equals(pos)) return;
 
         request.removeFirstSource();
         IMaidStorage storage = StorageRegistry.tryGetAt(level, pos);
-        if (storage == null) {
-            return;
-        }
+        if (storage == null) return;
 
         maid.swing(InteractionHand.OFF_HAND);
         IItemHandler maidInv = maid.getAvailableInv(false);
@@ -160,14 +157,14 @@ public class MaidPickupDishTask extends MaidCheckRateTask {
     }
 
     @Nullable
-    private BlockPos getTargetPos(EntityMaid maid) {
+    private static BlockPos getTargetPos(EntityMaid maid) {
         return maid.getBrain().getMemory(ModEntities.TARGET_POS.get())
                 .map(PositionTracker::currentBlockPosition)
                 .orElse(null);
     }
 
     @Nullable
-    private BlockPos getWalkTarget(EntityMaid maid) {
+    private static BlockPos getWalkTarget(EntityMaid maid) {
         return maid.getBrain().getMemory(ModEntities.WALK_TARGET.get())
                 .map(PositionTracker::currentBlockPosition)
                 .orElse(null);

@@ -3,8 +3,8 @@ package com.mastermarisa.maid_restaurant.maid.behavior.waiter;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
-import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.core.request.ServingRequest;
+import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
@@ -27,7 +27,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -48,92 +48,79 @@ public class MaidServeDishTask extends MaidCheckRateTask {
 
     @Override
     protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid maid) {
-        if (!super.checkExtraStartConditions(level, maid)) {
-            return false;
-        }
+        if (!super.checkExtraStartConditions(level, maid)) return false;
 
         ServingRequest request = WaiterScheduler.getOrClaimRequest(level, maid);
-        if (request == null) {
-            return false;
-        }
+        if (request == null) return false;
 
-        return searchTarget(level, maid, request);
+        return request.sources.isEmpty();
     }
 
     @Override
-    protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
-        return MemoryUtil.isTarget(maid, TargetType.SERVE_DISH)
-                && maid.getBrain().getMemory(ModEntities.TARGET_POS.get())
-                .map(PositionTracker::currentBlockPosition)
-                .map(pos -> !isCloseEnough(maid, pos))
-                .orElse(false);
-    }
-
-    @Override
-    protected void tick(ServerLevel level, EntityMaid maid, long gameTime) {
-        if (gameTime % 10 != 0) {
-            return;
-        }
-        maid.getBrain().getMemory(ModEntities.WALK_TARGET.get()).ifPresent(t -> {
-            BlockPos pos = t.currentBlockPosition();
-            WalkTarget target = new WalkTarget(pos, movementSpeed, 0);
-            MemoryUtil.setIfAbsent(maid, MemoryModuleType.WALK_TARGET, target);
-        });
-    }
-
-    @Override
-    protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
-        maid.getBrain().getMemory(ModEntities.TARGET_POS.get()).ifPresent(t -> {
-            BlockPos pos = t.currentBlockPosition();
-            if (isCloseEnough(maid, pos)) {
-                acceptTarget(level, maid, pos);
-            }
-        });
-        MemoryUtil.removeTarget(maid);
-        maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
-        maid.setDeltaMovement(Vec3.ZERO);
-    }
-
-    private boolean searchTarget(ServerLevel level, EntityMaid maid, ServingRequest request) {
-        if (!request.sources.isEmpty()) {
-            return false;
-        }
+    protected void start(ServerLevel level, EntityMaid maid, long gameTime) {
+        ServingRequest request = WaiterScheduler.getOrClaimRequest(level, maid);
+        if (request == null || !request.sources.isEmpty()) return;
 
         IItemHandler maidInv = maid.getAvailableInv(false);
         if (request.targets.isEmpty() || InvUtil.count(maidInv, request.dish) <= 0) {
             WaiterScheduler.submitRequest(level, maid);
-            return false;
+            return;
         }
 
         ServingRequest.Target target = request.targets.get(0);
         BlockPos pos = target.pos();
 
-        if (target.type() == 0) {
-            IMaidStorage storage = StorageRegistry.tryGetAt(level, pos);
-            if (storage == null) {
-                request.targets.remove(0);
-                CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 1);
-                return false;
-            }
-        } else if (target.type() == 1) {
-            if (!level.getBlockState(pos).canBeReplaced()) {
-                request.targets.remove(0);
-                CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 1);
-                return false;
-            }
+        if (!isValidTarget(level, pos, target.type())) {
+            request.targets.remove(0);
+            CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 1);
+            return;
+        }
+
+        if (isCloseEnough(maid, pos)) {
+            acceptTarget(level, maid, pos, request);
+            return;
         }
 
         MemoryUtil.setTarget(maid, new BlockPosTracker(pos), TargetType.SERVE_DISH);
         MemoryUtil.setWalkAndLookTargetMemories(maid, pos, pos, movementSpeed, 0);
-        return true;
     }
 
-    private void acceptTarget(ServerLevel level, EntityMaid maid, BlockPos pos) {
-        ServingRequest request = WaiterScheduler.getOrClaimRequest(level, maid);
-        if (request == null) {
-            return;
+    @Override
+    protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
+        if (!MemoryUtil.isTarget(maid, TargetType.SERVE_DISH)) {
+            return false;
+        }
+        BlockPos target = getTargetPos(maid);
+        return target != null && !isCloseEnough(maid, target);
+    }
+
+    @Override
+    protected void tick(ServerLevel level, EntityMaid maid, long gameTime) {
+        if (gameTime % 10 != 0) return;
+        BlockPos pos = getWalkTarget(maid);
+        if (pos != null) {
+            MemoryUtil.setIfAbsent(maid, MemoryModuleType.WALK_TARGET,
+                    new WalkTarget(pos, movementSpeed, 0));
+        }
+    }
+
+    @Override
+    protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
+        BlockPos target = getTargetPos(maid);
+        if (target != null && isCloseEnough(maid, target)) {
+            ServingRequest request = WaiterScheduler.getOrClaimRequest(level, maid);
+            if (request != null && request.sources.isEmpty()) {
+                acceptTarget(level, maid, target, request);
+            }
         }
 
+        MemoryUtil.removeTarget(maid);
+        maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+        maid.setDeltaMovement(Vec3.ZERO);
+    }
+
+    private void acceptTarget(ServerLevel level, EntityMaid maid, BlockPos pos, ServingRequest request) {
+        maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos));
         if (request.targets.isEmpty()) {
             WaiterScheduler.submitRequest(level, maid);
             return;
@@ -148,31 +135,14 @@ public class MaidServeDishTask extends MaidCheckRateTask {
         }
 
         if (target.type() == 0) {
-            IMaidStorage storage = StorageRegistry.tryGetAt(level, pos);
-            if (storage != null) {
-                for (var stack : toInsert) {
-                    ItemStack restItem = storage.insert(level, pos, stack.copy(), false);
-                    int inserted = stack.getCount() - restItem.getCount();
-                    if (inserted == 0) {
-                        break;
-                    }
-                    stack.shrink(inserted);
-                }
-            }
+            insertIntoStorage(level, pos, toInsert);
         } else if (target.type() == 1) {
-            if(level.getBlockState(pos).canBeReplaced() && level.getEntities(null, new AABB(pos)).isEmpty()) {
-                toInsert.stream().filter(s -> s.getItem() instanceof BlockItem).findAny()
-                        .ifPresent(stack -> {
-                            Direction dir = PosUtil.getHorizontalDirection(pos.getX() - maid.getX(), pos.getZ() - maid.getZ());
-                            maid.placeItemBlock(InteractionHand.MAIN_HAND, pos, dir, stack.split(1));
-                            maid.swing(InteractionHand.MAIN_HAND);
-                        });
-            }
+            placeBlockAt(level, maid, pos, toInsert);
         }
 
-        for (var stack : toInsert) {
+        for (ItemStack stack : toInsert) {
             if (!stack.isEmpty()) {
-                ItemHandlerHelper.insertItemStacked(maidInv, stack, false);
+                InvUtil.getItemToMaid(maid, stack);
             }
         }
 
@@ -180,6 +150,58 @@ public class MaidServeDishTask extends MaidCheckRateTask {
             WaiterScheduler.submitRequest(level, maid);
         }
         CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
+    }
+
+    private void insertIntoStorage(ServerLevel level, BlockPos pos, List<ItemStack> toInsert) {
+        IMaidStorage storage = StorageRegistry.tryGetAt(level, pos);
+        if (storage == null) return;
+
+        for (ItemStack stack : toInsert) {
+            ItemStack rest = storage.insert(level, pos, stack.copy(), false);
+            int inserted = stack.getCount() - rest.getCount();
+            if (inserted == 0) break;
+            stack.shrink(inserted);
+        }
+    }
+
+    private void placeBlockAt(ServerLevel level, EntityMaid maid, BlockPos pos, List<ItemStack> toInsert) {
+        if (!level.getBlockState(pos).canBeReplaced()) return;
+        if (!level.getEntities(null, new AABB(pos)).isEmpty()) return;
+
+        toInsert.stream()
+                .filter(s -> s.getItem() instanceof BlockItem)
+                .findAny()
+                .ifPresent(stack -> {
+                    Direction dir = PosUtil.getHorizontalDirection(
+                            pos.getX() - maid.getX(), pos.getZ() - maid.getZ());
+                    ItemStack toPlace = stack.copyWithCount(1);
+                    if (maid.placeItemBlock(InteractionHand.MAIN_HAND, pos, dir, toPlace)) {
+                        stack.shrink(1);
+                    }
+                    maid.swing(InteractionHand.MAIN_HAND);
+                });
+    }
+
+    private boolean isValidTarget(ServerLevel level, BlockPos pos, int type) {
+        return switch (type) {
+            case 0 -> StorageRegistry.tryGetAt(level, pos) != null;
+            case 1 -> level.getBlockState(pos).canBeReplaced();
+            default -> true;
+        };
+    }
+
+    @Nullable
+    private static BlockPos getTargetPos(EntityMaid maid) {
+        return maid.getBrain().getMemory(ModEntities.TARGET_POS.get())
+                .map(PositionTracker::currentBlockPosition)
+                .orElse(null);
+    }
+
+    @Nullable
+    private static BlockPos getWalkTarget(EntityMaid maid) {
+        return maid.getBrain().getMemory(ModEntities.WALK_TARGET.get())
+                .map(PositionTracker::currentBlockPosition)
+                .orElse(null);
     }
 
     private boolean isCloseEnough(EntityMaid maid, BlockPos pos) {

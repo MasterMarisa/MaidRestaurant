@@ -3,8 +3,8 @@ package com.mastermarisa.maid_restaurant.event;
 import com.github.tartaricacid.touhoulittlemaid.api.event.MaidTaskEnableEvent;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.core.request.CookingRequestBus;
 import com.mastermarisa.maid_restaurant.core.request.CookingRequest;
+import com.mastermarisa.maid_restaurant.core.request.CookingRequestBus;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.item.ChefLicenseItem;
 import com.mastermarisa.maid_restaurant.maid.task.TaskChef;
@@ -41,7 +41,7 @@ public class MaidTracker {
 
     @SubscribeEvent
     public static void onMaidLeave(EntityLeaveLevelEvent event) {
-        if (event.getLevel().isClientSide() || !(event.getLevel() instanceof ServerLevel level)) {
+        if (event.getLevel().isClientSide() || !(event.getLevel() instanceof ServerLevel)) {
             return;
         }
         if (!(event.getEntity() instanceof EntityMaid maid)) {
