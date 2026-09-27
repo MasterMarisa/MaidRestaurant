@@ -3,13 +3,13 @@ package com.mastermarisa.maid_restaurant.maid.behavior.waiter;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
+import com.mastermarisa.maid_restaurant.core.schedule.WaiterScheduler;
+import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
-import com.mastermarisa.maid_restaurant.core.schedule.WaiterScheduler;
-import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import com.mastermarisa.maid_restaurant.uitls.MemoryUtil;
 import com.mastermarisa.maid_restaurant.uitls.PosUtil;
@@ -151,7 +151,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
             IMaidStorage storage = StorageRegistry.tryGetAt(level, pos);
             if (storage != null) {
                 for (var stack : toInsert) {
-                    ItemStack restItem = storage.insert(level, pos, stack, false);
+                    ItemStack restItem = storage.insert(level, pos, stack.copy(), false);
                     int inserted = stack.getCount() - restItem.getCount();
                     if (inserted == 0) {
                         break;
