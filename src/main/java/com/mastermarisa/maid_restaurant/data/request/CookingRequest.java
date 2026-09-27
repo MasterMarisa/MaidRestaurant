@@ -12,7 +12,7 @@ public class CookingRequest implements INBTSerializable<CompoundTag> {
 
     public ExecutionNode root;
     @Nullable
-    public ServeRequest boundRequest;
+    public ServingRequest boundRequest;
 
     public CookingRequest() {}
 
@@ -37,7 +37,7 @@ public class CookingRequest implements INBTSerializable<CompoundTag> {
             this.root = ExecutionNode.fromRecipeTree(recipeRoot);
         }
         if (tag.contains(TAG_BOUND_REQUEST)) {
-            this.boundRequest = ServeRequest.fromNBT(tag.getCompound(TAG_BOUND_REQUEST));
+            this.boundRequest = ServingRequest.fromNBT(tag.getCompound(TAG_BOUND_REQUEST));
         }
     }
 

@@ -1,9 +1,9 @@
 package com.mastermarisa.maid_restaurant.client.render;
 
-import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
+import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
+import com.mastermarisa.maid_restaurant.data.request.ServingRequest;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.RestaurantMenuItem;
-import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -40,8 +40,8 @@ public class RestaurantMenuRender {
             return;
         }
 
-        List<ServeRequest.Target> targets = RestaurantMenuItem.getTargets(itemInHand);
-        for (ServeRequest.Target target : targets) {
+        List<ServingRequest.Target> targets = RestaurantMenuItem.getTargets(itemInHand);
+        for (ServingRequest.Target target : targets) {
             RenderUtil.renderThickAABB(
                     poseStack,
                     consumer,

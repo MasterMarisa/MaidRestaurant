@@ -14,7 +14,7 @@ public class MemoryUtil {
     public static void setWalkAndLookTargetMemories(LivingEntity pLivingEntity, BlockPos walkPos, BlockPos lookPos, float pSpeed, int pDistance) {
         pLivingEntity.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(walkPos, pSpeed, pDistance));
         pLivingEntity.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(lookPos.above()));
-        pLivingEntity.getBrain().setMemory(ModEntities.STAND_POS.get(), new BlockPosTracker(walkPos));
+        pLivingEntity.getBrain().setMemory(ModEntities.WALK_TARGET.get(), new BlockPosTracker(walkPos));
     }
 
     public static boolean isTarget(LivingEntity entity, TargetType type) {

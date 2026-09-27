@@ -2,11 +2,11 @@ package com.mastermarisa.maid_restaurant.item;
 
 import com.mastermarisa.maid_restaurant.blockentity.OrderBellBlockEntity;
 import com.mastermarisa.maid_restaurant.client.gui.screen.BellMenuScreen;
-import com.mastermarisa.maid_restaurant.data.menu.OrderEntry;
-import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
-import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
 import com.mastermarisa.maid_restaurant.core.schedule.CookingRequestBus;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.data.menu.OrderEntry;
+import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
+import com.mastermarisa.maid_restaurant.data.request.ServingRequest;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -90,14 +90,14 @@ public class BellMenuItem extends Item {
         }
 
         if (context.getPlayer() instanceof ServerPlayer player) {
-            List<ServeRequest.Target> targets = be.getTargets();
+            List<ServingRequest.Target> targets = be.getTargets();
             List<OrderEntry> entries = getOrderEntries(itemStack);
             for (OrderEntry order : entries) {
                 RecipeNode root = order.getEntry().getRoot().copy();
                 CookingRequest request = new CookingRequest(root);
                 request.root.applyCount(level, order.getCount());
                 if (!targets.isEmpty()) {
-                    request.boundRequest = new ServeRequest(root.getIngredient(), order.getCount());
+                    request.boundRequest = new ServingRequest(root.getIngredient(), order.getCount());
                     request.boundRequest.targets = new ArrayList<>(targets);
                 }
                 CookingRequestBus.getInstance((ServerLevel) level).enqueue(getRestaurantId(itemStack), request);

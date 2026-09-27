@@ -15,27 +15,42 @@ import net.minecraftforge.common.util.INBTSerializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServeRequest implements INBTSerializable<CompoundTag> {
+public class ServingRequest implements INBTSerializable<CompoundTag> {
     private static final String TAG_DISH = "dish";
     private static final String TAG_COUNT = "count";
-    private static final String TAG_PICKUP_POINTS = "pickup_points";
+    private static final String TAG_SOURCES = "sources";
     private static final String TAG_TARGETS = "targets";
 
     public Ingredient dish;
     public int count;
-    public List<Source> pickupPoints;
+    public List<Source> sources;
     public List<Target> targets;
 
-    public ServeRequest() {
-        this.pickupPoints = new ArrayList<>();
+    public ServingRequest() {
+        this.sources = new ArrayList<>();
         this.targets = new ArrayList<>();
     }
 
-    public ServeRequest(Ingredient dish, int count) {
+    public ServingRequest(Ingredient dish, int count) {
         this.dish = dish;
         this.count = count;
-        this.pickupPoints = new ArrayList<>();
+        this.sources = new ArrayList<>();
         this.targets = new ArrayList<>();
+    }
+
+    public boolean hasSources() {
+        return !this.sources.isEmpty();
+    }
+
+    public Source getFirstSource() {
+        return this.sources.get(0);
+    }
+
+    public Source removeFirstSource() {
+        if (!this.sources.isEmpty()) {
+            return this.sources.remove(0);
+        }
+        return null;
     }
 
     @Override
@@ -45,12 +60,12 @@ public class ServeRequest implements INBTSerializable<CompoundTag> {
             tag.putString(TAG_DISH, this.dish.toJson().toString());
         }
         tag.putInt(TAG_COUNT, this.count);
-        if (!this.pickupPoints.isEmpty()) {
+        if (!this.sources.isEmpty()) {
             ListTag listTag = new ListTag();
-            for (var source : pickupPoints) {
+            for (var source : sources) {
                 listTag.add(CodecUtil.serialize(source, Source.CODEC));
             }
-            tag.put(TAG_PICKUP_POINTS, listTag);
+            tag.put(TAG_SOURCES, listTag);
         }
         if (!this.targets.isEmpty()) {
             ListTag listTag = new ListTag();
@@ -73,11 +88,11 @@ public class ServeRequest implements INBTSerializable<CompoundTag> {
         if (tag.contains(TAG_COUNT)) {
             this.count = tag.getInt(TAG_COUNT);
         }
-        if (tag.contains(TAG_PICKUP_POINTS)) {
-            this.pickupPoints.clear();
-            ListTag listTag = tag.getList(TAG_PICKUP_POINTS, Tag.TAG_COMPOUND);
+        if (tag.contains(TAG_SOURCES)) {
+            this.sources.clear();
+            ListTag listTag = tag.getList(TAG_SOURCES, Tag.TAG_COMPOUND);
             for (int i = 0; i < listTag.size(); i++) {
-                this.pickupPoints.add(CodecUtil.deserialize(listTag.getCompound(i), Source.CODEC));
+                this.sources.add(CodecUtil.deserialize(listTag.getCompound(i), Source.CODEC));
             }
         }
         if (tag.contains(TAG_TARGETS)) {
@@ -89,8 +104,8 @@ public class ServeRequest implements INBTSerializable<CompoundTag> {
         }
     }
 
-    public static ServeRequest fromNBT(CompoundTag tag) {
-        ServeRequest request = new ServeRequest();
+    public static ServingRequest fromNBT(CompoundTag tag) {
+        ServingRequest request = new ServingRequest();
         request.deserializeNBT(tag);
         return request;
     }

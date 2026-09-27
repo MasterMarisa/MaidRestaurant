@@ -2,7 +2,7 @@ package com.mastermarisa.maid_restaurant.core.schedule;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
-import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
+import com.mastermarisa.maid_restaurant.data.request.ServingRequest;
 import com.mastermarisa.maid_restaurant.maid.task.TaskWaiter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -16,13 +16,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Mod.EventBusSubscriber(modid = MaidRestaurant.MOD_ID)
-public class ServeRequestBus extends RequestBus<ServeRequest> {
+public class ServeRequestBus extends RequestBus<ServingRequest> {
     private static final Map<ServerLevel, ServeRequestBus> BUS_MAP = new ConcurrentHashMap<>();
 
     /**
      * 校验委托合法性
      */
-    private boolean validate(ServerLevel level, String restaurantId, RequestEntry<ServeRequest> requestEntry) {
+    private boolean validate(ServerLevel level, String restaurantId, RequestEntry<ServingRequest> requestEntry) {
         if (requestEntry.owner == null) {
             return false;
         }
@@ -62,8 +62,8 @@ public class ServeRequestBus extends RequestBus<ServeRequest> {
 
             ServeRequestBus bus = getInstance(level);
             for (String key : bus.requestPool.keySet()) {
-                List<RequestEntry<ServeRequest>> entries = bus.requestPool.get(key);
-                List<RequestEntry<ServeRequest>> toRemove = new ArrayList<>();
+                List<RequestEntry<ServingRequest>> entries = bus.requestPool.get(key);
+                List<RequestEntry<ServingRequest>> toRemove = new ArrayList<>();
                 for (var entry : entries) {
                     if (!bus.validate(level, key, entry)) {
                         toRemove.add(entry);

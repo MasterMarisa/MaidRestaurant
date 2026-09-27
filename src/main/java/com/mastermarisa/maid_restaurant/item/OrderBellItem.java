@@ -1,8 +1,8 @@
 package com.mastermarisa.maid_restaurant.item;
 
 import com.mastermarisa.maid_restaurant.blockentity.OrderBellBlockEntity;
-import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
 import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
+import com.mastermarisa.maid_restaurant.data.request.ServingRequest;
 import com.mastermarisa.maid_restaurant.uitls.CodecUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -51,10 +51,10 @@ public class OrderBellItem extends BlockItem {
             pos = pos.relative(direction);
         }
 
-        List<ServeRequest.Target> targets = getTargets(stack);
+        List<ServingRequest.Target> targets = getTargets(stack);
         boolean removed = false;
         for (int i = 0; i < targets.size(); i++) {
-            ServeRequest.Target target = targets.get(i);
+            ServingRequest.Target target = targets.get(i);
             if (target.pos().equals(pos)) {
                 targets.remove(i);
                 removed = true;
@@ -63,7 +63,7 @@ public class OrderBellItem extends BlockItem {
         }
         if (!removed) {
             int type = StorageRegistry.tryGetAt(level, pos) != null ? 0 : 1;
-            targets.add(new ServeRequest.Target(pos, type));
+            targets.add(new ServingRequest.Target(pos, type));
         }
         setTargets(stack, targets);
 
@@ -73,7 +73,7 @@ public class OrderBellItem extends BlockItem {
     @Override
     protected boolean updateCustomBlockEntityTag(BlockPos pos, Level level, @Nullable Player player, ItemStack stack, BlockState state) {
         if (level.getBlockEntity(pos) instanceof OrderBellBlockEntity be) {
-            List<ServeRequest.Target> targets = getTargets(stack);
+            List<ServingRequest.Target> targets = getTargets(stack);
             be.setTargets(targets);
         }
         stack.removeTagKey(TAG_TARGETS);
@@ -93,23 +93,23 @@ public class OrderBellItem extends BlockItem {
         }
     }
 
-    public static List<ServeRequest.Target> getTargets(ItemStack itemStack) {
+    public static List<ServingRequest.Target> getTargets(ItemStack itemStack) {
         CompoundTag tag = itemStack.getOrCreateTag();
-        List<ServeRequest.Target> targets = new ArrayList<>();
+        List<ServingRequest.Target> targets = new ArrayList<>();
         if (tag.contains(TAG_TARGETS)) {
             ListTag listTag = tag.getList(TAG_TARGETS, Tag.TAG_COMPOUND);
             for (int i = 0; i < listTag.size(); i++) {
-                targets.add(CodecUtil.deserialize(listTag.getCompound(i), ServeRequest.Target.CODEC));
+                targets.add(CodecUtil.deserialize(listTag.getCompound(i), ServingRequest.Target.CODEC));
             }
         }
         return targets;
     }
 
-    public static void setTargets(ItemStack itemStack, List<ServeRequest.Target> targets) {
+    public static void setTargets(ItemStack itemStack, List<ServingRequest.Target> targets) {
         CompoundTag tag = itemStack.getOrCreateTag();
         ListTag listTag = new ListTag();
         for (var Target : targets) {
-            listTag.add(CodecUtil.serialize(Target, ServeRequest.Target.CODEC));
+            listTag.add(CodecUtil.serialize(Target, ServingRequest.Target.CODEC));
         }
         tag.put(TAG_TARGETS, listTag);
     }

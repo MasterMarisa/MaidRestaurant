@@ -4,7 +4,7 @@ import com.mastermarisa.maid_restaurant.core.schedule.CookingRequestBus;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.data.menu.OrderEntry;
 import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
-import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
+import com.mastermarisa.maid_restaurant.data.request.ServingRequest;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.ExclusiveMenuItem;
 import net.minecraft.ChatFormatting;
@@ -40,13 +40,13 @@ public record SendExclusiveOrdersMessage(String restaurantId, List<OrderEntry> o
                 ItemStack itemStack = player.getMainHandItem();
                 if (itemStack.is(ModItems.EXCLUSIVE_MENU.get())) {
                     ServerLevel level = player.serverLevel();
-                    List<ServeRequest.Target> targets = ExclusiveMenuItem.getTargets(itemStack);
+                    List<ServingRequest.Target> targets = ExclusiveMenuItem.getTargets(itemStack);
                     for (OrderEntry entry : message.orders()) {
                         RecipeNode root = entry.getEntry().getRoot().copy();
                         CookingRequest request = new CookingRequest(root);
                         request.root.applyCount(level, entry.getCount());
                         if (!targets.isEmpty()) {
-                            request.boundRequest = new ServeRequest(root.getIngredient(), entry.getCount());;
+                            request.boundRequest = new ServingRequest(root.getIngredient(), entry.getCount());;
                             request.boundRequest.targets = new ArrayList<>(targets);
                         }
                         CookingRequestBus.getInstance(level).enqueue(message.restaurantId(), request);

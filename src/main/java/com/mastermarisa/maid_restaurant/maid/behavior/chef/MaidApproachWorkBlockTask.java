@@ -4,6 +4,9 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
+import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
+import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
+import com.mastermarisa.maid_restaurant.core.tree.NodeState;
 import com.mastermarisa.maid_restaurant.data.task_data.WorkBlockCache;
 import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
@@ -11,9 +14,6 @@ import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
-import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
-import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
-import com.mastermarisa.maid_restaurant.core.tree.NodeState;
 import com.mastermarisa.maid_restaurant.uitls.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -82,7 +82,7 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
         if (gameTime % 10 != 0) {
             return;
         }
-        maid.getBrain().getMemory(ModEntities.STAND_POS.get()).ifPresent(t -> {
+        maid.getBrain().getMemory(ModEntities.WALK_TARGET.get()).ifPresent(t -> {
             BlockPos pos = t.currentBlockPosition();
             WalkTarget target = new WalkTarget(pos, movementSpeed, 0);
             MemoryUtil.setIfAbsent(maid, MemoryModuleType.WALK_TARGET, target);

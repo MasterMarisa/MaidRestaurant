@@ -13,7 +13,7 @@ public class MaidBrain implements IExtraMaidBrain {
         return Lists.newArrayList(
                 ModEntities.TARGET_POS.get(),
                 ModEntities.TARGET_TYPE.get(),
-                ModEntities.STAND_POS.get()
+                ModEntities.WALK_TARGET.get()
         );
     }
 }

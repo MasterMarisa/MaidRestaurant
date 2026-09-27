@@ -3,7 +3,7 @@ package com.mastermarisa.maid_restaurant.core.schedule;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
-import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
+import com.mastermarisa.maid_restaurant.data.request.ServingRequest;
 import com.mastermarisa.maid_restaurant.uitls.SerializerRegistry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -156,7 +156,7 @@ public abstract class RequestBus<T extends INBTSerializable<CompoundTag>> extend
 
     public static void registerSerializers() {
         REGISTRY.register(COOKING_REQUEST, CookingRequest.class, CookingRequest::fromNBT);
-        REGISTRY.register(SERVE_REQUEST, ServeRequest.class, ServeRequest::fromNBT);
+        REGISTRY.register(SERVE_REQUEST, ServingRequest.class, ServingRequest::fromNBT);
     }
 
     @SuppressWarnings("unchecked")

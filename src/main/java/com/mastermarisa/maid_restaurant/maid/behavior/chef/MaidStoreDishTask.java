@@ -4,17 +4,17 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
+import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
+import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
+import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
+import com.mastermarisa.maid_restaurant.core.tree.NodeState;
 import com.mastermarisa.maid_restaurant.data.request.CookingRequest;
-import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
+import com.mastermarisa.maid_restaurant.data.request.ServingRequest;
 import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
-import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
-import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
-import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
-import com.mastermarisa.maid_restaurant.core.tree.NodeState;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import com.mastermarisa.maid_restaurant.uitls.MemoryUtil;
 import com.mastermarisa.maid_restaurant.uitls.PosUtil;
@@ -77,7 +77,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         if (gameTime % 10 != 0) {
             return;
         }
-        maid.getBrain().getMemory(ModEntities.STAND_POS.get()).ifPresent(t -> {
+        maid.getBrain().getMemory(ModEntities.WALK_TARGET.get()).ifPresent(t -> {
             BlockPos pos = t.currentBlockPosition();
             WalkTarget target = new WalkTarget(pos, movementSpeed, 0);
             MemoryUtil.setIfAbsent(maid, MemoryModuleType.WALK_TARGET, target);
@@ -173,9 +173,9 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         }
 
         InvUtil.tryExtract(maidInv, inserted, node.getIngredient(), true, false);
-        ServeRequest serveRequest = request.boundRequest;
+        ServingRequest serveRequest = request.boundRequest;
         if (serveRequest != null) {
-            serveRequest.pickupPoints.add(new ServeRequest.Source(pos, inserted));
+            serveRequest.sources.add(new ServingRequest.Source(pos, inserted));
         }
 
         if (node.getCount() - inserted <= 0) {

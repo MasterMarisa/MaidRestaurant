@@ -2,7 +2,7 @@ package com.mastermarisa.maid_restaurant.item;
 
 import com.mastermarisa.maid_restaurant.client.gui.screen.ExclusiveMenuScreen;
 import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
-import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
+import com.mastermarisa.maid_restaurant.data.request.ServingRequest;
 import com.mastermarisa.maid_restaurant.uitls.CodecUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -70,10 +70,10 @@ public class ExclusiveMenuItem extends Item {
             pos = pos.relative(direction);
         }
 
-        List<ServeRequest.Target> targets = getTargets(stack);
+        List<ServingRequest.Target> targets = getTargets(stack);
         boolean removed = false;
         for (int i = 0; i < targets.size(); i++) {
-            ServeRequest.Target target = targets.get(i);
+            ServingRequest.Target target = targets.get(i);
             if (target.pos().equals(pos)) {
                 targets.remove(i);
                 removed = true;
@@ -82,7 +82,7 @@ public class ExclusiveMenuItem extends Item {
         }
         if (!removed) {
             int type = StorageRegistry.tryGetAt(level, pos) != null ? 0 : 1;
-            targets.add(new ServeRequest.Target(pos, type));
+            targets.add(new ServingRequest.Target(pos, type));
         }
         setTargets(stack, targets);
         return InteractionResult.SUCCESS;
@@ -128,22 +128,22 @@ public class ExclusiveMenuItem extends Item {
         itemStack.getOrCreateTag().putString(TAG_RESTAURANT_ID, restaurantId);
     }
 
-    public static List<ServeRequest.Target> getTargets(ItemStack itemStack) {
+    public static List<ServingRequest.Target> getTargets(ItemStack itemStack) {
         CompoundTag tag = itemStack.getOrCreateTag();
-        List<ServeRequest.Target> targets = new ArrayList<>();
+        List<ServingRequest.Target> targets = new ArrayList<>();
         if (tag.contains(TAG_TARGETS)) {
             ListTag listTag = tag.getList(TAG_TARGETS, Tag.TAG_COMPOUND);
             for (int i = 0; i < listTag.size(); i++) {
-                targets.add(CodecUtil.deserialize(listTag.getCompound(i), ServeRequest.Target.CODEC));
+                targets.add(CodecUtil.deserialize(listTag.getCompound(i), ServingRequest.Target.CODEC));
             }
         }
         return targets;
     }
 
-    public static void setTargets(ItemStack itemStack, List<ServeRequest.Target> targets) {
+    public static void setTargets(ItemStack itemStack, List<ServingRequest.Target> targets) {
         ListTag listTag = new ListTag();
-        for (ServeRequest.Target target : targets) {
-            listTag.add(CodecUtil.serialize(target, ServeRequest.Target.CODEC));
+        for (ServingRequest.Target target : targets) {
+            listTag.add(CodecUtil.serialize(target, ServingRequest.Target.CODEC));
         }
         itemStack.getOrCreateTag().put(TAG_TARGETS, listTag);
     }

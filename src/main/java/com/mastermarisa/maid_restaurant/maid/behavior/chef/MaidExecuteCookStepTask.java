@@ -5,13 +5,13 @@ import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.capability.CookResult;
+import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
+import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
+import com.mastermarisa.maid_restaurant.core.tree.NodeState;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidTickRateTask;
-import com.mastermarisa.maid_restaurant.core.schedule.ChefScheduler;
-import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
-import com.mastermarisa.maid_restaurant.core.tree.NodeState;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtil;
 import com.mastermarisa.maid_restaurant.uitls.MemoryUtil;
 import com.mastermarisa.maid_restaurant.uitls.PosUtil;
@@ -76,7 +76,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
         if (gameTime % 10 == 0) {
             double distHorizontal = PosUtil.distSqrHorizontal(maid, pos);
             if (distHorizontal > closeEnoughDistSqr) {
-                maid.getBrain().getMemory(ModEntities.STAND_POS.get()).ifPresent(t -> {
+                maid.getBrain().getMemory(ModEntities.WALK_TARGET.get()).ifPresent(t -> {
                     BlockPos walkPos = t.currentBlockPosition();
                     WalkTarget target = new WalkTarget(walkPos, 0.4F, 0);
                     MemoryUtil.setIfAbsent(maid, MemoryModuleType.WALK_TARGET, target);

@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
 import com.mastermarisa.maid_restaurant.core.schedule.WaiterScheduler;
 import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
-import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
+import com.mastermarisa.maid_restaurant.data.request.ServingRequest;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
@@ -52,7 +52,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
             return false;
         }
 
-        ServeRequest request = WaiterScheduler.getOrClaimRequest(level, maid);
+        ServingRequest request = WaiterScheduler.getOrClaimRequest(level, maid);
         if (request == null) {
             return false;
         }
@@ -74,7 +74,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
         if (gameTime % 10 != 0) {
             return;
         }
-        maid.getBrain().getMemory(ModEntities.STAND_POS.get()).ifPresent(t -> {
+        maid.getBrain().getMemory(ModEntities.WALK_TARGET.get()).ifPresent(t -> {
             BlockPos pos = t.currentBlockPosition();
             WalkTarget target = new WalkTarget(pos, movementSpeed, 0);
             MemoryUtil.setIfAbsent(maid, MemoryModuleType.WALK_TARGET, target);
@@ -94,8 +94,8 @@ public class MaidServeDishTask extends MaidCheckRateTask {
         maid.setDeltaMovement(Vec3.ZERO);
     }
 
-    private boolean searchTarget(ServerLevel level, EntityMaid maid, ServeRequest request) {
-        if (!request.pickupPoints.isEmpty()) {
+    private boolean searchTarget(ServerLevel level, EntityMaid maid, ServingRequest request) {
+        if (!request.sources.isEmpty()) {
             return false;
         }
 
@@ -105,7 +105,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
             return false;
         }
 
-        ServeRequest.Target target = request.targets.get(0);
+        ServingRequest.Target target = request.targets.get(0);
         BlockPos pos = target.pos();
 
         if (target.type() == 0) {
@@ -129,7 +129,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
     }
 
     private void acceptTarget(ServerLevel level, EntityMaid maid, BlockPos pos) {
-        ServeRequest request = WaiterScheduler.getOrClaimRequest(level, maid);
+        ServingRequest request = WaiterScheduler.getOrClaimRequest(level, maid);
         if (request == null) {
             return;
         }
@@ -140,7 +140,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
         }
 
         IItemHandler maidInv = maid.getAvailableInv(false);
-        ServeRequest.Target target = request.targets.remove(0);
+        ServingRequest.Target target = request.targets.remove(0);
         List<ItemStack> toInsert = InvUtil.tryExtract(maidInv, request.count, request.dish, false);
         if (toInsert.isEmpty()) {
             WaiterScheduler.submitRequest(level, maid);

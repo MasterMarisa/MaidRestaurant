@@ -1,6 +1,6 @@
 package com.mastermarisa.maid_restaurant.blockentity;
 
-import com.mastermarisa.maid_restaurant.data.request.ServeRequest;
+import com.mastermarisa.maid_restaurant.data.request.ServingRequest;
 import com.mastermarisa.maid_restaurant.init.ModBlocks;
 import com.mastermarisa.maid_restaurant.init.ModSounds;
 import com.mastermarisa.maid_restaurant.uitls.CodecUtil;
@@ -20,7 +20,7 @@ import java.util.List;
 public class OrderBellBlockEntity extends BaseBlockEntity {
     private static final String TAG_TARGETS = "targets";
 
-    private final List<ServeRequest.Target> targets;
+    private final List<ServingRequest.Target> targets;
     public AnimationState shakingState;
 
     public OrderBellBlockEntity(BlockPos pos, BlockState state) {
@@ -34,13 +34,13 @@ public class OrderBellBlockEntity extends BaseBlockEntity {
         level.playSound(null, this.worldPosition, ModSounds.ORDER_BELL.get(), SoundSource.BLOCKS, 1, 1);
     }
 
-    public void setTargets(List<ServeRequest.Target> targets) {
+    public void setTargets(List<ServingRequest.Target> targets) {
         this.targets.clear();
         this.targets.addAll(targets);
         this.setChanged();
     }
 
-    public List<ServeRequest.Target> getTargets() {
+    public List<ServingRequest.Target> getTargets() {
         return Collections.unmodifiableList(this.targets);
     }
 
@@ -49,8 +49,8 @@ public class OrderBellBlockEntity extends BaseBlockEntity {
         super.saveAdditional(tag);
         if (!this.targets.isEmpty()) {
             ListTag listTag = new ListTag();
-            for (ServeRequest.Target target : targets) {
-                listTag.add(CodecUtil.serialize(target, ServeRequest.Target.CODEC));
+            for (ServingRequest.Target target : targets) {
+                listTag.add(CodecUtil.serialize(target, ServingRequest.Target.CODEC));
             }
             tag.put(TAG_TARGETS, listTag);
         }
@@ -63,7 +63,7 @@ public class OrderBellBlockEntity extends BaseBlockEntity {
             this.targets.clear();
             ListTag listTag = tag.getList(TAG_TARGETS, Tag.TAG_COMPOUND);
             for (int i = 0; i < listTag.size(); i++) {
-                this.targets.add(CodecUtil.deserialize(listTag.getCompound(i), ServeRequest.Target.CODEC));
+                this.targets.add(CodecUtil.deserialize(listTag.getCompound(i), ServingRequest.Target.CODEC));
             }
         }
     }
