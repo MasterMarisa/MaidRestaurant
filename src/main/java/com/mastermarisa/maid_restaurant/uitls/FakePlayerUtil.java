@@ -10,5 +10,9 @@ import java.util.UUID;
 public class FakePlayerUtil {
     public static final GameProfile fakePlayerProfile = new GameProfile(UUID.randomUUID(),"Restaurant Fake Player");
 
-    public static FakePlayer getPlayer(ServerLevel level) { return FakePlayerFactory.get(level, fakePlayerProfile); }
+    public static FakePlayer getPlayer(ServerLevel level) {
+        FakePlayer fakePlayer = FakePlayerFactory.get(level, fakePlayerProfile);
+        fakePlayer.getInventory().clearContent();
+        return fakePlayer;
+    }
 }
