@@ -5,7 +5,7 @@ import com.mastermarisa.maid_restaurant.client.gui.widget.ImageData;
 import com.mastermarisa.maid_restaurant.data.menu.MenuEntry;
 import com.mastermarisa.maid_restaurant.data.menu.OrderEntry;
 import com.mastermarisa.maid_restaurant.data.menu.RecipeInfo;
-import com.mastermarisa.maid_restaurant.item.RestaurantMenuItem;
+import com.mastermarisa.maid_restaurant.item.PortableMenuItem;
 import com.mastermarisa.maid_restaurant.item.UnboundMenuItem;
 import com.mastermarisa.maid_restaurant.network.NetworkHandler;
 import com.mastermarisa.maid_restaurant.network.message.SendPortableOrdersMessage;
@@ -55,7 +55,7 @@ public class PortableMenuScreen extends Screen {
         super(Component.empty());
         this.menuEntries = UnboundMenuItem.getEntries(itemStack);
         this.maxPage = Mth.positiveCeilDiv(this.menuEntries.keySet().stream().max(Comparator.comparingInt(a -> a)).orElse(0) + 1, 4);
-        this.restaurantId = RestaurantMenuItem.getRestaurantId(itemStack);
+        this.restaurantId = PortableMenuItem.getRestaurantId(itemStack);
         this.orders = new OrderEntry[MAX_ORDER_COUNT];
         this.menuArea = new Rectangle(132, 165);
         this.menuEntryBtns = new Rectangle[4];

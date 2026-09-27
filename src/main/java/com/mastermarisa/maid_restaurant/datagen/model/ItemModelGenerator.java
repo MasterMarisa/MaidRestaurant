@@ -22,7 +22,6 @@ public class ItemModelGenerator extends ItemModelProvider {
         basicItem(ModItems.CUBOID_ZONE_DEFINITION.get());
         basicItem(ModItems.POINTSET_ZONE_DEFINITION.get());
         basicItem(ModItems.UNBOUND_MENU.get());
-        basicItem(ModItems.RESTAURANT_MENU.get());
         basicItem(ModItems.PORTABLE_MENU.get());
         basicItem(ModItems.BELL_MENU.get());
         basicItem(ModItems.EXCLUSIVE_MENU.get());

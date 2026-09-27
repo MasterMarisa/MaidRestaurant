@@ -62,7 +62,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
         if (request == null || !request.sources.isEmpty()) return;
 
         IItemHandler maidInv = maid.getAvailableInv(false);
-        if (request.targets.isEmpty() || InvUtil.count(maidInv, request.dish) <= 0) {
+        if (request.count == 0 || request.targets.isEmpty() || InvUtil.count(maidInv, request.dish) <= 0) {
             WaiterScheduler.submitRequest(level, maid);
             return;
         }
@@ -135,9 +135,9 @@ public class MaidServeDishTask extends MaidCheckRateTask {
         }
 
         if (target.type() == 0) {
-            insertIntoStorage(level, pos, toInsert);
+            insertIntoStorage(level, pos, request, toInsert);
         } else if (target.type() == 1) {
-            placeBlockAt(level, maid, pos, toInsert);
+            placeBlockAt(level, maid, pos, request, toInsert);
         }
 
         for (ItemStack stack : toInsert) {
@@ -152,7 +152,8 @@ public class MaidServeDishTask extends MaidCheckRateTask {
         CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
     }
 
-    private void insertIntoStorage(ServerLevel level, BlockPos pos, List<ItemStack> toInsert) {
+    private void insertIntoStorage(ServerLevel level, BlockPos pos,
+                                   ServingRequest request, List<ItemStack> toInsert) {
         IMaidStorage storage = StorageRegistry.tryGetAt(level, pos);
         if (storage == null) return;
 
@@ -161,10 +162,12 @@ public class MaidServeDishTask extends MaidCheckRateTask {
             int inserted = stack.getCount() - rest.getCount();
             if (inserted == 0) break;
             stack.shrink(inserted);
+            request.count -= inserted;
         }
     }
 
-    private void placeBlockAt(ServerLevel level, EntityMaid maid, BlockPos pos, List<ItemStack> toInsert) {
+    private void placeBlockAt(ServerLevel level, EntityMaid maid, BlockPos pos,
+                              ServingRequest request, List<ItemStack> toInsert) {
         if (!level.getBlockState(pos).canBeReplaced()) return;
         if (!level.getEntities(null, new AABB(pos)).isEmpty()) return;
 
@@ -177,6 +180,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
                     ItemStack toPlace = stack.copyWithCount(1);
                     if (maid.placeItemBlock(InteractionHand.MAIN_HAND, pos, dir, toPlace)) {
                         stack.shrink(1);
+                        request.count--;
                     }
                     maid.swing(InteractionHand.MAIN_HAND);
                 });

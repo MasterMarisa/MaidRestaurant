@@ -5,7 +5,7 @@ import com.mastermarisa.maid_restaurant.client.gui.widget.ImageData;
 import com.mastermarisa.maid_restaurant.data.menu.MenuEntry;
 import com.mastermarisa.maid_restaurant.data.menu.OrderEntry;
 import com.mastermarisa.maid_restaurant.data.menu.RecipeInfo;
-import com.mastermarisa.maid_restaurant.item.RestaurantMenuItem;
+import com.mastermarisa.maid_restaurant.item.ExclusiveMenuItem;
 import com.mastermarisa.maid_restaurant.item.UnboundMenuItem;
 import com.mastermarisa.maid_restaurant.network.NetworkHandler;
 import com.mastermarisa.maid_restaurant.network.message.SendExclusiveOrdersMessage;
@@ -58,7 +58,7 @@ public class ExclusiveMenuScreen extends Screen {
         super(net.minecraft.network.chat.Component.empty());
         this.menuEntries = UnboundMenuItem.getEntries(itemStack);
         this.maxPage = Mth.positiveCeilDiv(this.menuEntries.keySet().stream().max(Comparator.comparingInt(a -> a)).orElse(0) + 1, 4);
-        this.restaurantId = RestaurantMenuItem.getRestaurantId(itemStack);
+        this.restaurantId = ExclusiveMenuItem.getRestaurantId(itemStack);
         this.orders = new OrderEntry[MAX_ORDER_COUNT];
         this.menuArea = new Rectangle(132, 165);
         this.menuEntryBtns = new Rectangle[4];

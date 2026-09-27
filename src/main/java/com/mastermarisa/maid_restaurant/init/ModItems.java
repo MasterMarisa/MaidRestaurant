@@ -17,7 +17,6 @@ public interface ModItems {
     RegistryObject<Item> CUBOID_ZONE_DEFINITION = ITEMS.register("cuboid_zone_definition", () -> new CuboidZoneDefinitionItem(new Item.Properties()));
     RegistryObject<Item> POINTSET_ZONE_DEFINITION = ITEMS.register("pointset_zone_definition", () -> new PointsetZoneDefinitionItem(new Item.Properties()));
     RegistryObject<Item> UNBOUND_MENU = ITEMS.register("unbound_menu", () -> new UnboundMenuItem(new Item.Properties().stacksTo(1)));
-    RegistryObject<Item> RESTAURANT_MENU = ITEMS.register("restaurant_menu", () -> new RestaurantMenuItem(new Item.Properties().stacksTo(1)));
     RegistryObject<Item> PORTABLE_MENU = ITEMS.register("portable_menu", () -> new PortableMenuItem(new Item.Properties().stacksTo(1)));
     RegistryObject<Item> BELL_MENU = ITEMS.register("bell_menu", () -> new BellMenuItem(new Item.Properties().stacksTo(1)));
     RegistryObject<Item> EXCLUSIVE_MENU = ITEMS.register("exclusive_menu", () -> new ExclusiveMenuItem(new Item.Properties().stacksTo(1)));
