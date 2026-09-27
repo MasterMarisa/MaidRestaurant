@@ -31,12 +31,6 @@ public class MemoryUtil {
         entity.getBrain().eraseMemory(ModEntities.TARGET_TYPE.get());
     }
 
-    public static void removeTargetIfMatch(LivingEntity entity, TargetType type) {
-        if (isTarget(entity, type)) {
-            removeTarget(entity);
-        }
-    }
-
     public static <T> void setIfAbsent(LivingEntity entity, MemoryModuleType<T> moduleType, T value) {
         Brain<?> brain = entity.getBrain();
         if (brain.getMemory(moduleType).isEmpty()) {

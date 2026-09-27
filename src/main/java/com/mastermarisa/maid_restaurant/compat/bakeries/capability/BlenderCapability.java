@@ -157,7 +157,7 @@ public class BlenderCapability implements ICookCapability {
         }
 
         for (var ingredient : ingredients) {
-            List<ItemStack> itemStacks = InvUtil.tryExtract(maidInv, 1, ingredient, true, true);
+            List<ItemStack> itemStacks = InvUtil.extractFull(maidInv, 1, ingredient, true);
             if (itemStacks.isEmpty()) {
                 return CookResult.INTERRUPTED;
             }
@@ -165,11 +165,11 @@ public class BlenderCapability implements ICookCapability {
 
         for (int i = 0; i < ingredients.size() - 1; i++) {
             Ingredient ingredient = ingredients.get(i);
-            items.setStackInSlot(i, InvUtil.tryExtract(maidInv, 1, ingredient, true, false).get(0));
+            items.setStackInSlot(i, InvUtil.extractFull(maidInv, 1, ingredient, false).get(0));
         }
 
         Ingredient ingredient = ingredients.get(ingredients.size() - 1);
-        ItemStack stack = InvUtil.tryExtract(maidInv, 1, ingredient, true, false).get(0);
+        ItemStack stack = InvUtil.extractFull(maidInv, 1, ingredient, false).get(0);
         if (recipe.getContainer().isEmpty()) {
             items.setStackInSlot(ingredients.size() - 1, stack);
         } else {

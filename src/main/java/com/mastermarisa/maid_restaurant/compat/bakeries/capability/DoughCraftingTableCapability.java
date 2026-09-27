@@ -55,7 +55,7 @@ public class DoughCraftingTableCapability implements ICookCapability {
         Ingredient ingredient = recipe.getIngredients().get(0);
         int required = (int) Math.ceil((double) node.calculateCount(level, maid) / result.getCount());
 
-        if (InvUtil.tryExtract(maidInv, required, ingredient, true, false).isEmpty()) {
+        if (InvUtil.extractFull(maidInv, required, ingredient, false).isEmpty()) {
             return CookResult.INTERRUPTED;
         }
 

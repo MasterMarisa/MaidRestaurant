@@ -36,8 +36,11 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     @Nullable
     private RecipeNode parent;
     private List<RecipeNode> children;
+
     @Nullable
-    private IngredientStack cachedStack;
+    private IngredientStack cachedIngredient;
+    @Nullable
+    private Recipe<?> cachedRecipe;
 
     public RecipeNode() {
         this.ingredient = Ingredient.EMPTY;
@@ -57,7 +60,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         copy.count = this.count;
         copy.step = this.step;
         copy.parent = null;
-        copy.cachedStack = this.cachedStack;
+        copy.cachedIngredient = this.cachedIngredient;
 
         for (RecipeNode child : this.children) {
             RecipeNode childCopy = child.copy();
@@ -88,22 +91,14 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         return children;
     }
 
-    public void collectLeafIngredients(List<IngredientStack> result) {
-        if (this.isLeaf()) {
-            result.add(new IngredientStack(ingredient, count));
-        }
-
-        for (var child : children) {
-            child.collectLeafIngredients(result);
-        }
-    }
-
     @Nullable
     public Recipe<?> getRecipe(RecipeManager recipeManager) {
-        if (step != null) {
-            return recipeManager.byKey(step.recipeId()).orElse(null);
+        if (cachedRecipe == null) {
+            if (step != null) {
+                cachedRecipe = recipeManager.byKey(step.recipeId()).orElse(null);
+            }
         }
-        return null;
+        return cachedRecipe;
     }
 
     @Nullable
@@ -115,14 +110,14 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
     }
 
     @Nullable
-    public IngredientStack getCachedStack() {
-        if (this.parent != null && this.cachedStack == null) {
+    public IngredientStack getCachedIngredient() {
+        if (this.parent != null && this.cachedIngredient == null) {
             RecipeStep step = parent.getStep();
             if (step != null) {
-                this.cachedStack = RecipeCacheBuilder.findStack(step.recipeId(), getIngredient());
+                this.cachedIngredient = RecipeCacheBuilder.findStack(step.recipeId(), getIngredient());
             }
         }
-        return this.cachedStack;
+        return this.cachedIngredient;
     }
 
     public IngredientStack getOutputAsStack() {
@@ -145,6 +140,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
 
     public void setStep(@Nullable RecipeStep step) {
         this.step = step != null ? step.copy() : null;
+        this.cachedRecipe = null;
     }
 
     public void addChild(RecipeNode child) {
@@ -167,7 +163,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
             ICookCapability capability = parent.getCapability();
             Recipe<?> recipe = parent.getRecipe(level.getRecipeManager());
             if (recipe != null && capability != null) {
-                IngredientStack stack = node.getCachedStack();
+                IngredientStack stack = node.getCachedIngredient();
                 if (stack != null) {
                     int count = capability.getIngredientCount(level, recipe, parent.getCount(), stack);
                     node.setCount(count);
@@ -219,7 +215,7 @@ public class RecipeNode implements INBTSerializable<CompoundTag> {
         }
 
         ICookCapability capability = parent.getCapability();
-        IngredientStack stack = node.getCachedStack();
+        IngredientStack stack = node.getCachedIngredient();
         if (capability == null || stack == null) {
             return 0;
         }

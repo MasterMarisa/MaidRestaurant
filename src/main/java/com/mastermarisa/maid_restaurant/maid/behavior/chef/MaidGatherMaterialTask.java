@@ -152,7 +152,7 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
             if (storage == null) return;
 
             maid.swing(InteractionHand.OFF_HAND);
-            if (InvUtil.tryTake(level, pos, storage, maidInv, node.getIngredient(), count)) {
+            if (InvUtil.take(level, pos, storage, maidInv, node.getIngredient(), count)) {
                 node.setState(NodeState.DONE);
                 node.computeParentState();
             }

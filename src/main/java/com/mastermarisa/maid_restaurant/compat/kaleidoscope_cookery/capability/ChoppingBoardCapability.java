@@ -92,7 +92,7 @@ public class ChoppingBoardCapability implements ICookCapability {
         IItemHandler maidInv = maid.getAvailableInv(false);
 
         if (be.getCurrentCutStack().isEmpty()) {
-            List<ItemStack> inputs = InvUtil.tryExtract(maidInv, 1, recipe.getIngredient(), true, false);
+            List<ItemStack> inputs = InvUtil.extractFull(maidInv, 1, recipe.getIngredient(), false);
             if (!inputs.isEmpty()) {
                 be.onPutItem(level, maid, inputs.get(0));
                 maid.swing(InteractionHand.MAIN_HAND);

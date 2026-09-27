@@ -10,9 +10,9 @@ import com.google.common.base.Suppliers;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.capability.CookResult;
-import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.uitls.IngredientUtil;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
@@ -102,7 +102,7 @@ public class ShakerCapability implements ICookCapability {
         ItemStack result = recipe.getResultItem(level.registryAccess());
         ItemStack itemInHand = maid.getMainHandItem();
         if (ShakerItem.hasResult(itemInHand)) {
-            if (InvUtil.tryExtract(maidInv, 1, EMPTY_GLASSWARE.get(), true).isEmpty()) {
+            if (InvUtil.extractFull(maidInv, 1, EMPTY_GLASSWARE.get(), false).isEmpty()) {
                 return CookResult.INTERRUPTED;
             }
             InvUtil.getItemToMaid(maid, ShakerItem.getResult(itemInHand));
@@ -114,7 +114,7 @@ public class ShakerCapability implements ICookCapability {
 
         for (var ingredient : recipe.getIngredients()) {
             if (ingredient.isEmpty()) continue;
-            if (InvUtil.tryExtract(maidInv, 1, ingredient, true, true).isEmpty()) {
+            if (InvUtil.extractFull(maidInv, 1, ingredient, true).isEmpty()) {
                 return CookResult.INTERRUPTED;
             }
         }
@@ -129,7 +129,7 @@ public class ShakerCapability implements ICookCapability {
 
         for (var ingredient : recipe.getIngredients()) {
             if (index >= 3 || ingredient.isEmpty()) continue;
-            ItemStack stack = InvUtil.tryExtract(maidInv, 1, ingredient, true, false).get(0);
+            ItemStack stack = InvUtil.extractFull(maidInv, 1, ingredient, false).get(0);
             items.setStackInSlot(index++, stack);
         }
         ShakerItem.setStorage(itemInHand, items);

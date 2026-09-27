@@ -2,9 +2,9 @@ package com.mastermarisa.maid_restaurant.api;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.capability.CookResult;
-import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -16,8 +16,6 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public interface ICookCapability {
@@ -41,16 +39,21 @@ public interface ICookCapability {
 
     @Nullable
     default BlockPos searchWorkBlock(ServerLevel level, AbstractZone zone, EntityMaid maid) {
-        List<BlockPos> found = new ArrayList<>();
+        BlockPos center = maid.blockPosition();
+        BlockPos best = null;
+        double bestDist = Double.MAX_VALUE;
+
         for (BlockPos pos : zone) {
-            if (isValidWorkBlock(level, pos) && !BlockUsageUtil.isUsed(pos)) {
-                found.add(pos);
+            if (!isValidWorkBlock(level, pos)) continue;
+            if (BlockUsageUtil.isUsed(pos)) continue;
+
+            double dist = pos.distSqr(center);
+            if (dist < bestDist) {
+                bestDist = dist;
+                best = pos;
             }
         }
-        if (found.isEmpty()) {
-            return null;
-        }
-        return found.stream().min(Comparator.comparingDouble(p -> p.distSqr(maid.blockPosition()))).orElse(null);
+        return best;
     }
 
     boolean isValidWorkBlock(ServerLevel level, BlockPos pos);

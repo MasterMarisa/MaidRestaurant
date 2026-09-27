@@ -126,7 +126,7 @@ public class MaidPickupDishTask extends MaidCheckRateTask {
 
         maid.swing(InteractionHand.OFF_HAND);
         IItemHandler maidInv = maid.getAvailableInv(false);
-        InvUtil.tryTake(level, pos, storage, maidInv, request.dish, source.count());
+        InvUtil.take(level, pos, storage, maidInv, request.dish, source.count());
         CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 1);
     }
 

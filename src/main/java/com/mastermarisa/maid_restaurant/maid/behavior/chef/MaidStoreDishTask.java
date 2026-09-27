@@ -61,8 +61,8 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
 
         ExecutionNode node = request.root;
         IItemHandler maidInv = maid.getAvailableInv(false);
-        List<ItemStack> results = InvUtil.tryExtract(maidInv, node.getCount(),
-                node.getIngredient(), true, true);
+        List<ItemStack> results = InvUtil.extractFull(maidInv, node.getCount(),
+                node.getIngredient(), true);
         if (results.isEmpty()) {
             node.verifyAndUpdateState(level, maid);
             return;
@@ -122,8 +122,8 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
 
         ExecutionNode node = request.root;
         IItemHandler maidInv = maid.getAvailableInv(false);
-        List<ItemStack> results = InvUtil.tryExtract(maidInv, node.getCount(),
-                node.getIngredient(), false, true);
+        List<ItemStack> results = InvUtil.extractPartial(maidInv, node.getCount(),
+                node.getIngredient(), true);
         if (results.isEmpty()) {
             node.verifyAndUpdateState(level, maid);
             return;
@@ -138,7 +138,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         }
         if (inserted == 0) return;
 
-        InvUtil.tryExtract(maidInv, inserted, node.getIngredient(), true, false);
+        InvUtil.extractFull(maidInv, inserted, node.getIngredient(), false);
         if (request.boundRequest != null) {
             request.boundRequest.sources.add(new ServingRequest.Source(pos, inserted));
         }

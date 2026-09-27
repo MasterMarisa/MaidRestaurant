@@ -62,14 +62,14 @@ public class CraftingTableCapability implements ICookCapability {
 
         IItemHandler maidInv = maid.getAvailableInv(false);
         for (IngredientStack stack : ingredients) {
-            List<ItemStack> itemStacks = InvUtil.tryExtract(maidInv, stack.getCount(), stack.getIngredient(), true, true);
+            List<ItemStack> itemStacks = InvUtil.extractFull(maidInv, stack.getCount(), stack.getIngredient(), true);
             if (itemStacks.isEmpty()) {
                 return CookResult.INTERRUPTED;
             }
         }
 
         for (var stack : ingredients) {
-            List<ItemStack> extracted = InvUtil.tryExtract(maidInv, stack.getCount(), stack.getIngredient(), true, false);
+            List<ItemStack> extracted = InvUtil.extractFull(maidInv, stack.getCount(), stack.getIngredient(), false);
             for (ItemStack stack1 : extracted) {
                 ItemStack remainder = stack1.getCraftingRemainingItem();
                 if (!remainder.isEmpty()) {

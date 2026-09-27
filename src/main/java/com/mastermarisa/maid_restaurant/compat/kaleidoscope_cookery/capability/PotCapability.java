@@ -115,7 +115,7 @@ public class PotCapability implements ICookCapability {
         switch (be.getStatus()) {
             case 0 -> {
                 if (!state.getValue(PotBlock.HAS_OIL)) {
-                    List<ItemStack> inputs = InvUtil.tryExtract(maidInv, 1, Ingredient.of(TagMod.OIL), true, false);
+                    List<ItemStack> inputs = InvUtil.extractFull(maidInv, 1, Ingredient.of(TagMod.OIL), false);
                     if (!inputs.isEmpty()) {
                         be.onPlaceOil(level, maid, inputs.get(0));
                         maid.swing(InteractionHand.MAIN_HAND);
@@ -133,7 +133,7 @@ public class PotCapability implements ICookCapability {
                     List<IngredientStack> stacks = RecipeCacheBuilder.getIngredientStacks(recipe.getId());
                     stacks = stacks.stream().filter(s -> recipe.getIngredients().contains(s.getIngredient())).toList();
                     for (IngredientStack stack : stacks) {
-                        List<ItemStack> itemStacks = InvUtil.tryExtract(maidInv, stack.getCount(), stack.getIngredient(), true, true);
+                        List<ItemStack> itemStacks = InvUtil.extractFull(maidInv, stack.getCount(), stack.getIngredient(), true);
                         if (itemStacks.isEmpty()) {
                             return CookResult.INTERRUPTED;
                         }
@@ -148,7 +148,7 @@ public class PotCapability implements ICookCapability {
                     }
 
                     for (var stack : stacks) {
-                        List<ItemStack> inputs = InvUtil.tryExtract(maidInv, stack.getCount(), stack.getIngredient(), true, false);
+                        List<ItemStack> inputs = InvUtil.extractFull(maidInv, stack.getCount(), stack.getIngredient(), false);
                         for (int i = 0; i < inputs.get(0).getCount(); i++) {
                             be.addIngredient(level, maid, inputs.get(0).copyWithCount(1));
                         }
@@ -179,7 +179,7 @@ public class PotCapability implements ICookCapability {
                     return CookResult.PROGRESS;
                 }
                 if (be.hasCarrier()){
-                    List<ItemStack> carriers = InvUtil.tryExtract(maidInv, be.getResult().getCount(), recipe.carrier(),true, false);
+                    List<ItemStack> carriers = InvUtil.extractFull(maidInv, be.getResult().getCount(), recipe.carrier(), false);
                     if (!carriers.isEmpty()) {
                         for (var stack : carriers) {
                             be.takeOutProduct(level, fakePlayer, stack);

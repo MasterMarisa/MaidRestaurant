@@ -128,7 +128,7 @@ public class TeapotCapability implements ICookCapability {
                 ResourceLocation teaFluidId = be.getTeaFluidId();
                 if (!teaFluidId.equals(recipe.teaFluid())) {
                     Ingredient bucket = getFluidIngredient(recipe.teaFluid());
-                    List<ItemStack> extracted = InvUtil.tryExtract(maidInv, 1, bucket, true);
+                    List<ItemStack> extracted = InvUtil.extractFull(maidInv, 1, bucket, false);
                     if (extracted.isEmpty()) {
                         return CookResult.INTERRUPTED;
                     }
@@ -140,7 +140,7 @@ public class TeapotCapability implements ICookCapability {
                 if (!recipe.ingredient().test(input)) {
                     be.removeIngredient(level, fakePlayer);
                     InvUtil.getAllFromInv(fakePlayer.getInventory(), maid);
-                    List<ItemStack> extracted = InvUtil.tryExtract(maidInv, recipe.ingredientCount(), recipe.ingredient(), true);
+                    List<ItemStack> extracted = InvUtil.extractFull(maidInv, recipe.ingredientCount(), recipe.ingredient(), false);
                     if (extracted.isEmpty()) {
                         return CookResult.INTERRUPTED;
                     }
@@ -150,7 +150,7 @@ public class TeapotCapability implements ICookCapability {
                     maid.swing(InteractionHand.MAIN_HAND);
                 } else if (input.getCount() < recipe.ingredientCount()) {
                     int count = recipe.ingredientCount() - input.getCount();
-                    List<ItemStack> extracted = InvUtil.tryExtract(maidInv, count, Ingredient.of(input), true);
+                    List<ItemStack> extracted = InvUtil.extractFull(maidInv, count, Ingredient.of(input), false);
                     if (extracted.isEmpty()) {
                         return CookResult.INTERRUPTED;
                     }
@@ -170,7 +170,7 @@ public class TeapotCapability implements ICookCapability {
                     teapot.refresh();
                     return CookResult.PROGRESS;
                 }
-                List<ItemStack> extracted = InvUtil.tryExtract(maidInv, result.getCount(), EMPTY_CUP.get(), true);
+                List<ItemStack> extracted = InvUtil.extractFull(maidInv, result.getCount(), EMPTY_CUP.get(), false);
                 if (extracted.isEmpty()) {
                     return CookResult.INTERRUPTED;
                 }

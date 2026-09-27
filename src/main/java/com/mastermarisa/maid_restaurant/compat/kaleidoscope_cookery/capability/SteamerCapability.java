@@ -142,7 +142,7 @@ public class SteamerCapability implements ICookCapability {
         }
 
         int toExtract = Math.min(freeSlots, required - existedInput);
-        List<ItemStack> inputs = InvUtil.tryExtract(maidInv, toExtract, recipe.getIngredient(), true, false);
+        List<ItemStack> inputs = InvUtil.extractFull(maidInv, toExtract, recipe.getIngredient(), false);
         if (inputs.isEmpty()) {
             return CookResult.INTERRUPTED;
         }

@@ -128,7 +128,7 @@ public class MaidServeDishTask extends MaidCheckRateTask {
 
         IItemHandler maidInv = maid.getAvailableInv(false);
         ServingRequest.Target target = request.targets.remove(0);
-        List<ItemStack> toInsert = InvUtil.tryExtract(maidInv, request.count, request.dish, false);
+        List<ItemStack> toInsert = InvUtil.extractPartial(maidInv, request.count, request.dish, false);
         if (toInsert.isEmpty()) {
             WaiterScheduler.submitRequest(level, maid);
             return;

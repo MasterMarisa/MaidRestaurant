@@ -125,7 +125,7 @@ public class OvenCapability implements ICookCapability {
         }
 
         int toExtract = Math.min(freeSlots, required - existedInput);
-        List<ItemStack> inputs = InvUtil.tryExtract(maidInv, toExtract, ingredient, true, false);
+        List<ItemStack> inputs = InvUtil.extractFull(maidInv, toExtract, ingredient, false);
         if (inputs.isEmpty()) {
             if (changed) {
                 OvenBlockEntity.updateBlock(be);

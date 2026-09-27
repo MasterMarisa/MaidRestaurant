@@ -33,18 +33,24 @@ public class CommonStorage implements IMaidStorage {
 
     @Override
     public List<ItemStack> extract(Level level, BlockPos pos, Ingredient ingredient, int amount, boolean simulate) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
         IItemHandler handler = getItemHandler(level,pos);
-        if (handler != null) {
-            return InvUtil.tryExtract(handler, amount, ingredient, false, simulate);
+        if (blockEntity != null && handler != null) {
+            List<ItemStack> extracted = InvUtil.extractPartial(handler, amount, ingredient, simulate);
+            blockEntity.setChanged();
+            return extracted;
         }
         return List.of();
     }
 
     @Override
     public ItemStack insert(Level level, BlockPos pos, ItemStack stack, boolean simulate) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
         IItemHandler handler = getItemHandler(level,pos);
-        if (handler != null) {
-            return ItemHandlerHelper.insertItemStacked(handler, stack, simulate);
+        if (blockEntity != null && handler != null) {
+            ItemStack leftover = ItemHandlerHelper.insertItemStacked(handler, stack, simulate);
+            blockEntity.setChanged();
+            return leftover;
         }
         return stack;
     }
@@ -52,9 +58,7 @@ public class CommonStorage implements IMaidStorage {
     @Override
     public int count(Level level, BlockPos pos, Ingredient ingredient) {
         IItemHandler handler = getItemHandler(level, pos);
-        if (handler == null) {
-            return 0;
-        }
+        if (handler == null) return 0;
         return InvUtil.count(handler, ingredient);
     }
 

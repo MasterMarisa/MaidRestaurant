@@ -37,10 +37,8 @@ public class FruitBasketStorage implements IMaidStorage {
     @Override
     public List<ItemStack> extract(Level level, BlockPos pos, Ingredient ingredient, int amount, boolean simulate) {
         if (level.getBlockEntity(pos) instanceof FruitBasketBlockEntity be) {
-            List<ItemStack> result = InvUtil.tryExtract(be.getItems(), amount, ingredient, false, simulate);
-            if (!simulate) {
-                be.refresh();
-            }
+            List<ItemStack> result = InvUtil.extractPartial(be.getItems(), amount, ingredient, simulate);
+            if (!simulate) be.refresh();
             return result;
         }
         return List.of();
@@ -51,9 +49,7 @@ public class FruitBasketStorage implements IMaidStorage {
         if (level.getBlockEntity(pos) instanceof FruitBasketBlockEntity be) {
             if (stack.getItem().canFitInsideContainerItems()) {
                 ItemStack result = ItemHandlerHelper.insertItemStacked(be.getItems(), stack, simulate);
-                if (!simulate) {
-                    be.refresh();
-                }
+                if (!simulate) be.refresh();
                 return result;
             }
         }

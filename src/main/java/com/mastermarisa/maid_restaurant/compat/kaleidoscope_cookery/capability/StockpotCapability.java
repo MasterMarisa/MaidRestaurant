@@ -149,7 +149,7 @@ public class StockpotCapability implements ICookCapability {
                         }
                     }
 
-                    List<ItemStack> stacks = InvUtil.tryExtract(maidInv, 1, ingredient, true, false);
+                    List<ItemStack> stacks = InvUtil.extractFull(maidInv, 1, ingredient, false);
                     if (stacks.isEmpty()) {
                         return CookResult.INTERRUPTED;
                     }
@@ -178,19 +178,19 @@ public class StockpotCapability implements ICookCapability {
                     List<IngredientStack> stacks = RecipeCacheBuilder.getIngredientStacks(recipe.getId());
                     stacks = stacks.stream().filter(s -> recipe.getIngredients().contains(s.getIngredient())).toList();
                     for (IngredientStack stack : stacks) {
-                        List<ItemStack> itemStacks = InvUtil.tryExtract(maidInv, stack.getCount(), stack.getIngredient(), true, true);
+                        List<ItemStack> itemStacks = InvUtil.extractFull(maidInv, stack.getCount(), stack.getIngredient(), true);
                         if (itemStacks.isEmpty()) {
                             return CookResult.INTERRUPTED;
                         }
                     }
 
-                    List<ItemStack> lid = InvUtil.tryExtract(maidInv, 1, STOCKPOT_LID.get(), true, false);
+                    List<ItemStack> lid = InvUtil.extractFull(maidInv, 1, STOCKPOT_LID.get(), false);
                     if (lid.isEmpty()) {
                         return CookResult.INTERRUPTED;
                     }
 
                     for (var stack : stacks) {
-                        List<ItemStack> inputs = InvUtil.tryExtract(maidInv, stack.getCount(), stack.getIngredient(), true, false);
+                        List<ItemStack> inputs = InvUtil.extractFull(maidInv, stack.getCount(), stack.getIngredient(), false);
                         for (int i = 0; i < inputs.get(0).getCount(); i++) {
                             be.addIngredient(level, maid, inputs.get(0).copyWithCount(1));
                         }
@@ -201,7 +201,7 @@ public class StockpotCapability implements ICookCapability {
             }
             case 2 -> {
                 if (!be.hasLid()) {
-                    List<ItemStack> lid = InvUtil.tryExtract(maidInv, 1, STOCKPOT_LID.get(), true, false);
+                    List<ItemStack> lid = InvUtil.extractFull(maidInv, 1, STOCKPOT_LID.get(), false);
                     if (lid.isEmpty()) {
                         return CookResult.INTERRUPTED;
                     }
@@ -230,7 +230,7 @@ public class StockpotCapability implements ICookCapability {
                             return CookResult.PROGRESS;
                         }
                     }
-                    List<ItemStack> carriers = InvUtil.tryExtract(maidInv, recipe.result().getCount(), recipe.carrier(), true, false);
+                    List<ItemStack> carriers = InvUtil.extractFull(maidInv, recipe.result().getCount(), recipe.carrier(), false);
                     if (!carriers.isEmpty()) {
                         for (var stack : carriers) {
                             for (int i = 0; i < stack.getCount(); i++) {
