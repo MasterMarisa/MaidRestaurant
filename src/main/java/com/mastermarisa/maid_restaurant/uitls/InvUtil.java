@@ -2,6 +2,7 @@ package com.mastermarisa.maid_restaurant.uitls;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
+import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.core.BlockPos;
@@ -195,6 +196,67 @@ public class InvUtil {
             return List.of();
         }
         return extractPartial(handler, count, ingredient, simulate);
+    }
+
+    /**
+     * 按序从 handler 中提取 required 列表中所有需要的物品。
+     * <p>
+     * 若所有 required 都能满足，则真正提取并返回结果列表（按槽位顺序）；
+     * 否则返回空列表，且不修改 handler。
+     *
+     * @param handler  物品容器
+     * @param required 需要的物品列表，按顺序分配
+     * @param simulate true 时只做验证，不真正提取
+     * @return 提取到的 ItemStack 列表；无法满足全部 required 则返回空列表
+     */
+    public static List<ItemStack> extractAll(IItemHandler handler, List<IngredientStack> required,
+                                             boolean simulate) {
+        if (required.isEmpty()) return List.of();
+
+        int slots = handler.getSlots();
+
+        // 缓存每个槽位的物品引用与剩余可用数量
+        ItemStack[] slotStacks = new ItemStack[slots];
+        int[] available = new int[slots];
+        for (int i = 0; i < slots; i++) {
+            ItemStack stack = handler.getStackInSlot(i);
+            slotStacks[i] = stack;
+            available[i] = stack.isEmpty() ? 0 : stack.getCount();
+        }
+
+        // 每个槽位最终需要提取的总数量
+        int[] allocation = new int[slots];
+
+        // 逐个 required 分配库存
+        for (IngredientStack req : required) {
+            if (req.isEmpty()) continue;
+
+            int need = req.getCount();
+            for (int i = 0; i < slots && need > 0; i++) {
+                if (available[i] <= 0) continue;
+                if (!req.test(slotStacks[i])) continue;
+
+                int take = Math.min(need, available[i]);
+                available[i] -= take;
+                allocation[i] += take;
+                need -= take;
+            }
+
+            // 有 required 无法满足，整体失败
+            if (need > 0) return List.of();
+        }
+
+        // 所有 required 都满足，按槽位顺序真正提取
+        List<ItemStack> result = new ArrayList<>();
+        for (int i = 0; i < slots; i++) {
+            if (allocation[i] <= 0) continue;
+
+            ItemStack extracted = handler.extractItem(i, allocation[i], simulate);
+            if (!extracted.isEmpty()) {
+                result.add(extracted);
+            }
+        }
+        return result;
     }
 
     /**
