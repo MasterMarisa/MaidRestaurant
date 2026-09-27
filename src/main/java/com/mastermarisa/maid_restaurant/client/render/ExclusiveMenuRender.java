@@ -1,7 +1,7 @@
 package com.mastermarisa.maid_restaurant.client.render;
 
-import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.core.request.ServingRequest;
+import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.ExclusiveMenuItem;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
@@ -31,14 +31,10 @@ public class ExclusiveMenuRender {
                               Vec3 cameraOffset, @Nullable BlockPos pos) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
-        if (player == null) {
-            return;
-        }
+        if (player == null) return;
 
         ItemStack itemInHand = player.getMainHandItem();
-        if (!itemInHand.is(ModItems.EXCLUSIVE_MENU.get()) || !ExclusiveMenuItem.isSelectingTargets(itemInHand)) {
-            return;
-        }
+        if (!itemInHand.is(ModItems.EXCLUSIVE_MENU.get())) return;
 
         List<ServingRequest.Target> targets = ExclusiveMenuItem.getTargets(itemInHand);
         for (ServingRequest.Target target : targets) {
@@ -51,7 +47,7 @@ public class ExclusiveMenuRender {
             );
         }
 
-        if (pos != null) {
+        if (pos != null && ExclusiveMenuItem.isSelectingTargets(itemInHand)) {
             Level level = mc.level;
             int type = level != null && StorageRegistry.tryGetAt(level, pos) != null ? 0 : 1;
             Vec3 selector = SELECTOR_CACHE.lerpTo(pos.getCenter(), SELECTOR_TRANSITION_SPEED);

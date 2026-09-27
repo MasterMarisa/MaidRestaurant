@@ -14,6 +14,16 @@ import javax.annotation.Nullable;
 @OnlyIn(Dist.CLIENT)
 public class ClientUtil {
     @Nullable
+    public static BlockPos selectedBlock() {
+        HitResult hitResult = Minecraft.getInstance().hitResult;
+        if (hitResult != null && hitResult.getType().equals(HitResult.Type.BLOCK)
+                && hitResult instanceof BlockHitResult hit) {
+            return hit.getBlockPos();
+        }
+        return null;
+    }
+
+    @Nullable
     public static BlockPos getTargetedBlock() {
         HitResult hitResult = Minecraft.getInstance().hitResult;
         if (hitResult != null && hitResult.getType().equals(HitResult.Type.BLOCK)

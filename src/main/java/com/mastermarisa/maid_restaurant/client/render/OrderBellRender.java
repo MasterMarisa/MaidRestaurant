@@ -1,9 +1,11 @@
 package com.mastermarisa.maid_restaurant.client.render;
 
-import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
+import com.mastermarisa.maid_restaurant.blockentity.OrderBellBlockEntity;
 import com.mastermarisa.maid_restaurant.core.request.ServingRequest;
+import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.OrderBellItem;
+import com.mastermarisa.maid_restaurant.uitls.ClientUtil;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -23,9 +25,7 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 public class OrderBellRender {
     private static final float[] BLUE = new float[]{ 139 / 255F, 193 / 255F, 250 / 255F, 1};
-    private static final float[] BLUE_TARGET = new float[]{ 139 / 255F, 193 / 255F, 250 / 255F, 0.5F};
     private static final float[] ORANGE = new float[]{ 221 / 255F, 120 / 255F, 41 / 255F, 1};
-    private static final float[] ORANGE_TARGET = new float[]{ 221 / 255F, 120 / 255F, 41 / 255F, 0.5F};
     private static final float SELECTOR_TRANSITION_SPEED = 0.2f;
     private static final Vec3CacheHolder SELECTOR_CACHE = new Vec3CacheHolder();
 
@@ -33,16 +33,22 @@ public class OrderBellRender {
                               Vec3 cameraOffset, @Nullable BlockPos pos) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
-        if (player == null) {
-            return;
-        }
+        if (player == null) return;
 
         ItemStack itemInHand = player.getMainHandItem();
-        if (!itemInHand.is(ModItems.ORDER_BELL.get())) {
-            return;
+        if (!itemInHand.is(ModItems.ORDER_BELL.get())) return;
+
+        List<ServingRequest.Target> targets;
+        boolean isBlock = false;
+        Level level = player.level();
+        BlockPos cursor = ClientUtil.selectedBlock();
+        if (cursor != null && level.getBlockEntity(cursor) instanceof OrderBellBlockEntity be) {
+            targets = be.getTargets();
+            isBlock = true;
+        } else {
+            targets = OrderBellItem.getTargets(itemInHand);
         }
 
-        List<ServingRequest.Target> targets = OrderBellItem.getTargets(itemInHand);
         for (ServingRequest.Target target : targets) {
             RenderUtil.renderThickAABB(
                     poseStack,
@@ -53,9 +59,8 @@ public class OrderBellRender {
             );
         }
 
-        if (pos != null) {
-            Level level = mc.level;
-            int type = level != null && StorageRegistry.tryGetAt(level, pos) != null ? 0 : 1;
+        if (pos != null && !isBlock) {
+            int type = StorageRegistry.tryGetAt(level, pos) != null ? 0 : 1;
             Vec3 selector = SELECTOR_CACHE.lerpTo(pos.getCenter(), SELECTOR_TRANSITION_SPEED);
             AABB aabb = new AABB(
                     selector.x - 0.5,
@@ -70,7 +75,7 @@ public class OrderBellRender {
                     consumer,
                     aabb.move(cameraOffset),
                     0.075F,
-                    type == 0 ? BLUE_TARGET : ORANGE_TARGET
+                    type == 0 ? BLUE : ORANGE
             );
         }
     }
