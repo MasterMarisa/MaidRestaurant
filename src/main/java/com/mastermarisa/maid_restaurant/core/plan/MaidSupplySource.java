@@ -34,25 +34,36 @@ public final class MaidSupplySource implements ISupplySource {
 
     @Override
     public List<SupplyTarget> find(Ingredient ingredient, int want) {
-        List<Weighted> found = new ArrayList<>();
-        for (BlockPos pos : containers()) {
+        List<SupplyTarget> targets = new ArrayList<>();
+        for (BlockPos pos : byDistance()) {
             IMaidStorage storage = StorageRegistry.tryGetAt(level, pos);
             if (storage == null) continue;
 
             int available = storage.count(level, pos, ingredient);
             if (available > 0) {
-                found.add(new Weighted(new SupplyTarget(pos, Math.min(available, want)), storage.getPriority()));
+                targets.add(new SupplyTarget(pos, Math.min(available, want)));
             }
         }
-
-        found.sort(Comparator.comparingInt(Weighted::priority)
-                .thenComparingDouble(weighted -> weighted.target().pos().distSqr(center)));
-
-        List<SupplyTarget> targets = new ArrayList<>(found.size());
-        for (Weighted weighted : found) {
-            targets.add(weighted.target());
-        }
         return targets;
+    }
+
+    @Override
+    @Nullable
+    public SupplyTarget findFirst(Ingredient ingredient) {
+        for (BlockPos pos : byDistance()) {
+            IMaidStorage storage = StorageRegistry.tryGetAt(level, pos);
+            if (storage == null) continue;
+
+            int available = storage.count(level, pos, ingredient);
+            if (available > 0) return new SupplyTarget(pos, available);
+        }
+        return null;
+    }
+
+    private List<BlockPos> byDistance() {
+        List<BlockPos> positions = new ArrayList<>(containers());
+        positions.sort(Comparator.comparingDouble(pos -> pos.distSqr(center)));
+        return positions;
     }
 
     private List<BlockPos> containers() {
@@ -71,6 +82,4 @@ public final class MaidSupplySource implements ISupplySource {
     }
 
     private record CachedPositions(long expiresAt, List<BlockPos> positions) {}
-
-    private record Weighted(SupplyTarget target, int priority) {}
 }

@@ -66,15 +66,9 @@ public final class NodePlanner {
     private static Resolution fetch(Need need, @Nullable ISupplySource supply) {
         if (supply == null) return null;
 
-        List<SupplyTarget> targets = supply.find(need.ingredient(), need.amount());
-        if (targets.isEmpty()) return null;
-
-        int total = 0;
-        for (SupplyTarget target : targets) {
-            total += target.available();
-        }
-        if (total <= 0) return null;
-        return new Resolution.Fetch(need, targets, Math.min(total, need.amount()));
+        SupplyTarget target = supply.findFirst(need.ingredient());
+        if (target == null) return null;
+        return new Resolution.Fetch(need, target);
     }
 
     private static boolean hasRecipe(ExecutionNode node, WorldContext world) {

@@ -5,7 +5,7 @@ import java.util.List;
 public sealed interface Resolution {
     record Satisfied() implements Resolution {}
 
-    record Fetch(Need need, List<SupplyTarget> targets, int amount) implements Resolution {}
+    record Fetch(Need need, SupplyTarget target) implements Resolution {}
 
     record Craft(Need need, List<Need> children, boolean ready) implements Resolution {}
 

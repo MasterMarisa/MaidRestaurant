@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
 import com.mastermarisa.maid_restaurant.core.plan.PlanAction;
 import com.mastermarisa.maid_restaurant.core.plan.Resolution;
-import com.mastermarisa.maid_restaurant.core.plan.SupplyTarget;
 import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
 import com.mastermarisa.maid_restaurant.core.tree.Progress;
@@ -83,14 +82,12 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         if (ChefScheduler.getStorageZone(maid) == null) return;
 
         Resolution resolution = node.getResolution();
-        List<SupplyTarget> targets = resolution instanceof Resolution.Fetch fetch
-                ? fetch.targets() : List.of();
-        if (targets.isEmpty()) {
+        if (!(resolution instanceof Resolution.Fetch fetch)) {
             complainMissing(maid, node, ingredient);
             return;
         }
 
-        BlockPos best = targets.get(0).pos();
+        BlockPos best = fetch.target().pos();
 
         if (isCloseEnough(maid, best)) {
             take(level, maid, best, node);
