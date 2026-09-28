@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 public class CuboidZone extends AbstractZone {
     private static final String TAG_MIN = "min";
@@ -52,6 +53,18 @@ public class CuboidZone extends AbstractZone {
     @Override
     public Iterator<BlockPos> iterator() {
         return new CuboidIterator(min, max);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CuboidZone other)) return false;
+        return min.equals(other.min) && max.equals(other.max);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(min, max);
     }
 
     @Override

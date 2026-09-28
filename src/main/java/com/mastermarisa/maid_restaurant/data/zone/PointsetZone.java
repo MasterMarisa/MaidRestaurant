@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -33,6 +34,18 @@ public class PointsetZone extends AbstractZone {
     @Override
     public Iterator<BlockPos> iterator() {
         return points.iterator();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PointsetZone other)) return false;
+        return points.equals(other.points);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(points);
     }
 
     @Override

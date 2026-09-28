@@ -6,10 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class CombinedZoneWrapper extends AbstractZone {
     private final List<AbstractZone> zones;
@@ -30,6 +27,18 @@ public class CombinedZoneWrapper extends AbstractZone {
     @Override
     public Iterator<BlockPos> iterator() {
         return Iterators.concat(zones.stream().map(AbstractZone::iterator).iterator());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CombinedZoneWrapper other)) return false;
+        return zones.equals(other.zones);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(zones);
     }
 
     @Override
