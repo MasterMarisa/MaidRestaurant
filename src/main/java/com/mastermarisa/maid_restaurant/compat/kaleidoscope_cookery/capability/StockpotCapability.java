@@ -77,18 +77,17 @@ public class StockpotCapability implements ICookCapability {
     @Override
     public int getIngredientCount(Level level, Recipe<?> recipe, int output, IngredientStack stack) {
         ResourceLocation soupBaseId = ((StockpotRecipe) recipe).soupBase();
+        Ingredient ingredient = stack.getIngredient();
         if (soupBaseId.equals(ModSoupBases.WATER)) {
-            if (IngredientUtil.equals(stack.getIngredient(), SOUP_BASE_MAP.get(soupBaseId))) {
+            if (IngredientUtil.equals(ingredient, SOUP_BASE_MAP.get(soupBaseId))) {
                 ItemStack result = recipe.getResultItem(level.registryAccess());
                 int multiplier = (int) Math.ceil((double) output / result.getCount());
                 return multiplier >= 2 ? 2 : 1;
             }
         }
-
-        if (IngredientUtil.equals(stack.getIngredient(), STOCKPOT_LID.get())) {
+        if (IngredientUtil.equals(ingredient, STOCKPOT_LID.get())) {
             return 1;
         }
-
         return ICookCapability.super.getIngredientCount(level, recipe, output, stack);
     }
 

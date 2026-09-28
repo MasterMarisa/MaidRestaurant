@@ -29,6 +29,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Iterator;
 import java.util.List;
 
 public class MaidServeDishTask extends MaidCheckRateTask {
@@ -64,18 +65,18 @@ public class MaidServeDishTask extends MaidCheckRateTask {
         IItemHandler maidInv = maid.getAvailableInv(false);
         if (request.count == 0 || request.targets.isEmpty() || InvUtil.count(maidInv, request.dish) <= 0) {
             WaiterScheduler.submitRequest(level, maid);
+            CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
             return;
         }
 
-        ServingRequest.Target target = request.targets.get(0);
+        ServingRequest.Target target = findValidTarget(level, request);
+        if (target == null) {
+            WaiterScheduler.submitRequest(level, maid);
+            CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
+            return;
+        }
+
         BlockPos pos = target.pos();
-
-        if (!isValidTarget(level, pos, target.type())) {
-            request.targets.remove(0);
-            CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 1);
-            return;
-        }
-
         if (isCloseEnough(maid, pos)) {
             acceptTarget(level, maid, pos, request);
             return;
@@ -186,12 +187,27 @@ public class MaidServeDishTask extends MaidCheckRateTask {
                 });
     }
 
-    private boolean isValidTarget(ServerLevel level, BlockPos pos, int type) {
+    private boolean isValidTarget(ServerLevel level, BlockPos pos, int type, ItemStack dish) {
         return switch (type) {
             case 0 -> StorageRegistry.tryGetAt(level, pos) != null;
-            case 1 -> level.getBlockState(pos).canBeReplaced();
+            case 1 -> level.getBlockState(pos).canBeReplaced() && dish.getItem() instanceof BlockItem;
             default -> true;
         };
+    }
+
+    @Nullable
+    private ServingRequest.Target findValidTarget(ServerLevel level, ServingRequest request) {
+        ItemStack itemStack = request.dish.getItems()[0];
+        Iterator<ServingRequest.Target> it = request.targets.iterator();
+        while (it.hasNext()) {
+            ServingRequest.Target target = it.next();
+            if (!isValidTarget(level, target.pos(), target.type(), itemStack)) {
+                it.remove();
+                continue;
+            }
+            return target;
+        }
+        return null;
     }
 
     @Nullable

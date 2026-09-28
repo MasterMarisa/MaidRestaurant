@@ -63,8 +63,8 @@ public class PotCapability implements ICookCapability {
     @Override
     public List<Ingredient> getRequiredIngredients(Recipe<?> recipe) {
         List<Ingredient> ingredients = new ArrayList<>(ICookCapability.super.getRequiredIngredients(recipe));
-        ingredients.add(OIL);
         PotRecipe potRecipe = (PotRecipe) recipe;
+        ingredients.add(OIL);
         if (!potRecipe.carrier().isEmpty()) {
             for (int i = 0; i < potRecipe.result().getCount(); i++) {
                 ingredients.add(potRecipe.carrier());
@@ -76,9 +76,7 @@ public class PotCapability implements ICookCapability {
 
     @Override
     public int getIngredientCount(Level level, Recipe<?> recipe, int output, IngredientStack stack) {
-        if (IngredientUtil.equals(stack.getIngredient(), KITCHEN_SHOVEL)) {
-            return 1;
-        }
+        if (IngredientUtil.equals(stack.getIngredient(), KITCHEN_SHOVEL)) return 1;
         return ICookCapability.super.getIngredientCount(level, recipe, output, stack);
     }
 
@@ -104,115 +102,134 @@ public class PotCapability implements ICookCapability {
         if (!(level.getBlockEntity(pos) instanceof PotBlockEntity be)) {
             return CookResult.INTERRUPTED;
         }
-        BlockState state = level.getBlockState(pos);
 
         PotRecipe recipe = (PotRecipe) node.getRecipe(level.getRecipeManager());
-        if (recipe == null) {
-            return CookResult.INTERRUPTED;
-        }
+        if (recipe == null) return CookResult.INTERRUPTED;
+
+        return switch (be.getStatus()) {
+            case 0 -> cookAddOilOrIngredients(level, maid, pos, be, recipe);
+            case 1 -> cookShovelHit(level, maid, be);
+            case 2 -> cookTakeOutProduct(level, maid, be, recipe, node);
+            case 3 -> cookReset(level, maid, be);
+            default -> CookResult.INTERRUPTED;
+        };
+    }
+
+    private CookResult cookAddOilOrIngredients(ServerLevel level, EntityMaid maid, BlockPos pos,
+                                               PotBlockEntity be, PotRecipe recipe) {
+        BlockState state = level.getBlockState(pos);
         IItemHandler maidInv = maid.getAvailableInv(false);
 
-        switch (be.getStatus()) {
-            case 0 -> {
-                if (!state.getValue(PotBlock.HAS_OIL)) {
-                    List<ItemStack> inputs = InvUtil.extractFull(maidInv, 1, Ingredient.of(TagMod.OIL), false);
-                    if (!inputs.isEmpty()) {
-                        be.onPlaceOil(level, maid, inputs.get(0));
-                        maid.swing(InteractionHand.MAIN_HAND);
-                    }
-                } else {
-                    if (!be.isEmpty()) {
-                        for (var item : be.getInputs()) {
-                            if (!item.isEmpty()) {
-                                InvUtil.getItemToMaid(maid, item.copyAndClear());
-                            }
-                        }
-                        be.refresh();
-                    }
-
-                    List<IngredientStack> stacks = RecipeCacheBuilder.getIngredientStacks(recipe.getId());
-                    stacks = stacks.stream().filter(s -> recipe.getIngredients().contains(s.getIngredient())).toList();
-                    for (IngredientStack stack : stacks) {
-                        List<ItemStack> itemStacks = InvUtil.extractFull(maidInv, stack.getCount(), stack.getIngredient(), true);
-                        if (itemStacks.isEmpty()) {
-                            return CookResult.INTERRUPTED;
-                        }
-                    }
-
-                    int shovelIndex = InvUtil.findSlot(maidInv, KITCHEN_SHOVEL);
-                    if (shovelIndex == -1) {
-                        return CookResult.INTERRUPTED;
-                    }
-                    if (!KITCHEN_SHOVEL.test(maid.getMainHandItem())) {
-                        InvUtil.exchangeToHand(maid, InteractionHand.MAIN_HAND, shovelIndex);
-                    }
-
-                    for (var stack : stacks) {
-                        List<ItemStack> inputs = InvUtil.extractFull(maidInv, stack.getCount(), stack.getIngredient(), false);
-                        for (int i = 0; i < inputs.get(0).getCount(); i++) {
-                            be.addIngredient(level, maid, inputs.get(0).copyWithCount(1));
-                        }
-                    }
-
-                    be.onShovelHit(level, maid, maid.getMainHandItem());
-                    level.playSound(null, maid.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, (level.random.nextFloat() - level.random.nextFloat()) * 0.8F);
-                    maid.swing(InteractionHand.MAIN_HAND);
-                }
-            }
-            case 1 -> {
-                int shovelIndex = InvUtil.findSlot(maidInv, KITCHEN_SHOVEL);
-                if (shovelIndex == -1) {
-                    return CookResult.INTERRUPTED;
-                }
-                if (!KITCHEN_SHOVEL.test(maid.getMainHandItem())) {
-                    InvUtil.exchangeToHand(maid, InteractionHand.MAIN_HAND, shovelIndex);
-                }
-
-                be.onShovelHit(level, maid, maid.getMainHandItem());
-                level.playSound(null, maid.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, (level.random.nextFloat() - level.random.nextFloat()) * 0.8F);
+        if (!state.getValue(PotBlock.HAS_OIL)) {
+            List<ItemStack> inputs = InvUtil.extractFull(maidInv, 1, Ingredient.of(TagMod.OIL), false);
+            if (!inputs.isEmpty()) {
+                be.onPlaceOil(level, maid, inputs.get(0));
                 maid.swing(InteractionHand.MAIN_HAND);
             }
-            case 2 -> {
-                FakePlayer fakePlayer = FakePlayerUtil.getPlayer(level);
-                if (!ItemStack.isSameItem(be.getResult(), recipe.result())) {
-                    be.reset();
-                    return CookResult.PROGRESS;
-                }
-                if (be.hasCarrier()){
-                    List<ItemStack> carriers = InvUtil.extractFull(maidInv, be.getResult().getCount(), recipe.carrier(), false);
-                    if (!carriers.isEmpty()) {
-                        for (var stack : carriers) {
-                            be.takeOutProduct(level, fakePlayer, stack);
-                        }
-                        InvUtil.getAllFromInv(fakePlayer.getInventory(), maid);
-                        maid.swing(InteractionHand.MAIN_HAND);
-                        if (node.calculateCount(level, maid) <= 0) {
-                            return CookResult.DONE;
-                        } else {
-                            return CookResult.PROGRESS;
-                        }
-                    } else {
-                        return CookResult.INTERRUPTED;
-                    }
-                } else {
-                    Pig pig = new Pig(EntityType.PIG, level);
-                    be.takeOutProduct(level, pig, ModItems.KITCHEN_SHOVEL.get().getDefaultInstance());
-                    InvUtil.getItemToMaid(maid, pig.getMainHandItem());
-                    maid.swing(InteractionHand.MAIN_HAND);
-                    if (node.calculateCount(level, maid) <= 0) {
-                        return CookResult.DONE;
-                    } else {
-                        return CookResult.PROGRESS;
-                    }
+            return CookResult.PROGRESS;
+        }
+
+        if (!be.isEmpty()) {
+            for (var item : be.getInputs()) {
+                if (!item.isEmpty()) {
+                    InvUtil.getItemToMaid(maid, item.copyAndClear());
                 }
             }
-            case 3 -> {
-                be.reset();
-                maid.swing(InteractionHand.MAIN_HAND);
-                return CookResult.INTERRUPTED;
+            be.refresh();
+            maid.swing(InteractionHand.MAIN_HAND);
+        }
+
+        if (!equipShovel(maid, maidInv)) {
+            return CookResult.INTERRUPTED;
+        }
+
+        List<IngredientStack> required = new ArrayList<>();
+        for (var stack : RecipeCacheBuilder.getIngredientStacks(recipe.getId())) {
+            if (recipe.getIngredients().contains(stack.getIngredient())) {
+                required.add(stack);
             }
         }
+
+        List<ItemStack> extracted = InvUtil.extractAll(maidInv, required, false);
+        if (extracted.isEmpty()) return CookResult.INTERRUPTED;
+
+        for (ItemStack itemStack : extracted) {
+            for (int i = 0; i < itemStack.getCount(); i++) {
+                be.addIngredient(level, maid, itemStack.copyWithCount(1));
+            }
+        }
+
+        shovelHit(level, maid, be);
         return CookResult.PROGRESS;
+    }
+
+    private CookResult cookShovelHit(ServerLevel level, EntityMaid maid, PotBlockEntity be) {
+        if (!equipShovel(maid, maid.getAvailableInv(false))) {
+            return CookResult.INTERRUPTED;
+        }
+        shovelHit(level, maid, be);
+        return CookResult.PROGRESS;
+    }
+
+    private CookResult cookTakeOutProduct(ServerLevel level, EntityMaid maid,
+                                          PotBlockEntity be, PotRecipe recipe, RecipeNode node) {
+        if (!ItemStack.isSameItem(be.getResult(), recipe.result())) {
+            be.reset();
+            return CookResult.PROGRESS;
+        }
+
+        return be.hasCarrier()
+                ? takeOutWithCarrier(level, maid, be, recipe, node)
+                : takeOutWithoutCarrier(level, maid, be, node);
+    }
+
+    private CookResult cookReset(ServerLevel level, EntityMaid maid, PotBlockEntity be) {
+        be.reset();
+        maid.swing(InteractionHand.MAIN_HAND);
+        return CookResult.INTERRUPTED;
+    }
+
+    private CookResult takeOutWithCarrier(ServerLevel level, EntityMaid maid,
+                                          PotBlockEntity be, PotRecipe recipe, RecipeNode node) {
+        IItemHandler maidInv = maid.getAvailableInv(false);
+        ItemStack carrier = InvUtil.extractSingle(maidInv, be.getResult().getCount(),
+                recipe.carrier(), true, false);
+        if (carrier.isEmpty()) return CookResult.INTERRUPTED;
+
+        FakePlayer fakePlayer = FakePlayerUtil.getPlayer(level);
+        be.takeOutProduct(level, fakePlayer, carrier);
+        InvUtil.getAllFromInv(fakePlayer.getInventory(), maid);
+        maid.swing(InteractionHand.MAIN_HAND);
+
+        return node.calculateCount(level, maid) <= 0 ? CookResult.DONE : CookResult.PROGRESS;
+    }
+
+    private CookResult takeOutWithoutCarrier(ServerLevel level, EntityMaid maid,
+                                             PotBlockEntity be, RecipeNode node) {
+        Pig pig = new Pig(EntityType.PIG, level);
+        be.takeOutProduct(level, pig, ModItems.KITCHEN_SHOVEL.get().getDefaultInstance());
+        InvUtil.getItemToMaid(maid, pig.getMainHandItem());
+        maid.swing(InteractionHand.MAIN_HAND);
+
+        return node.calculateCount(level, maid) <= 0 ? CookResult.DONE : CookResult.PROGRESS;
+    }
+
+    private boolean equipShovel(EntityMaid maid, IItemHandler maidInv) {
+        int shovelIndex = InvUtil.findSlot(maidInv, KITCHEN_SHOVEL);
+        if (shovelIndex == -1) return false;
+
+        if (!KITCHEN_SHOVEL.test(maid.getMainHandItem())) {
+            InvUtil.exchangeToHand(maid, InteractionHand.MAIN_HAND, shovelIndex);
+        }
+        return true;
+    }
+
+    private void shovelHit(ServerLevel level, EntityMaid maid, PotBlockEntity be) {
+        be.onShovelHit(level, maid, maid.getMainHandItem());
+        level.playSound(null, maid.blockPosition(), SoundEvents.FIRE_EXTINGUISH,
+                SoundSource.BLOCKS, 1.0F,
+                (level.random.nextFloat() - level.random.nextFloat()) * 0.8F);
+        maid.swing(InteractionHand.MAIN_HAND);
     }
 
     @Override

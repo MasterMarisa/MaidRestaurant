@@ -16,6 +16,7 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class InvUtil {
@@ -260,6 +261,96 @@ public class InvUtil {
     }
 
     /**
+     * 提取单一类型的物品，跨槽位合并为一个 ItemStack。
+     * <p>
+     * 选择规则：
+     * <ol>
+     *   <li>优先找一种能凑够 count 个的匹配物品（按槽位遍历顺序，第一个满足的胜出）</li>
+     *   <li>若没有任何一种能凑够：
+     *     <ul>
+     *       <li>{@code requireFull = false}：返回匹配物品中可合并总量最多的那一种</li>
+     *       <li>{@code requireFull = true}：返回 {@link ItemStack#EMPTY}</li>
+     *     </ul>
+     *   </li>
+     * </ol>
+     *
+     * @param handler     物品容器
+     * @param count       期望数量
+     * @param ingredient  匹配条件
+     * @param requireFull 为 true 时必须凑够 count 才返回
+     * @param simulate    为 true 时只模拟，不真正提取
+     * @return 合并后的 ItemStack；无匹配或 requireFull 不满足时返回 EMPTY
+     */
+    public static ItemStack extractSingle(IItemHandler handler, int count,
+                                          Ingredient ingredient,
+                                          boolean requireFull, boolean simulate) {
+        if (count <= 0) return ItemStack.EMPTY;
+
+        int slots = handler.getSlots();
+        List<StackGroup> groups = new ArrayList<>();
+        int[] slotGroup = new int[slots];
+        Arrays.fill(slotGroup, -1);
+
+        for (int i = 0; i < slots; i++) {
+            ItemStack slot = handler.getStackInSlot(i);
+            if (slot.isEmpty() || !ingredient.test(slot)) continue;
+
+            int groupIdx = -1;
+            for (int g = 0; g < groups.size(); g++) {
+                if (groups.get(g).matches(slot)) {
+                    groupIdx = g;
+                    break;
+                }
+            }
+            if (groupIdx == -1) {
+                groupIdx = groups.size();
+                groups.add(new StackGroup(slot));
+            }
+            groups.get(groupIdx).total += slot.getCount();
+            slotGroup[i] = groupIdx;
+        }
+
+        if (groups.isEmpty()) return ItemStack.EMPTY;
+
+        int targetIdx = -1;
+        for (int g = 0; g < groups.size(); g++) {
+            if (groups.get(g).total >= count) {
+                targetIdx = g;
+                break;
+            }
+        }
+        if (targetIdx == -1) {
+            if (requireFull) return ItemStack.EMPTY;
+            int maxTotal = -1;
+            for (int g = 0; g < groups.size(); g++) {
+                if (groups.get(g).total > maxTotal) {
+                    maxTotal = groups.get(g).total;
+                    targetIdx = g;
+                }
+            }
+        }
+
+        int need = Math.min(count, groups.get(targetIdx).total);
+        ItemStack result = ItemStack.EMPTY;
+
+        for (int i = 0; i < slots && need > 0; i++) {
+            if (slotGroup[i] != targetIdx) continue;
+
+            ItemStack extracted = handler.extractItem(i, need, simulate);
+            if (extracted.isEmpty()) continue;
+
+            if (result.isEmpty()) {
+                result = extracted.copy();
+            } else {
+                result.grow(extracted.getCount());
+            }
+            need -= extracted.getCount();
+        }
+
+        return result;
+    }
+
+    /**
      * 从 IMaidStorage 取物品放入 IItemHandler。
      * <p>
      * 取出的物品先尝试全部插入 to；插不进去的部分还回 from，
@@ -340,6 +431,25 @@ public class InvUtil {
         maid.setItemInHand(hand, fromSlot);
         if (!inHand.isEmpty()) {
             getItemToMaid(maid, inHand);
+        }
+    }
+
+    /**
+     * 分组：一个「可合并类型」的代表栈与累计数量。
+     * <p>
+     * {@code template} 是源栈的拷贝（count=1），避免提取过程中源栈被修改导致比较失效。
+     */
+    private static final class StackGroup {
+        final ItemStack template;
+        int total;
+
+        StackGroup(ItemStack source) {
+            this.template = source.copyWithCount(1);
+            this.total = 0;
+        }
+
+        boolean matches(ItemStack stack) {
+            return ItemStack.isSameItemSameTags(this.template, stack);
         }
     }
 }
