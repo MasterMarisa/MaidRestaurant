@@ -1,15 +1,10 @@
 package com.mastermarisa.maid_restaurant.core.tree;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
-import com.mastermarisa.maid_restaurant.uitls.ChefScheduler;
-import com.mastermarisa.maid_restaurant.uitls.InvUtil;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
+import com.mastermarisa.maid_restaurant.core.plan.Resolution;
+import com.mastermarisa.maid_restaurant.core.world.IRecipeLookup;
+import com.mastermarisa.maid_restaurant.core.world.WorldContext;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -17,14 +12,16 @@ import java.util.List;
 
 public class ExecutionNode {
     private final RecipeNode recipeNode;
-    private NodeState state;
+    private Progress progress;
+    @Nullable
+    private Resolution resolution;
     @Nullable
     private ExecutionNode parent;
     private final List<ExecutionNode> children;
 
     public ExecutionNode(RecipeNode recipeNode) {
         this.recipeNode = recipeNode;
-        this.state = NodeState.NEED_MATERIALS;
+        this.progress = Progress.PENDING;
         this.parent = null;
         this.children = new ArrayList<>();
     }
@@ -46,8 +43,21 @@ public class ExecutionNode {
         return this.recipeNode;
     }
 
-    public NodeState getState() {
-        return this.state;
+    public Progress getProgress() {
+        return this.progress;
+    }
+
+    public void setProgress(Progress progress) {
+        this.progress = progress;
+    }
+
+    @Nullable
+    public Resolution getResolution() {
+        return this.resolution;
+    }
+
+    public void setResolution(@Nullable Resolution resolution) {
+        this.resolution = resolution;
     }
 
     @Nullable
@@ -64,118 +74,26 @@ public class ExecutionNode {
     public Ingredient getIngredient() { return this.recipeNode.getIngredient(); }
 
     @Nullable
-    public Recipe<?> getRecipe(RecipeManager recipeManager) { return this.recipeNode.getRecipe(recipeManager); }
-
-    @Nullable
     public ICookCapability getCapability() { return this.recipeNode.getCapability(); }
 
     public boolean isLeaf() {
         return children.isEmpty();
     }
 
-    public void setState(NodeState state) {
-        this.state = state;
+    public void applyCount(IRecipeLookup recipes, int count) { this.recipeNode.applyCount(recipes, count); }
+
+    public int calculateRequiredCount(WorldContext world) {
+        return this.recipeNode.calculateCount(world);
     }
 
-    public void applyCount(Level level, int count) { this.recipeNode.applyCount(level, count); }
-
-    public int calculateRequiredCount(ServerLevel level, EntityMaid maid) {
-        return this.recipeNode.calculateCount(level, maid);
-    }
-
-    /**
-     * 根据子节点自推导自身状态
-     */
-    public void computeState() {
-        //如果为叶节点,则保持当前状态
-        if (isLeaf()) {
-            return;
-        }
-
-        boolean allChildrenDone = true;
-        for (ExecutionNode child : children) {
-            if (child.state != NodeState.DONE) {
-                allChildrenDone = false;
-                break;
-            }
-        }
-
-        // 如果所有子节点都已完成且本节点非 EXECUTING & DONE → 本节点转为 READY
-        if (allChildrenDone) {
-            if (state != NodeState.EXECUTING && state != NodeState.DONE) {
-                state = NodeState.READY;
-            }
-        } else {
-            // 如果任何子节点未完成,则继续等待
-            state = NodeState.WAITING;
-        }
-    }
-
-    public void computeParentState() {
-        if (this.parent != null) {
-            this.parent.computeState();;
-        }
-    }
-
-    /**
-     * 验证并更新自身及子树状态
-     * @param maid 女仆实体
-     */
-    public void verifyAndUpdateState(ServerLevel level, EntityMaid maid) {
-        int required = parent != null ? parent.calculateRequiredCount(level, maid) : 0;
-        verifyAndUpdateState(level, maid, required, null);
-    }
-
-    private void verifyAndUpdateState(ServerLevel level, EntityMaid maid, int parentCount,
-                                      @Nullable List<ItemStack> existed) {
-        int required = RecipeNode.calculateCountByParent(level, maid, recipeNode, parentCount);
-        if (required > 0) {
-            if (existed == null || existed.isEmpty()) {
-                existed = ChefScheduler.getExistedInputs(level, maid, parent);
-            }
-            required -= InvUtil.count(existed, recipeNode.getIngredient());
-        }
-
-        if (isLeaf()) {
-            state = required <= 0 ? NodeState.DONE : NodeState.NEED_MATERIALS;
-        } else if (required <= 0) {
-            // 只要自身满足条件,就不再关心子树状态,并将子树所有节点状态覆盖为 DONE
-            state = NodeState.DONE;
-            setSubtreeState(NodeState.DONE);
-        } else {
-            // 否则临时设为 WAITING,等待子树更新状态后重新推导
-            state = NodeState.WAITING;
-            for (ExecutionNode child : children) {
-                child.verifyAndUpdateState(level, maid, required, existed);
-            }
-            computeState();
-        }
-    }
-
-    /**
-     * 将子树中的所有节点设置为目标状态
-     * @param state 目标状态
-     */
-    public void setSubtreeState(NodeState state) {
-        for (ExecutionNode child : children) {
-            child.setState(state);
-            child.setSubtreeState(state);
-        }
-    }
-
-    /**
-     * 自顶向下搜索对应状态的节点
-     * @param state 目标状态
-     * @return 找到的节点
-     */
     @Nullable
-    public ExecutionNode findNode(NodeState state) {
-        if (this.state == state) {
+    public ExecutionNode findNode(Progress target) {
+        if (this.progress == target) {
             return this;
         }
 
         for (ExecutionNode child : children) {
-            ExecutionNode found = child.findNode(state);
+            ExecutionNode found = child.findNode(target);
             if (found != null) {
                 return found;
             }

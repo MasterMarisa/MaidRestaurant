@@ -3,10 +3,15 @@ package com.mastermarisa.maid_restaurant.maid.behavior.chef;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.api.IMaidStorage;
+import com.mastermarisa.maid_restaurant.core.plan.PlanAction;
+import com.mastermarisa.maid_restaurant.core.plan.Resolution;
+import com.mastermarisa.maid_restaurant.core.plan.SupplyTarget;
 import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
-import com.mastermarisa.maid_restaurant.core.tree.NodeState;
-import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
+import com.mastermarisa.maid_restaurant.core.tree.Progress;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
+import com.mastermarisa.maid_restaurant.core.world.MaidWorldView;
+import com.mastermarisa.maid_restaurant.core.world.WorldContext;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
@@ -52,42 +57,44 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
     protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid maid) {
         if (!super.checkExtraStartConditions(level, maid)) return false;
 
-        ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.NEED_MATERIALS);
-        if (node == null) return false;
+        PlanAction action = ChefScheduler.nextAction(level, maid);
+        if (action == null) return false;
 
-        pendingNode.put(maid, node);
+        if (!(action.resolution() instanceof Resolution.Fetch)
+                && !(action.resolution() instanceof Resolution.Impossible)) {
+            return false;
+        }
+
+        pendingNode.put(maid, action.node());
         return true;
     }
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long gameTime) {
-        ExecutionNode node = pendingNode.remove(maid);
+        ExecutionNode node = pendingNode.get(maid);
         if (node == null) return;
 
-        node.verifyAndUpdateState(level, maid);
-        if (node.getState() != NodeState.NEED_MATERIALS) {
-            node.computeParentState();
-            if (node.getParent() != null && node.getParent().getState() == NodeState.WAITING) {
-                CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
-            }
-            return;
-        }
-
         Ingredient ingredient = node.getIngredient();
-        if (ingredient.isEmpty()) return;
-
-        AbstractZone zone = ChefScheduler.getStorageZone(maid);
-        if (zone == null) return;
-
-        BlockPos best = findNearestStorage(level, maid, zone, ingredient);
-        if (best == null) {
-            ChatBubbleUtil.setTextChatBubble(maid, Component.literal(
-                    "主人,我缺少" + ingredient.getItems()[0].getDisplayName().getString() + "!"));
+        if (ingredient.isEmpty()) {
+            pendingNode.remove(maid);
             return;
         }
+
+        if (ChefScheduler.getStorageZone(maid) == null) return;
+
+        Resolution resolution = node.getResolution();
+        List<SupplyTarget> targets = resolution instanceof Resolution.Fetch fetch
+                ? fetch.targets() : List.of();
+        if (targets.isEmpty()) {
+            complainMissing(maid, node, ingredient);
+            return;
+        }
+
+        BlockPos best = targets.get(0).pos();
 
         if (isCloseEnough(maid, best)) {
             take(level, maid, best, node);
+            ChatBubbleUtil.removeChatBubble(maid);
             return;
         }
 
@@ -117,14 +124,12 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
-        pendingNode.remove(maid);
-
+        ExecutionNode node = pendingNode.remove(maid);
         BlockPos target = getTargetPos(maid);
-        if (target != null && isCloseEnough(maid, target)) {
-            ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.NEED_MATERIALS);
-            if (node != null) {
-                take(level, maid, target, node);
-            }
+
+        if (node != null && target != null && isCloseEnough(maid, target)
+                && node.getResolution() instanceof Resolution.Fetch) {
+            take(level, maid, target, node);
         }
 
         MemoryUtil.removeTarget(maid);
@@ -136,15 +141,15 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
         maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos));
         try {
             IItemHandler maidInv = maid.getAvailableInv(false);
-            int count = node.calculateRequiredCount(level, maid);
+            WorldContext world = new WorldContext(MaidWorldView.of(maidInv), LevelRecipeLookup.of(level));
+            int count = node.calculateRequiredCount(world);
             if (count > 0) {
                 List<ItemStack> existed = ChefScheduler.getExistedInputs(level, maid, node.getParent());
                 count -= InvUtil.count(existed, node.getIngredient());
             }
 
             if (count <= 0) {
-                node.setState(NodeState.DONE);
-                node.computeParentState();
+                node.setProgress(Progress.DONE);
                 return;
             }
 
@@ -153,33 +158,18 @@ public class MaidGatherMaterialTask extends MaidCheckRateTask {
 
             maid.swing(InteractionHand.OFF_HAND);
             if (InvUtil.take(level, pos, storage, maidInv, node.getIngredient(), count)) {
-                node.setState(NodeState.DONE);
-                node.computeParentState();
+                node.setProgress(Progress.DONE);
             }
         } finally {
             CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
         }
     }
 
-    @Nullable
-    private BlockPos findNearestStorage(ServerLevel level, EntityMaid maid,
-                                        AbstractZone zone, Ingredient ingredient) {
-        BlockPos center = maid.blockPosition();
-        BlockPos best = null;
-        double bestDist = Double.MAX_VALUE;
+    private void complainMissing(EntityMaid maid, ExecutionNode node, Ingredient ingredient) {
+        if (!node.isLeaf()) return;
 
-        for (BlockPos pos : zone) {
-            IMaidStorage storage = StorageRegistry.tryGetAt(level, pos);
-            if (storage == null) continue;
-            if (storage.count(level, pos, ingredient) <= 0) continue;
-
-            double dist = pos.distSqr(center);
-            if (dist < bestDist) {
-                bestDist = dist;
-                best = pos;
-            }
-        }
-        return best;
+        ChatBubbleUtil.setTextChatBubble(maid, Component.literal(
+                "主人,我缺少" + ingredient.getItems()[0].getDisplayName().getString() + "!"));
     }
 
     @Nullable

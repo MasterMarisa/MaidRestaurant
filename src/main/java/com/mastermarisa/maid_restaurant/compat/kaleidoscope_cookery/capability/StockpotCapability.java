@@ -16,10 +16,14 @@ import com.mastermarisa.maid_restaurant.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
+import com.mastermarisa.maid_restaurant.core.world.MaidWorldView;
+import com.mastermarisa.maid_restaurant.core.world.WorldContext;
 import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtil;
 import com.mastermarisa.maid_restaurant.uitls.IngredientUtil;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -29,7 +33,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -75,12 +78,12 @@ public class StockpotCapability implements ICookCapability {
     }
 
     @Override
-    public int getIngredientCount(Level level, Recipe<?> recipe, int output, IngredientStack stack) {
+    public int getIngredientCount(Recipe<?> recipe, int output, IngredientStack stack, RegistryAccess registries) {
         ResourceLocation soupBaseId = ((StockpotRecipe) recipe).soupBase();
         Ingredient ingredient = stack.getIngredient();
         if (soupBaseId.equals(ModSoupBases.WATER)) {
             if (IngredientUtil.equals(ingredient, SOUP_BASE_MAP.get(soupBaseId))) {
-                ItemStack result = recipe.getResultItem(level.registryAccess());
+                ItemStack result = recipe.getResultItem(registries);
                 int multiplier = (int) Math.ceil((double) output / result.getCount());
                 return multiplier >= 2 ? 2 : 1;
             }
@@ -88,7 +91,7 @@ public class StockpotCapability implements ICookCapability {
         if (IngredientUtil.equals(ingredient, STOCKPOT_LID.get())) {
             return 1;
         }
-        return ICookCapability.super.getIngredientCount(level, recipe, output, stack);
+        return ICookCapability.super.getIngredientCount(recipe, output, stack, registries);
     }
 
     @Override
@@ -112,7 +115,7 @@ public class StockpotCapability implements ICookCapability {
                 inputs.add(ModItems.STOCKPOT_LID.get().getDefaultInstance());
             }
 
-            StockpotRecipe recipe = (StockpotRecipe) node.getRecipe(level.getRecipeManager());
+            StockpotRecipe recipe = (StockpotRecipe) node.getRecipe(LevelRecipeLookup.of(level));
             if (recipe != null) {
                 Ingredient carrier = recipe.carrier();
                 if (!carrier.isEmpty() && be.getStatus() == 3) {
@@ -137,7 +140,7 @@ public class StockpotCapability implements ICookCapability {
             return CookResult.INTERRUPTED;
         }
 
-        StockpotRecipe recipe = (StockpotRecipe) node.getRecipe(level.getRecipeManager());
+        StockpotRecipe recipe = (StockpotRecipe) node.getRecipe(LevelRecipeLookup.of(level));
         if (recipe == null) return CookResult.INTERRUPTED;
 
         if (be.hasLid() && be.getStatus() != 2) {
@@ -260,7 +263,7 @@ public class StockpotCapability implements ICookCapability {
 
         InvUtil.getAllFromInv(fakePlayer.getInventory(), maid);
         maid.swing(InteractionHand.MAIN_HAND);
-        return node.calculateCount(level, maid) <= 0 ? CookResult.DONE : CookResult.PROGRESS;
+        return node.calculateCount(new WorldContext(MaidWorldView.of(maid), LevelRecipeLookup.of(level))) <= 0 ? CookResult.DONE : CookResult.PROGRESS;
     }
 
     private void takeLid(ServerLevel level, EntityMaid maid, BlockPos pos, StockpotBlockEntity pot) {

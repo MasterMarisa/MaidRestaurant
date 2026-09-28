@@ -9,6 +9,7 @@ import com.mastermarisa.maid_restaurant.network.message.SaveRecipeTreeMessage;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeStep;
 import com.mastermarisa.maid_restaurant.uitls.IngredientUtil;
 import com.mastermarisa.maid_restaurant.uitls.RenderUtil;
@@ -318,14 +319,14 @@ public class CookingGuideScreen extends Screen {
             return;
         }
 
-        Recipe<?> recipe = node.getRecipe(level.getRecipeManager());
+        Recipe<?> recipe = node.getRecipe(LevelRecipeLookup.of(level));
         ICookCapability capability = node.getCapability();
         if (recipe == null || capability == null) {
             return;
         }
 
         for (var stack : RecipeCacheBuilder.getIngredientStacks(step.recipeId())) {
-            int count = capability.getIngredientCount(level, recipe, node.getCount(), stack);
+            int count = capability.getIngredientCount(recipe, node.getCount(), stack, level.registryAccess());
             RecipeNode child = new RecipeNode(stack.getIngredient(), count, null);
             node.addChild(child);
         }

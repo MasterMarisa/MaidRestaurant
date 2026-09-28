@@ -7,7 +7,7 @@ import com.mastermarisa.maid_restaurant.core.request.CookingRequest;
 import com.mastermarisa.maid_restaurant.core.request.ServingRequest;
 import com.mastermarisa.maid_restaurant.core.storage.StorageRegistry;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
-import com.mastermarisa.maid_restaurant.core.tree.NodeState;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
 import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
@@ -51,20 +51,23 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         if (!super.checkExtraStartConditions(level, maid)) return false;
 
         CookingRequest request = ChefScheduler.getOrClaimRequest(level, maid);
-        return request != null && request.root.getState() == NodeState.DONE;
+        return request != null && holdsDish(maid, request.root);
+    }
+
+    private static boolean holdsDish(EntityMaid maid, ExecutionNode node) {
+        return InvUtil.contains(maid.getAvailableInv(false), node.getIngredient(), node.getCount());
     }
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long gameTime) {
         CookingRequest request = ChefScheduler.getOrClaimRequest(level, maid);
-        if (request == null || request.root.getState() != NodeState.DONE) return;
+        if (request == null || !holdsDish(maid, request.root)) return;
 
         ExecutionNode node = request.root;
         IItemHandler maidInv = maid.getAvailableInv(false);
         List<ItemStack> results = InvUtil.extractFull(maidInv, node.getCount(),
                 node.getIngredient(), true);
         if (results.isEmpty()) {
-            node.verifyAndUpdateState(level, maid);
             return;
         }
 
@@ -107,7 +110,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         BlockPos target = getTargetPos(maid);
         if (target != null && isCloseEnough(maid, target)) {
             CookingRequest request = ChefScheduler.getOrClaimRequest(level, maid);
-            if (request != null && request.root.getState() == NodeState.DONE) {
+            if (request != null && holdsDish(maid, request.root)) {
                 storeDish(level, maid, target, request);
             }
         }
@@ -125,7 +128,6 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
         List<ItemStack> results = InvUtil.extractPartial(maidInv, node.getCount(),
                 node.getIngredient(), true);
         if (results.isEmpty()) {
-            node.verifyAndUpdateState(level, maid);
             return;
         }
 
@@ -147,7 +149,7 @@ public class MaidStoreDishTask extends MaidCheckRateTask {
             ChefScheduler.submitRequest(level, maid);
             CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidGatherMaterialTask.UID, 5);
         } else {
-            request.root.applyCount(level, node.getCount() - inserted);
+            request.root.applyCount(LevelRecipeLookup.of(level), node.getCount() - inserted);
             CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
         }
     }

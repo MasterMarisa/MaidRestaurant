@@ -6,11 +6,15 @@ import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
+import com.mastermarisa.maid_restaurant.core.world.MaidWorldView;
+import com.mastermarisa.maid_restaurant.core.world.WorldContext;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import com.renyigesai.bakeries.block.blender.BlenderBlockEntity;
 import com.renyigesai.bakeries.init.BakeriesItems;
 import com.renyigesai.bakeries.recipe.BlenderRecipe;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -20,7 +24,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.RecipeMatcher;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -59,12 +62,12 @@ public class BlenderCapability implements ICookCapability {
     }
 
     @Override
-    public int getIngredientCount(Level level, Recipe<?> recipe, int output, IngredientStack stack) {
+    public int getIngredientCount(Recipe<?> recipe, int output, IngredientStack stack, RegistryAccess registries) {
         Ingredient ingredient = stack.getIngredient();
         if (ingredient.getItems().length == 1 && ingredient.getItems()[0].is(Items.WATER_BUCKET)) {
             return 1;
         }
-        return ICookCapability.super.getIngredientCount(level, recipe, output, stack);
+        return ICookCapability.super.getIngredientCount(recipe, output, stack, registries);
     }
 
     @Override
@@ -80,7 +83,7 @@ public class BlenderCapability implements ICookCapability {
             }
 
             ItemStack result = items.getStackInSlot(10);
-            BlenderRecipe recipe = (BlenderRecipe) node.getRecipe(level.getRecipeManager());
+            BlenderRecipe recipe = (BlenderRecipe) node.getRecipe(LevelRecipeLookup.of(level));
             if (recipe != null && !result.isEmpty()) {
                 for (var ingredient : recipe.getIngredients()) {
                     if (!ingredient.isEmpty()) {
@@ -103,12 +106,12 @@ public class BlenderCapability implements ICookCapability {
             return CookResult.INTERRUPTED;
         }
 
-        BlenderRecipe recipe = (BlenderRecipe) node.getRecipe(level.getRecipeManager());
+        BlenderRecipe recipe = (BlenderRecipe) node.getRecipe(LevelRecipeLookup.of(level));
         if (recipe == null) {
             return CookResult.INTERRUPTED;
         }
 
-        int required = node.calculateCount(level, maid);
+        int required = node.calculateCount(new WorldContext(MaidWorldView.of(maid), LevelRecipeLookup.of(level)));
         if (required <= 0) {
             return CookResult.DONE;
         }

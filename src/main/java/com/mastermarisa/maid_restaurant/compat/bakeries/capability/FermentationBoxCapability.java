@@ -5,6 +5,9 @@ import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
+import com.mastermarisa.maid_restaurant.core.world.MaidWorldView;
+import com.mastermarisa.maid_restaurant.core.world.WorldContext;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import com.renyigesai.bakeries.block.fermentation_box.FermentationBoxBlockEntity;
 import com.renyigesai.bakeries.init.BakeriesItems;
@@ -42,7 +45,7 @@ public class FermentationBoxCapability implements ICookCapability {
     @Override
     public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeNode node) {
         List<ItemStack> inputs = new ArrayList<>();
-        FermentationBoxRecipe recipe = (FermentationBoxRecipe) node.getRecipe(level.getRecipeManager());
+        FermentationBoxRecipe recipe = (FermentationBoxRecipe) node.getRecipe(LevelRecipeLookup.of(level));
         if (recipe != null && level.getBlockEntity(pos) instanceof FermentationBoxBlockEntity be) {
             Ingredient ingredient = recipe.getIngredients().get(0);
             ItemStack result = recipe.getResultItem(level.registryAccess());
@@ -71,12 +74,12 @@ public class FermentationBoxCapability implements ICookCapability {
             return CookResult.INTERRUPTED;
         }
 
-        FermentationBoxRecipe recipe = (FermentationBoxRecipe) node.getRecipe(level.getRecipeManager());
+        FermentationBoxRecipe recipe = (FermentationBoxRecipe) node.getRecipe(LevelRecipeLookup.of(level));
         if (recipe == null) {
             return CookResult.INTERRUPTED;
         }
 
-        int required = node.calculateCount(level, maid);
+        int required = node.calculateCount(new WorldContext(MaidWorldView.of(maid), LevelRecipeLookup.of(level)));
         if (required <= 0) {
             return CookResult.DONE;
         }

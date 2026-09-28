@@ -4,6 +4,7 @@ import com.mastermarisa.maid_restaurant.blockentity.OrderBellBlockEntity;
 import com.mastermarisa.maid_restaurant.client.gui.screen.BellMenuScreen;
 import com.mastermarisa.maid_restaurant.core.request.CookingRequestBus;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
 import com.mastermarisa.maid_restaurant.data.menu.OrderEntry;
 import com.mastermarisa.maid_restaurant.core.request.CookingRequest;
 import com.mastermarisa.maid_restaurant.core.request.ServingRequest;
@@ -95,7 +96,7 @@ public class BellMenuItem extends Item {
             for (OrderEntry order : entries) {
                 RecipeNode root = order.getEntry().getRoot().copy();
                 CookingRequest request = new CookingRequest(root);
-                request.root.applyCount(level, order.getCount());
+                request.root.applyCount(LevelRecipeLookup.of(level), order.getCount());
                 if (!targets.isEmpty()) {
                     request.boundRequest = new ServingRequest(root.getIngredient(), order.getCount());
                     request.boundRequest.targets = new ArrayList<>(targets);

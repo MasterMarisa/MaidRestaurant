@@ -5,6 +5,9 @@ import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
+import com.mastermarisa.maid_restaurant.core.world.MaidWorldView;
+import com.mastermarisa.maid_restaurant.core.world.WorldContext;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import com.renyigesai.bakeries.init.BakeriesBlocks;
 import com.renyigesai.bakeries.init.BakeriesItems;
@@ -45,7 +48,7 @@ public class DoughCraftingTableCapability implements ICookCapability {
 
     @Override
     public CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeNode node) {
-        DoughCraftingRecipe recipe = (DoughCraftingRecipe) node.getRecipe(level.getRecipeManager());
+        DoughCraftingRecipe recipe = (DoughCraftingRecipe) node.getRecipe(LevelRecipeLookup.of(level));
         if (recipe == null) {
             return CookResult.INTERRUPTED;
         }
@@ -53,7 +56,7 @@ public class DoughCraftingTableCapability implements ICookCapability {
         IItemHandler maidInv = maid.getAvailableInv(false);
         ItemStack result = recipe.getResultItem(level.registryAccess());
         Ingredient ingredient = recipe.getIngredients().get(0);
-        int required = (int) Math.ceil((double) node.calculateCount(level, maid) / result.getCount());
+        int required = (int) Math.ceil((double) node.calculateCount(new WorldContext(MaidWorldView.of(maid), LevelRecipeLookup.of(level))) / result.getCount());
 
         if (InvUtil.extractFull(maidInv, required, ingredient, false).isEmpty()) {
             return CookResult.INTERRUPTED;

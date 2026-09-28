@@ -12,9 +12,13 @@ import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
+import com.mastermarisa.maid_restaurant.core.world.MaidWorldView;
+import com.mastermarisa.maid_restaurant.core.world.WorldContext;
 import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtil;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -25,7 +29,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.items.IItemHandler;
@@ -68,7 +71,7 @@ public class TeapotCapability implements ICookCapability {
     }
 
     @Override
-    public int getIngredientCount(Level level, Recipe<?> recipe, int output, IngredientStack stack) {
+    public int getIngredientCount(Recipe<?> recipe, int output, IngredientStack stack, RegistryAccess registries) {
         int multiplier = Mth.positiveCeilDiv(output, 12);
         return stack.getCount() * multiplier;
     }
@@ -90,7 +93,7 @@ public class TeapotCapability implements ICookCapability {
                 }
             } else {
                 ItemStack result = be.getResult();
-                TeapotRecipe recipe = (TeapotRecipe) node.getRecipe(level.getRecipeManager());
+                TeapotRecipe recipe = (TeapotRecipe) node.getRecipe(LevelRecipeLookup.of(level));
                 if (recipe != null && ItemStack.isSameItem(result, recipe.result()) && result.getCount() == 12) {
                     ResourceLocation teaFluidId = recipe.teaFluid();
                     if (!teaFluidId.equals(TeapotRecipeSerializer.EMPTY_TEA_FLUID)) {
@@ -116,7 +119,7 @@ public class TeapotCapability implements ICookCapability {
             return CookResult.INTERRUPTED;
         }
 
-        TeapotRecipe recipe = (TeapotRecipe) node.getRecipe(level.getRecipeManager());
+        TeapotRecipe recipe = (TeapotRecipe) node.getRecipe(LevelRecipeLookup.of(level));
         if (recipe == null) {
             return CookResult.INTERRUPTED;
         }
@@ -179,7 +182,7 @@ public class TeapotCapability implements ICookCapability {
                 teapot.refresh();
                 InvUtil.getItemToMaid(maid, result.copy());
                 maid.swing(InteractionHand.MAIN_HAND);
-                if (node.calculateCount(level, maid) <= 0) {
+                if (node.calculateCount(new WorldContext(MaidWorldView.of(maid), LevelRecipeLookup.of(level))) <= 0) {
                     return CookResult.DONE;
                 } else {
                     return CookResult.PROGRESS;

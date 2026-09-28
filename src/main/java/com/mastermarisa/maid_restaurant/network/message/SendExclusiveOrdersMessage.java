@@ -2,6 +2,7 @@ package com.mastermarisa.maid_restaurant.network.message;
 
 import com.mastermarisa.maid_restaurant.core.request.CookingRequestBus;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
 import com.mastermarisa.maid_restaurant.data.menu.OrderEntry;
 import com.mastermarisa.maid_restaurant.core.request.CookingRequest;
 import com.mastermarisa.maid_restaurant.core.request.ServingRequest;
@@ -44,7 +45,7 @@ public record SendExclusiveOrdersMessage(String restaurantId, List<OrderEntry> o
                     for (OrderEntry entry : message.orders()) {
                         RecipeNode root = entry.getEntry().getRoot().copy();
                         CookingRequest request = new CookingRequest(root);
-                        request.root.applyCount(level, entry.getCount());
+                        request.root.applyCount(LevelRecipeLookup.of(level), entry.getCount());
                         if (!targets.isEmpty()) {
                             request.boundRequest = new ServingRequest(root.getIngredient(), entry.getCount());;
                             request.boundRequest.targets = new ArrayList<>(targets);

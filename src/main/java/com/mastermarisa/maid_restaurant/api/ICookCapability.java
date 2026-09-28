@@ -7,13 +7,13 @@ import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
 import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.uitls.BlockUsageUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -29,8 +29,8 @@ public interface ICookCapability {
         return recipe.getIngredients().stream().filter(i -> !i.isEmpty()).toList();
     }
 
-    default int getIngredientCount(Level level, Recipe<?> recipe, int output, IngredientStack stack) {
-        ItemStack result = recipe.getResultItem(level.registryAccess());
+    default int getIngredientCount(Recipe<?> recipe, int output, IngredientStack stack, RegistryAccess registries) {
+        ItemStack result = recipe.getResultItem(registries);
         int multiplier = (int) Math.ceil((double) output / result.getCount());
         return stack.getCount() * multiplier;
     }

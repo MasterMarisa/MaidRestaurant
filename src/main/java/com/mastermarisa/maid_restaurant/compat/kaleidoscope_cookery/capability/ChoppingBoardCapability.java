@@ -11,9 +11,13 @@ import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
+import com.mastermarisa.maid_restaurant.core.world.MaidWorldView;
+import com.mastermarisa.maid_restaurant.core.world.WorldContext;
 import com.mastermarisa.maid_restaurant.uitls.IngredientUtil;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -23,7 +27,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.items.IItemHandler;
 
 import java.lang.reflect.Method;
@@ -56,11 +59,11 @@ public class ChoppingBoardCapability implements ICookCapability {
     }
 
     @Override
-    public int getIngredientCount(Level level, Recipe<?> recipe, int output, IngredientStack stack) {
+    public int getIngredientCount(Recipe<?> recipe, int output, IngredientStack stack, RegistryAccess registries) {
         if (IngredientUtil.equals(stack.getIngredient(), KITCHEN_KNIFE)) {
             return 1;
         }
-        return ICookCapability.super.getIngredientCount(level, recipe, output, stack);
+        return ICookCapability.super.getIngredientCount(recipe, output, stack, registries);
     }
 
     @Override
@@ -85,7 +88,7 @@ public class ChoppingBoardCapability implements ICookCapability {
             return CookResult.INTERRUPTED;
         }
 
-        ChoppingBoardRecipe recipe = (ChoppingBoardRecipe) node.getRecipe(level.getRecipeManager());
+        ChoppingBoardRecipe recipe = (ChoppingBoardRecipe) node.getRecipe(LevelRecipeLookup.of(level));
         if (recipe == null) {
             return CookResult.INTERRUPTED;
         }
@@ -125,7 +128,7 @@ public class ChoppingBoardCapability implements ICookCapability {
             callResetBoardData(be);
             level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 2.0F + level.random.nextFloat() * 0.2F);
             maid.swing(InteractionHand.MAIN_HAND);
-            if (node.calculateCount(level, maid) <= 0) {
+            if (node.calculateCount(new WorldContext(MaidWorldView.of(maid), LevelRecipeLookup.of(level))) <= 0) {
                 return CookResult.DONE;
             } else {
                 return CookResult.PROGRESS;

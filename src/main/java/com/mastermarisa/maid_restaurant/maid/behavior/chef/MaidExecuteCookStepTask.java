@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
-import com.mastermarisa.maid_restaurant.core.tree.NodeState;
+import com.mastermarisa.maid_restaurant.core.tree.Progress;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
@@ -38,7 +38,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
 
     @Override
     protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid maid) {
-        ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.EXECUTING);
+        ExecutionNode node = ChefScheduler.findNode(level, maid, Progress.EXECUTING);
         if (node == null) return false;
 
         BlockPos pos = getTargetPos(maid);
@@ -79,7 +79,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
 
         if (!shouldTick(level, maid, gameTime)) return;
 
-        ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.EXECUTING);
+        ExecutionNode node = ChefScheduler.findNode(level, maid, Progress.EXECUTING);
         if (node == null) return;
 
         ICookCapability capability = node.getCapability();
@@ -90,6 +90,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
 
         switch (result) {
             case DONE -> {
+                node.setProgress(Progress.DONE);
                 CheckRateHelper.setRemainingTicks(maid.getUUID(), MaidStoreDishTask.UID, 5);
                 doStop(level, maid, gameTime);
             }
@@ -109,10 +110,9 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
         }
         MemoryUtil.removeTarget(maid);
 
-        ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.EXECUTING);
+        ExecutionNode node = ChefScheduler.findNode(level, maid, Progress.EXECUTING);
         if (node != null) {
-            node.verifyAndUpdateState(level, maid);
-            node.computeParentState();
+            node.setProgress(Progress.PENDING);
         }
     }
 
@@ -121,7 +121,7 @@ public class MaidExecuteCookStepTask extends MaidTickRateTask {
 
     @Override
     protected int getInterval(ServerLevel level, EntityMaid maid) {
-        ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.EXECUTING);
+        ExecutionNode node = ChefScheduler.findNode(level, maid, Progress.EXECUTING);
         if (node == null) return DEFAULT_INTERVAL;
         ICookCapability capability = node.getCapability();
         return capability != null ? capability.getTickInterval() : DEFAULT_INTERVAL;

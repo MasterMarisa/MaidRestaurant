@@ -11,6 +11,9 @@ import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.capability.CapabilityRegistry;
 import com.mastermarisa.maid_restaurant.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
+import com.mastermarisa.maid_restaurant.core.world.MaidWorldView;
+import com.mastermarisa.maid_restaurant.core.world.WorldContext;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -45,7 +48,7 @@ public class SteamerCapability implements ICookCapability {
     @Override
     public List<ItemStack> getExistedInputs(ServerLevel level, BlockPos pos, RecipeNode node) {
         List<ItemStack> inputs = new ArrayList<>();
-        SteamerRecipe recipe = (SteamerRecipe) node.getRecipe(level.getRecipeManager());
+        SteamerRecipe recipe = (SteamerRecipe) node.getRecipe(LevelRecipeLookup.of(level));
         if (recipe != null) {
             Ingredient ingredient = recipe.getIngredient();
             ItemStack result = recipe.getResult();
@@ -96,12 +99,12 @@ public class SteamerCapability implements ICookCapability {
 
 
         IItemHandler maidInv = maid.getAvailableInv(false);
-        SteamerRecipe recipe = (SteamerRecipe) node.getRecipe(level.getRecipeManager());
+        SteamerRecipe recipe = (SteamerRecipe) node.getRecipe(LevelRecipeLookup.of(level));
         if (recipe == null) {
             return CookResult.INTERRUPTED;
         }
 
-        int required = node.calculateCount(level, maid);
+        int required = node.calculateCount(new WorldContext(MaidWorldView.of(maid), LevelRecipeLookup.of(level)));
         if (required <= 0) {
             return CookResult.DONE;
         }

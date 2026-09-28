@@ -13,10 +13,14 @@ import com.mastermarisa.maid_restaurant.capability.CookResult;
 import com.mastermarisa.maid_restaurant.core.recipe.IngredientStack;
 import com.mastermarisa.maid_restaurant.core.recipe.RecipeCacheBuilder;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
+import com.mastermarisa.maid_restaurant.core.world.MaidWorldView;
+import com.mastermarisa.maid_restaurant.core.world.WorldContext;
 import com.mastermarisa.maid_restaurant.uitls.FakePlayerUtil;
 import com.mastermarisa.maid_restaurant.uitls.IngredientUtil;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -28,7 +32,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.items.IItemHandler;
@@ -75,9 +78,9 @@ public class PotCapability implements ICookCapability {
     }
 
     @Override
-    public int getIngredientCount(Level level, Recipe<?> recipe, int output, IngredientStack stack) {
+    public int getIngredientCount(Recipe<?> recipe, int output, IngredientStack stack, RegistryAccess registries) {
         if (IngredientUtil.equals(stack.getIngredient(), KITCHEN_SHOVEL)) return 1;
-        return ICookCapability.super.getIngredientCount(level, recipe, output, stack);
+        return ICookCapability.super.getIngredientCount(recipe, output, stack, registries);
     }
 
     @Override
@@ -103,7 +106,7 @@ public class PotCapability implements ICookCapability {
             return CookResult.INTERRUPTED;
         }
 
-        PotRecipe recipe = (PotRecipe) node.getRecipe(level.getRecipeManager());
+        PotRecipe recipe = (PotRecipe) node.getRecipe(LevelRecipeLookup.of(level));
         if (recipe == null) return CookResult.INTERRUPTED;
 
         return switch (be.getStatus()) {
@@ -201,7 +204,7 @@ public class PotCapability implements ICookCapability {
         InvUtil.getAllFromInv(fakePlayer.getInventory(), maid);
         maid.swing(InteractionHand.MAIN_HAND);
 
-        return node.calculateCount(level, maid) <= 0 ? CookResult.DONE : CookResult.PROGRESS;
+        return node.calculateCount(new WorldContext(MaidWorldView.of(maid), LevelRecipeLookup.of(level))) <= 0 ? CookResult.DONE : CookResult.PROGRESS;
     }
 
     private CookResult takeOutWithoutCarrier(ServerLevel level, EntityMaid maid,
@@ -211,7 +214,7 @@ public class PotCapability implements ICookCapability {
         InvUtil.getItemToMaid(maid, pig.getMainHandItem());
         maid.swing(InteractionHand.MAIN_HAND);
 
-        return node.calculateCount(level, maid) <= 0 ? CookResult.DONE : CookResult.PROGRESS;
+        return node.calculateCount(new WorldContext(MaidWorldView.of(maid), LevelRecipeLookup.of(level))) <= 0 ? CookResult.DONE : CookResult.PROGRESS;
     }
 
     private boolean equipShovel(EntityMaid maid, IItemHandler maidInv) {

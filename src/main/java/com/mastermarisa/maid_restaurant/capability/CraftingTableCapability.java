@@ -3,6 +3,9 @@ package com.mastermarisa.maid_restaurant.capability;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
+import com.mastermarisa.maid_restaurant.core.world.MaidWorldView;
+import com.mastermarisa.maid_restaurant.core.world.WorldContext;
 import com.mastermarisa.maid_restaurant.uitls.InvUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -56,7 +59,7 @@ public class CraftingTableCapability implements ICookCapability {
 
     @Override
     public CookResult cookTick(ServerLevel level, EntityMaid maid, BlockPos pos, RecipeNode node) {
-        CraftingRecipe recipe = (CraftingRecipe) node.getRecipe(level.getRecipeManager());
+        CraftingRecipe recipe = (CraftingRecipe) node.getRecipe(LevelRecipeLookup.of(level));
         if (recipe == null) return CookResult.INTERRUPTED;
 
         IItemHandler maidInv = maid.getAvailableInv(false);
@@ -86,7 +89,7 @@ public class CraftingTableCapability implements ICookCapability {
             return CookResult.INTERRUPTED;
         }
 
-        return node.calculateCount(level, maid) <= 0 ? CookResult.DONE :CookResult.PROGRESS;
+        return node.calculateCount(new WorldContext(MaidWorldView.of(maid), LevelRecipeLookup.of(level))) <= 0 ? CookResult.DONE :CookResult.PROGRESS;
     }
 
     @Override

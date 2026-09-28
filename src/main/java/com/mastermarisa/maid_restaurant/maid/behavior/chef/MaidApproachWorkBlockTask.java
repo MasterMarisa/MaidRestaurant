@@ -3,14 +3,15 @@ package com.mastermarisa.maid_restaurant.maid.behavior.chef;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
+import com.mastermarisa.maid_restaurant.core.plan.PlanAction;
+import com.mastermarisa.maid_restaurant.core.plan.Resolution;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
-import com.mastermarisa.maid_restaurant.core.tree.NodeState;
+import com.mastermarisa.maid_restaurant.core.tree.Progress;
 import com.mastermarisa.maid_restaurant.data.task_data.WorkBlockCache;
 import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
 import com.mastermarisa.maid_restaurant.init.ModEntities;
 import com.mastermarisa.maid_restaurant.init.ModTaskDataKeys;
 import com.mastermarisa.maid_restaurant.maid.behavior.TargetType;
-import com.mastermarisa.maid_restaurant.maid.behavior.base.CheckRateHelper;
 import com.mastermarisa.maid_restaurant.maid.behavior.base.MaidCheckRateTask;
 import com.mastermarisa.maid_restaurant.uitls.*;
 import net.minecraft.core.BlockPos;
@@ -48,26 +49,21 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
     protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid maid) {
         if (!super.checkExtraStartConditions(level, maid)) return false;
 
-        ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.READY);
-        if (node == null) return false;
+        PlanAction action = ChefScheduler.nextAction(level, maid);
+        if (action == null || !isReadyToCook(action.resolution())) return false;
 
-        pendingNode.put(maid, node);
+        pendingNode.put(maid, action.node());
         return true;
+    }
+
+    private static boolean isReadyToCook(Resolution resolution) {
+        return resolution instanceof Resolution.Craft craft && craft.ready();
     }
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long gameTime) {
-        ExecutionNode node = pendingNode.remove(maid);
+        ExecutionNode node = pendingNode.get(maid);
         if (node == null) return;
-
-        node.verifyAndUpdateState(level, maid);
-        if (node.getState() != NodeState.READY) {
-            node.computeParentState();
-            if (node.getParent() != null && node.getParent().getState() == NodeState.READY) {
-                CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
-            }
-            return;
-        }
 
         ICookCapability capability = node.getCapability();
         AbstractZone zone = ChefScheduler.getWorkZone(maid);
@@ -121,14 +117,10 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
-        pendingNode.remove(maid);
-
+        ExecutionNode node = pendingNode.remove(maid);
         BlockPos target = getTargetPos(maid);
-        if (target != null && isCloseEnough(maid, target)) {
-            ExecutionNode node = ChefScheduler.findNode(level, maid, NodeState.READY);
-            if (node != null) {
-                onReached(level, maid, target, node);
-            }
+        if (node != null && target != null && isCloseEnough(maid, target)) {
+            onReached(level, maid, target, node);
         }
 
         if (!MemoryUtil.isTarget(maid, TargetType.EXECUTE_COOK_STEP)) {
@@ -141,21 +133,12 @@ public class MaidApproachWorkBlockTask extends MaidCheckRateTask {
     private void onReached(ServerLevel level, EntityMaid maid, BlockPos pos, ExecutionNode node) {
         if (BlockUsageUtil.isUsed(pos)) return;
 
-        node.verifyAndUpdateState(level, maid);
-        if (node.getState() != NodeState.READY) {
-            node.computeParentState();
-            if (node.getParent() != null && node.getParent().getState() == NodeState.READY) {
-                CheckRateHelper.setRemainingTicks(maid.getUUID(), UID, 5);
-            }
-            return;
-        }
-
         ICookCapability capability = node.getCapability();
         if (capability == null || !capability.isValidWorkBlock(level, pos)) {
             return;
         }
 
-        node.setState(NodeState.EXECUTING);
+        node.setProgress(Progress.EXECUTING);
         BlockUsageUtil.add(pos, maid.getUUID());
         MemoryUtil.setTarget(maid, new BlockPosTracker(pos), TargetType.EXECUTE_COOK_STEP);
         maid.setData(ModTaskDataKeys.WORK_BLOCK_CACHE, new WorkBlockCache(pos, capability.getID()));

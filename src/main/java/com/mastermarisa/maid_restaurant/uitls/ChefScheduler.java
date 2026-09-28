@@ -4,11 +4,15 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import com.mastermarisa.maid_restaurant.api.ICookCapability;
+import com.mastermarisa.maid_restaurant.core.plan.*;
+import com.mastermarisa.maid_restaurant.core.request.CookingRequest;
 import com.mastermarisa.maid_restaurant.core.request.CookingRequestBus;
 import com.mastermarisa.maid_restaurant.core.request.ServingRequestBus;
 import com.mastermarisa.maid_restaurant.core.tree.ExecutionNode;
-import com.mastermarisa.maid_restaurant.core.tree.NodeState;
-import com.mastermarisa.maid_restaurant.core.request.CookingRequest;
+import com.mastermarisa.maid_restaurant.core.tree.Progress;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
+import com.mastermarisa.maid_restaurant.core.world.MaidWorldView;
+import com.mastermarisa.maid_restaurant.core.world.WorldContext;
 import com.mastermarisa.maid_restaurant.data.task_data.ChefInformation;
 import com.mastermarisa.maid_restaurant.data.task_data.WorkBlockCache;
 import com.mastermarisa.maid_restaurant.data.zone.AbstractZone;
@@ -119,9 +123,6 @@ public class ChefScheduler {
         CookingRequest request = bus.getClaimed(restaurantId, maid);
         if (request == null) {
             request = bus.claim(restaurantId, maid);
-            if (request != null) {
-                request.root.verifyAndUpdateState(level, maid);
-            }
         }
         return request;
     }
@@ -151,19 +152,76 @@ public class ChefScheduler {
     }
 
     /**
-     * 查找当前女仆委托树中第一个状态匹配的节点
-     * @param level 所在世界
-     * @param maid  女仆实体
-     * @param state 目标节点状态
-     * @return 第一个匹配的节点
+     * 自顶向下规划出下一个可执行的动作,并把结论写到对应节点上
+     * @return 无可执行动作时返回 null
      */
     @Nullable
-    public static ExecutionNode findNode(ServerLevel level, EntityMaid maid, NodeState state) {
+    public static PlanAction nextAction(ServerLevel level, EntityMaid maid) {
         CookingRequest request = getOrClaimRequest(level, maid);
         if (request == null) {
             return null;
         }
-        return request.root.findNode(state);
+
+        ExecutionNode root = request.root;
+        WorldContext world = new WorldContext(MaidWorldView.of(maid), LevelRecipeLookup.of(level));
+        PlanInput input = new PlanInput(0, world, List.of(), getExistedInputs(level, maid, root),
+                MaidSupplySource.of(level, maid));
+        return search(level, maid, root, world, input, NodePlanner.requiredCount(root, input));
+    }
+
+    /**
+     * 查找指定进度的节点
+     * @param level    所在世界
+     * @param maid     女仆实体
+     * @param progress 目标进度
+     * @return 第一个匹配的节点
+     */
+    @Nullable
+    public static ExecutionNode findNode(ServerLevel level, EntityMaid maid, Progress progress) {
+        CookingRequest request = getOrClaimRequest(level, maid);
+        if (request == null) {
+            return null;
+        }
+        return request.root.findNode(progress);
+    }
+
+    /**
+     * @param input    本节点的规划输入,由父节点装配
+     * @param required 本节点已算好的缺口
+     */
+    @Nullable
+    private static PlanAction search(ServerLevel level, EntityMaid maid, ExecutionNode node,
+                                     WorldContext world, PlanInput input, int required) {
+        Resolution plan = NodePlanner.resolve(node, input, required);
+        node.setResolution(plan);
+
+        if (plan instanceof Resolution.Craft craft) {
+            if (craft.ready()) {
+                return new PlanAction(node, plan);
+            }
+
+            List<ExecutionNode> children = node.getChildren();
+            List<Need> needs = craft.children();
+            for (int i = 0; i < children.size(); i++) {
+                ExecutionNode child = children.get(i);
+                PlanInput childInput = new PlanInput(craft.need().amount(), world,
+                        input.childrenInPlace(), getExistedInputs(level, maid, child), input.supply());
+                PlanAction action = search(level, maid, child, world, childInput, needs.get(i).amount());
+                if (action != null) {
+                    return action;
+                }
+            }
+            return new PlanAction(node, plan);
+        }
+
+        if (plan instanceof Resolution.Satisfied) {
+            return null;
+        }
+
+        if (plan instanceof Resolution.Impossible && !node.isLeaf()) {
+            return null;
+        }
+        return new PlanAction(node, plan);
     }
 
     public static List<ItemStack> getExistedInputs(ServerLevel level, EntityMaid maid, @Nullable ExecutionNode node) {

@@ -4,6 +4,7 @@ import com.mastermarisa.maid_restaurant.MaidRestaurant;
 import com.mastermarisa.maid_restaurant.core.request.CookingRequest;
 import com.mastermarisa.maid_restaurant.core.request.CookingRequestBus;
 import com.mastermarisa.maid_restaurant.core.tree.RecipeNode;
+import com.mastermarisa.maid_restaurant.core.world.LevelRecipeLookup;
 import com.mastermarisa.maid_restaurant.init.ModItems;
 import com.mastermarisa.maid_restaurant.item.CookingGuideItem;
 import com.mojang.brigadier.CommandDispatcher;
@@ -74,7 +75,7 @@ public class CommandRegistry {
         }
 
         CookingRequest request = new CookingRequest(RecipeNode.fromNBT(CookingGuideItem.getRecipeRoot(itemInHand)));
-        request.root.applyCount(level, count);
+        request.root.applyCount(LevelRecipeLookup.of(level), count);
         CookingRequestBus.getInstance(level).enqueue(restaurantId, request);
         context.getSource().sendSuccess(() -> Component.literal("§a成功发送委托！"), true);
     }
